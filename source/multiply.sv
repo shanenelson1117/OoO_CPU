@@ -13,7 +13,7 @@ module multiply (
   control multiply_cu(.*);
 endmodule
 
-// multiply datapath
+// implement booth's algorithm
 module datapath (
   output logic [63:0] product,
   output logic [31:0] Q, P,
