@@ -39,8 +39,7 @@ module datapath (
       else A <= A - B;
     end
     if (shiftregs) begin
-      Q1 <= Q[0];
-      {A, Q} <= {A, Q} >>> 1;
+      {A, Q, Q1} <= {A, Q, Q1} >>> 1;
     end
   end
 
@@ -114,9 +113,10 @@ module multiply_tb;
 
   // Test sequence
   initial begin
-    $display("Starting enumerated multiply testbench");
     logic [63:0] expected;
     logic [31:0] a, b;
+    $display("Starting enumerated multiply testbench");
+    
     // Initialize inputs
     multiplier = 0;
     multiplicand = 0;
