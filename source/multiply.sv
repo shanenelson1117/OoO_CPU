@@ -82,7 +82,7 @@ module multiply_tb;
   logic [63:0] product;
 
   // Instantiate DUT
-  multiply dut (
+  multiply uut (
     .multiplier(multiplier),
     .multiplicand(multiplicand),
     .valid_in(valid_in),
@@ -100,14 +100,18 @@ module multiply_tb;
   always #5 clk = ~clk; // 10ns period
 
   // Test procedure task
-  task run_test(input signed [31:0] a, input signed [31:0] b);
-    signed [63:0] expected;
+  task run_test(input [31:0] a_in, input [31:0] b_in);
+    // Interpret inputs as signed within the task
+    automatic signed [31:0] a, b;
+    automatic signed [63:0] expected;
     begin
+      a = a_in;
+      b = b_in;
       expected = a * b;
 
       // Apply inputs
-      multiplier = a;
-      multiplicand = b;
+      multiplier = a_in;
+      multiplicand = b_in;
       valid_in = 1;
 
       @(posedge clk);
@@ -119,7 +123,7 @@ module multiply_tb;
       // Wait for valid_out
       wait (valid_out);
 
-      $display("Test: %0d x %0d = %0d (Expected: %0d)", a, b, product, expected);
+      $display("Test: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
       if ($signed(product) !== expected)
         $display("ERROR: Mismatch. Got %0d, expected %0d", $signed(product), expected);
       else
@@ -150,18 +154,18 @@ module multiply_tb;
     reset = 0;
 
     // Run tests
-    run_test(32'd7, 32'd6);             // positive x positive
-    run_test(-32'd7, 32'd6);            // negative x positive
-    run_test(32'd7, -32'd6);            // positive x negative
-    run_test(-32'd7, -32'd6);           // negative x negative
-    run_test(32'd0, 32'd12345);         // zero x positive
-    run_test(32'd12345, 32'd0);         // positive x zero
-    run_test(32'd0, 32'd0);             // zero x zero
-    run_test(32'h7FFFFFFF, 32'd2);      // max int x 2
-    run_test(32'h80000000, 32'd2);      // min int x 2
+    run_test(32'd7, 32'd6);               // positive x positive
+    run_test(-32'sd7, 32'd6);             // negative x positive
+    run_test(32'd7, -32'sd6);             // positive x negative
+    run_test(-32'sd7, -32'sd6);           // negative x negative
+    run_test(32'd0, 32'd12345);           // zero x positive
+    run_test(32'd12345, 32'd0);           // positive x zero
+    run_test(32'd0, 32'd0);               // zero x zero
+    run_test(32'h7FFFFFFF, 32'd2);        // max int x 2
+    run_test(32'h80000000, 32'd2);        // min int x 2
     run_test(32'h7FFFFFFF, 32'h7FFFFFFF); // max int x max int
     run_test(32'h80000000, 32'h80000000); // min int x min int
-    run_test(32'hFFFFFFFF, 32'd1);      // -1 x 1
+    run_test(32'hFFFFFFFF, 32'd1);        // -1 x 1
 
     // Finish simulation
     #50;
