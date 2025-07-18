@@ -87,7 +87,7 @@ module multiply_tb;
   logic [63:0] product;
 
   // Instantiate DUT
-  multiply uut (
+  multiply dut (
     .multiplier(multiplier),
     .multiplicand(multiplicand),
     .valid_in(valid_in),
@@ -121,10 +121,12 @@ module multiply_tb;
 
     // -------------------
     // Test 1: 7 x 6
-    signed [63:0] expected;
-    signed [31:0] a, b;
+    logic [63:0] expected;
+    logic [31:0] a, b;
 
-    a = 7; b = 6; expected = a * b;
+    a = 7; 
+    b = 6; 
+    expected = a * b;
     multiplier = a;
     multiplicand = b;
     valid_in = 1;
@@ -134,8 +136,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 1: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 1: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -154,8 +156,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 2: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 2: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -174,8 +176,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 3: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 3: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -194,8 +196,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 4: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 4: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -214,8 +216,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 5: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 5: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -234,8 +236,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 6: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 6: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -254,8 +256,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 7: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 7: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -274,8 +276,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 8: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 8: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
@@ -294,8 +296,8 @@ module multiply_tb;
     wait (ready);
     wait (valid_out);
 
-    $display("Test 9: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-    if ($signed(product) !== expected)
+    $display("Test 9: %0d x %0d = %0d (Expected: %0d)", a, b, $int(product), expected);
+    if ($int(product) !== expected)
       $display("ERROR: Mismatch.");
     else
       $display("PASS");
