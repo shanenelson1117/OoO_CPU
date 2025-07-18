@@ -1,3 +1,4 @@
+// top level
 module multiply (
   input logic [31:0] multiplier, multiplicand,
   input logic valid_in, yumi_in, reset, clk,
@@ -12,6 +13,7 @@ module multiply (
   control multiply_cu(.*);
 endmodule
 
+// multiply datapath
 module datapath (
   output logic [63:0] product,
   output logic [31:0] Q, P,
@@ -22,6 +24,7 @@ module datapath (
   logic C;
   logic [31:0] A, B;
 
+  // compute arithmetic
   always_ff @(posedge clk) begin
     if (loadregs) begin
       A <= 0; C <= 0; P <= 32;
@@ -44,6 +47,7 @@ module control (
   
   enum logic [1:0] {s_idle = 2'b00, s_add = 2'b01, s_shift = 2'b10, s_done = 2'b11} ps, ns;
 
+  // assign control signals
   assign loadregs = (ps == s_idle) & valid_in;
   assign shiftregs = (ps == s_shift);
   assign addregs = (ps == s_add) & Q[0];
@@ -51,13 +55,14 @@ module control (
   assign valid_out = (ps == s_done);
   assign ready = (ps == s_idle);
 
+  // on reset go to idle state
   always_ff @(posedge clk) begin
     if (reset)
       ps <= s_idle;
     else
       ps <= ns;
   end 
-
+  // update state
   always_comb begin
     case (ps)
       s_idle: ns = valid_in ? s_add : s_idle;
@@ -99,49 +104,10 @@ module multiply_tb;
   initial clk = 0;
   always #5 clk = ~clk; // 10ns period
 
-  // Test procedure task
-  task run_test(input [31:0] a_in, input [31:0] b_in);
-    // Interpret inputs as signed within the task
-    automatic signed [31:0] a, b;
-    automatic signed [63:0] expected;
-    begin
-      a = a_in;
-      b = b_in;
-      expected = a * b;
-
-      // Apply inputs
-      multiplier = a_in;
-      multiplicand = b_in;
-      valid_in = 1;
-
-      @(posedge clk);
-      valid_in = 0;
-
-      // Wait for ready
-      wait (ready);
-
-      // Wait for valid_out
-      wait (valid_out);
-
-      $display("Test: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
-      if ($signed(product) !== expected)
-        $display("ERROR: Mismatch. Got %0d, expected %0d", $signed(product), expected);
-      else
-        $display("PASS");
-
-      // Consume output
-      yumi_in = 1;
-      @(posedge clk);
-      yumi_in = 0;
-
-      // Small delay between tests
-      @(posedge clk);
-    end
-  endtask
-
   // Test sequence
   initial begin
-    $display("Starting extended multiply testbench");
+    $display("Starting enumerated multiply testbench");
+
     // Initialize inputs
     multiplier = 0;
     multiplicand = 0;
@@ -153,27 +119,197 @@ module multiply_tb;
     #20;
     reset = 0;
 
-    // Run tests
-    run_test(32'd7, 32'd6);               // positive x positive
-    run_test(-32'sd7, 32'd6);             // negative x positive
-    run_test(32'd7, -32'sd6);             // positive x negative
-    run_test(-32'sd7, -32'sd6);           // negative x negative
-    run_test(32'd0, 32'd12345);           // zero x positive
-    run_test(32'd12345, 32'd0);           // positive x zero
-    run_test(32'd0, 32'd0);               // zero x zero
-    run_test(32'h7FFFFFFF, 32'd2);        // max int x 2
-    run_test(32'h80000000, 32'd2);        // min int x 2
-    run_test(32'h7FFFFFFF, 32'h7FFFFFFF); // max int x max int
-    run_test(32'h80000000, 32'h80000000); // min int x min int
-    run_test(32'hFFFFFFFF, 32'd1);        // -1 x 1
+    // -------------------
+    // Test 1: 7 x 6
+    signed [63:0] expected;
+    signed [31:0] a, b;
+
+    a = 7; b = 6; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 1: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 2: -7 x 6
+    a = -7; b = 6; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 2: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 3: 7 x -6
+    a = 7; b = -6; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 3: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 4: -7 x -6
+    a = -7; b = -6; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 4: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 5: 0 x 12345
+    a = 0; b = 12345; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 5: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 6: 12345 x 0
+    a = 12345; b = 0; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 6: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 7: max int x 2
+    a = 32'h7FFFFFFF; b = 2; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 7: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 8: min int x 2
+    a = 32'h80000000; b = 2; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 8: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
+
+    // -------------------
+    // Test 9: -1 x 1
+    a = -1; b = 1; expected = a * b;
+    multiplier = a;
+    multiplicand = b;
+    valid_in = 1;
+    @(posedge clk);
+    valid_in = 0;
+
+    wait (ready);
+    wait (valid_out);
+
+    $display("Test 9: %0d x %0d = %0d (Expected: %0d)", a, b, $signed(product), expected);
+    if ($signed(product) !== expected)
+      $display("ERROR: Mismatch.");
+    else
+      $display("PASS");
+
+    yumi_in = 1; @(posedge clk); yumi_in = 0; @(posedge clk);
 
     // Finish simulation
     #50;
-    $display("Finished extended multiply testbench");
+    $display("Finished enumerated multiply testbench");
     $finish;
   end
 
 endmodule
+
 
 
   
