@@ -39,7 +39,7 @@ module datapath (
       else A <= A - B;
     end
     if (shiftregs) begin
-      {A, Q, Q1} <= {A, Q, Q1} >>> 1;
+      {A, Q, Q1} <= {A[31], A, Q};
     end
   end
 
