@@ -21,19 +21,27 @@ module datapath (
   input logic [31:0] multiplier, multiplicand,
   input logic clk, loadregs, shiftregs, addregs, decr_P
 );
-  logic C;
+  logic Q1;
   logic [31:0] A, B;
+  logic temp_C;
 
   // compute arithmetic
   always_ff @(posedge clk) begin
     if (loadregs) begin
-      A <= 0; C <= 0; P <= 32;
+      A <= 0; Q1 <= 0; P <= 32;
       B <= multiplicand;
       Q <= multiplier;
     end
     if (decr_P) P <= P - 1;
-    if (addregs) {C, A} <= A + B;
-    if (shiftregs) {C, A, Q} <= {C, A, Q} >> 1;
+    if (addregs) begin
+      if (({Q[0], Q1} == 2'b00) | ({Q[0], Q1} == 2'b11)) A <= A;
+      else if ({Q[0], Q1} == 2'b01) A <= A + B;
+      else A <= A - B;
+    end
+    if (shiftregs) begin
+      Q1 <= Q[0];
+      {A, Q} <= {A, Q} >>> 1;
+    end
   end
 
   assign product = {A, Q};
@@ -50,7 +58,7 @@ module control (
   // assign control signals
   assign loadregs = (ps == s_idle) & valid_in;
   assign shiftregs = (ps == s_shift);
-  assign addregs = (ps == s_add) & Q[0];
+  assign addregs = (ps == s_add);
   assign decr_P = (ps == s_add);
   assign valid_out = (ps == s_done);
   assign ready = (ps == s_idle);
@@ -107,7 +115,8 @@ module multiply_tb;
   // Test sequence
   initial begin
     $display("Starting enumerated multiply testbench");
-
+    logic [63:0] expected;
+    logic [31:0] a, b;
     // Initialize inputs
     multiplier = 0;
     multiplicand = 0;
@@ -121,8 +130,6 @@ module multiply_tb;
 
     // -------------------
     // Test 1: 7 x 6
-    logic [63:0] expected;
-    logic [31:0] a, b;
 
     a = 7; 
     b = 6; 
