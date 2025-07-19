@@ -8,7 +8,10 @@ module divide (
 );
   logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj;
   logic [31:0] P;
-  assign a_lt_b = signed_div ? $signed(dividend) < $signed(divisor) : dividend < divisor;
+  logic [63:0] abs_sor, abs_end;
+  assign abs_sor = divisor[63] ? ~divisor + 1 : divisor;
+  assign abs_end = dividend[63] ? ~dividend + 1 : dividend;
+  assign a_lt_b = signed_div ? abs_sor > abs_end : divisor > dividend;
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
