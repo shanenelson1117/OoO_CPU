@@ -18,7 +18,7 @@ module datapath_dv (
   input logic [63:0] divisor, dividend,
   output logic [63:0] quotient,
   output logic [31:0] P,
-  input logic clk, loadregs, pass1, pass2, pass3, signadj
+  input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div
 );
   logic [63:0] A, M, Q;
 
@@ -29,8 +29,13 @@ module datapath_dv (
       Q <= signed_div & dividend[63] ? (~dividend + 1) : dividend;
     end
     if (pass1) begin
-      {A, Q} <= {A, Q} << 1;
-      A <= A[63] ? A + M : A - M;
+      if (A[63]) begin
+        {A, Q} <= {A, Q} << 1;
+        A <= A + M;
+      end
+      else begin
+        {A, Q} <= {A, Q} << 1;
+        A <= A - M;
     end 
     if (pass2) begin
       Q[0] <= ~A[63];
