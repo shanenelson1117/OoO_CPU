@@ -34,12 +34,14 @@ always_ff @(posedge clk) begin
   end
   else if (pass1) begin
     {A,Q} <= {A,Q} << 1;
+end
+else if (pass2) begin
     if (!A[63]) A <= A - M;
     else A <= A + M;
     Q[0] <= ~A[63];
     P <= P - 1;
   end
-  else if (pass2) begin
+  else if (pass3) begin
     if (A[63]) A <= A + M;
   end
   else if (signadj) begin
@@ -85,8 +87,9 @@ module control_dv (
         else if (valid_in & a_lt_b) ns = s_done;
         else ns = s_idle;
       end
-      s_pass1: ns = (P == 32'b0) ? s_pass3 : s_pass1;
-      s_pass2: ns = signed_div ? s_signadj : s_done;
+      s_pass1: ns = s_pass2;
+      s_pass2: ns = (P == 32'b0) ? s_pass3 : s_pass1;
+      s_pass3: ns = signed_div ? s_signadj : s_done;
       s_signadj: ns = s_done;
       s_done: ns = yumi_in ? s_idle : s_done;
       default: ns = s_idle;
@@ -289,4 +292,3 @@ module divide_tb;
   end
 
 endmodule
-// 6148914691236517206
