@@ -6,9 +6,9 @@ module divide (
   input logic [63:0] dividend, divisor,
   output logic [63:0] quotient
 );
-  logic a_lt_b, loadregs, pass1, pass2, pass3, signadj;
+  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj;
   logic [31:0] P;
-  assign a_lt_b = dividend < divisor;
+  assign a_lt_b = signed_div ? $signed(dividend) < $signed(divisor) : dividend < divisor;
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
@@ -19,7 +19,7 @@ module datapath_dv (
   input logic [63:0] divisor, dividend,
   output logic [63:0] quotient,
   output logic [31:0] P,
-  input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div, a_lt_b
+  input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div, a_lt_b, pass4
 );
   logic [63:0] A, M, Q;
 
@@ -56,7 +56,7 @@ endmodule
 module control_dv (
   input logic valid_in, clk, reset, yumi_in, a_lt_b, signed_div,
   input logic [31:0] P,
-  output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready
+  output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, pass4
 );
   
   enum logic [2:0] {s_idle = 3'b000, s_pass1 = 3'b001, s_pass2 = 3'b010, s_pass3 = 3'b011, s_signadj = 3'b100, s_done = 3'b101, unused1 = 3'b110, unused2 = 3'b111} ps, ns;
@@ -66,6 +66,7 @@ module control_dv (
   assign pass1 = (ps == s_pass1);
   assign pass2 = (ps == s_pass2);
   assign pass3 = (ps == s_pass3);
+  assign pass4 = (ps == s_pass4);
   assign signadj = (ps == s_signadj);
   assign valid_out = (ps == s_done);
   assign ready = (ps == s_idle);
