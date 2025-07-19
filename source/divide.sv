@@ -26,31 +26,27 @@ module datapath_dv (
 );
   logic [63:0] A, M, Q;
 
-  always_ff @(posedge clk) begin
-    if (loadregs) begin
-      A <= 0; P <= 64;
-      M <= signed_div & divisor[63] ? (~divisor + 1) : divisor;
-      if (a_lt_b) Q <= 0;
-      else if (signed_div & dividend[63]) Q <= (~dividend + 1);
-      else Q <= dividend;
-    end
-    if (pass1) begin
-       {A, Q} <= {A, Q} << 1;
-    end 
-    if (pass2) begin
-      A <= A[63] ? A + M : A - M;
-    end
-    if (pass3) begin
-      Q[0] <= ~A[63];
-      P <= P - 1;
-    end
-    if (pass4) begin
-      A <= A[63] ? A + M : A;
-    end
-    if (signadj) begin
-      Q <= (divisor[63] ^ dividend[63]) ? (~Q) + 1 : Q;
-    end
+always_ff @(posedge clk) begin
+  if (loadregs) begin
+    A <= 0; P <= 64;
+    M <= signed_div & divisor[63] ? (~divisor + 1) : divisor;
+    Q <= signed_div & dividend[63] ? (~dividend + 1) : dividend;
   end
+  else if (pass1) begin
+    {A,Q} <= {A,Q} << 1;
+    if (!A[63]) A <= A - M;
+    else A <= A + M;
+    Q[0] <= ~A[63];
+    P <= P - 1;
+  end
+  else if (pass2) begin
+    if (A[63]) A <= A + M;
+  end
+  else if (signadj) begin
+    if (divisor[63] ^ dividend[63]) Q <= (~Q) + 1;
+  end
+end
+
 
   assign quotient = Q;
         
@@ -89,10 +85,8 @@ module control_dv (
         else if (valid_in & a_lt_b) ns = s_done;
         else ns = s_idle;
       end
-      s_pass1: ns = s_pass2;
-      s_pass2: ns = s_pass3;
-      s_pass3: ns = (P == 32'b0) ? s_pass4 : s_pass1;
-      s_pass4: ns = signed_div ? s_signadj : s_done;
+      s_pass1: ns = (P == 32'b0) ? s_pass3 : s_pass1;
+      s_pass2: ns = signed_div ? s_signadj : s_done;
       s_signadj: ns = s_done;
       s_done: ns = yumi_in ? s_idle : s_done;
       default: ns = s_idle;
