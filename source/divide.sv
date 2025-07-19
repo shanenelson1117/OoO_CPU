@@ -21,7 +21,6 @@ module datapath_dv (
   input logic clk, loadregs, pass1, pass2, pass3, signadj
 );
   logic [63:0] A, M, Q;
-  logic [31:0] P;
 
   always_ff @(posedge clk) begin
     if (loadregs) begin
@@ -51,7 +50,7 @@ endmodule
 
 module control_dv (
   input logic valid_in, clk, reset, yumi_in, a_lt_b, signed_div,
-  input logic [31:0] Q, P,
+  input logic [31:0] P,
   output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready
 );
   
