@@ -59,7 +59,7 @@ module control_dv (
   output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, pass4
 );
   
-  enum logic [2:0] {s_idle = 3'b000, s_pass1 = 3'b001, s_pass2 = 3'b010, s_pass3 = 3'b011, s_signadj = 3'b100, s_done = 3'b101, unused1 = 3'b110, unused2 = 3'b111} ps, ns;
+  enum logic [2:0] {s_idle = 3'b000, s_pass1 = 3'b001, s_pass2 = 3'b010, s_pass3 = 3'b011, s_signadj = 3'b100, s_done = 3'b101, unused1 = 3'b110, s_pass4 = 3'b111} ps, ns;
 
   // assign control signals
   assign loadregs = (ps == s_idle) & valid_in;
