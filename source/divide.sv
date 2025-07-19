@@ -6,7 +6,8 @@ module divide (
   input logic [63:0] dividend, divisor,
   output logic [63:0] quotient
 );
-  logic a_lt_b;
+  logic a_lt_b, loadregs, pass1, pass2, pass3, signadj;
+  logic [31:0] P;
   assign a_lt_b = divisor < dividend;
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
@@ -36,6 +37,7 @@ module datapath_dv (
       else begin
         {A, Q} <= {A, Q} << 1;
         A <= A - M;
+      end
     end 
     if (pass2) begin
       Q[0] <= ~A[63];
@@ -127,10 +129,9 @@ module divide_tb;
 
   // Test sequence
   initial begin
-    $display("Starting enumerated divide testbench");
-
-    logic [63:0] expected;
+ logic [63:0] expected;
     logic [63:0] a, b;
+    $display("Starting enumerated divide testbench");
 
     // Initialize inputs
     dividend = 0;
