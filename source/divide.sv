@@ -31,17 +31,17 @@ module datapath_dv (
     end
     if (pass1) begin
       {A, Q} <= {A, Q} << 1;
-      A <= (A[63] == 1) ? A + M : A - M;
+      A <= A[63] ? A + M : A - M;
     end 
     if (pass2) begin
       Q[0] <= ~A[63];
       P <= P - 1;
     end
     if (pass3) begin
-      if (A[63]) A <= A + M; 
+      A <= A[63] ? A + M : A;
     end
     if (signadj) begin
-      if (divisor[63] ^ dividend[63]) Q <= (~Q) + 1;
+      Q <= (divisor[63] ^ dividend[63]) ? (~Q) + 1 : Q;
     end
   end
 
