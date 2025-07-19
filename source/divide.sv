@@ -8,7 +8,7 @@ module divide (
 );
   logic a_lt_b, loadregs, pass1, pass2, pass3, signadj;
   logic [31:0] P;
-  assign a_lt_b = divisor < dividend;
+  assign a_lt_b = dividend < divisor;
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
@@ -19,7 +19,7 @@ module datapath_dv (
   input logic [63:0] divisor, dividend,
   output logic [63:0] quotient,
   output logic [31:0] P,
-  input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div
+  input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div, a_lt_b
 );
   logic [63:0] A, M, Q;
 
@@ -28,6 +28,7 @@ module datapath_dv (
       A <= 0; P <= 64;
       M <= signed_div & divisor[63] ? (~divisor + 1) : divisor;
       Q <= signed_div & dividend[63] ? (~dividend + 1) : dividend;
+      if (a_lt_b) Q <= 0;
     end
     if (pass1) begin
       if (A[63]) begin
@@ -292,3 +293,4 @@ module divide_tb;
   end
 
 endmodule
+// 6148914691236517206
