@@ -1,3 +1,7 @@
+// Author: Shane Nelson
+// Project: OoO CPU
+// File: Integer Division Functional Unit
+
 module divide (
   input logic clk, reset, valid_in, yumi_in,
   output logic valid_out, ready,

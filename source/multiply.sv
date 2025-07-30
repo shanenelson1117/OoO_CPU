@@ -1,5 +1,8 @@
-// top level
+// Author: Shane Nelson
+// Project: OoO CPU
+// File: Integer Multiply Functional Unit
 // note: carry out is not currently used
+
 module multiply (
   input logic [31:0] multiplier, multiplicand,
   input logic valid_in, yumi_in, reset, clk,
