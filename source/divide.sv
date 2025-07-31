@@ -4,25 +4,25 @@
 
 module divide (
   input logic clk, reset, valid_in, yumi_in,
-  input logic div, // are we doing div or remu
+  input logic div, // are we doing div or remu (remainder unsigned)
   output logic valid_out, ready,
   input logic [31:0] dividend, divisor, 
-  output logic [31:0] output
+  output logic [31:0] result
 );
   logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj;
   logic [31:0] P, quotient, remainder;
 
   logic [31:0] abs_sor, abs_end;
-  assign abs_sor = divisor[31] ? ~divisor + 1 : divisor;
-  assign abs_end = dividend[31] ? ~dividend + 1 : dividend;
-  assign a_lt_b = abs_sor > abs_end;
+  assign abs_sor = divisor[31] & div ? ~divisor + 1 : divisor;
+  assign abs_end = dividend[31] & div ? ~dividend + 1 : dividend;
+  assign a_lt_b = div ? abs_sor > abs_end : divisor > dividend;
 
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
   
-  assign output = div ? quotient : remainder;
-  
+  assign result = div ? quotient : remainder;
+
 endmodule
 
 module datapath_dv (
@@ -62,7 +62,7 @@ end
 endmodule
 
 module control_dv (
-  input logic valid_in, clk, reset, yumi_in, a_lt_b,
+  input logic valid_in, clk, reset, yumi_in, a_lt_b, div,
   input logic [31:0] P,
   output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, pass4
 );
@@ -96,7 +96,7 @@ module control_dv (
       end
       s_pass1: ns = s_pass2;
       s_pass2: ns = (P == 32'b0) ? s_pass3 : s_pass1;
-      s_pass3: ns = s_signadj;
+      s_pass3: ns = div ? s_signadj : s_done;
       s_signadj: ns = s_done;
       s_done: ns = yumi_in ? s_idle : s_done;
       default: ns = s_idle;

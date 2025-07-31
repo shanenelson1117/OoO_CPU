@@ -1,13 +1,13 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Integer Multiply Functional Unit
-// note: carry out is not currently used
+
 
 module multiply (
   input logic [31:0] multiplier, multiplicand,      // register operands
   input logic valid_in, yumi_in, reset, clk, mulh,  // inputs are valid, system ready, rst, clk, high order bits?
   output logic valid_out, ready,                    // output is valid, FU ready for input, 
-  output logic [63:0] product
+  output logic [63:0] result
 );
 
   logic [31:0] Q, P;
@@ -17,7 +17,7 @@ module multiply (
   datapath multiply_dp(.*);
   control multiply_cu(.*);
 
-  assign product = mulh ? product_inter[63:32] : product_inter[31:0];
+  assign result = mulh ? product_inter[63:32] : product_inter[31:0];
 
 endmodule
 
