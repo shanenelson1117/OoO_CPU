@@ -1,6 +1,11 @@
+// Author: Shane Nelson
+// Project: OoO CPU
+// File: two-bit saturated branch prediction fsm
+
+
 module two_bit_predictor (
-    output logic prediction,
-    input logic update, valid, clk, reset
+    output logic prediction,                // fsm output
+    input logic update, valid, clk, reset   // was branch taken? are we updating state?
 );
 
     enum logic [1:0] {N = 2'b00, n = 2'b01, t = 2'b10, T = 2'b11} ps, ns;
