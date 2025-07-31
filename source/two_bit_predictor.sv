@@ -2,7 +2,6 @@
 // Project: OoO CPU
 // File: two-bit saturated branch prediction fsm
 
-
 module two_bit_predictor (
     output logic prediction,                // fsm output
     input logic update, valid, clk, reset   // was branch taken? are we updating state?

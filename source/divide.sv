@@ -4,28 +4,30 @@
 
 module divide (
   input logic clk, reset, valid_in, yumi_in,
+  input logic div, // are we doing div or remu
   output logic valid_out, ready,
-  input logic [31:0] dividend, divisor,
-  output logic [31:0] quotient
+  input logic [31:0] dividend, divisor, 
+  output logic [31:0] output
 );
   logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj;
-  logic [31:0] P;
+  logic [31:0] P, quotient, remainder;
 
   logic [31:0] abs_sor, abs_end;
   assign abs_sor = divisor[31] ? ~divisor + 1 : divisor;
   assign abs_end = dividend[31] ? ~dividend + 1 : dividend;
   assign a_lt_b = abs_sor > abs_end;
-  
+
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
+  
+  assign output = div ? quotient : remainder;
   
 endmodule
 
 module datapath_dv (
   input logic [31:0] divisor, dividend, abs_sor, abs_end,
-  output logic [31:0] quotient,
-  output logic [31:0] P,
+  output logic [31:0] quotient, P, remainder,
   input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div, a_lt_b, pass4
 );
   logic [31:0] A, M, Q;
@@ -55,6 +57,7 @@ end
 
 
   assign quotient = Q;
+  assign remainder = A;
         
 endmodule
 
