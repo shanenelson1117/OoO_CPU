@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Global Branch History Shift Register
 
-module gbhsr(
+module gbhsr (
     input logic clk, reset, update, valid_in,
     output logic [9:0] history
 );
