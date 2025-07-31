@@ -5,17 +5,17 @@
 module divide (
   input logic clk, reset, valid_in, yumi_in,
   output logic valid_out, ready,
-  // control signal identifying signed or unsigned division
-  input logic signed_div,
-  input logic [63:0] dividend, divisor,
-  output logic [63:0] quotient
+  input logic [31:0] dividend, divisor,
+  output logic [31:0] quotient
 );
   logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj;
   logic [31:0] P;
-  logic [63:0] abs_sor, abs_end;
-  assign abs_sor = divisor[63] ? ~divisor + 1 : divisor;
-  assign abs_end = dividend[63] ? ~dividend + 1 : dividend;
-  assign a_lt_b = signed_div ? abs_sor > abs_end : divisor > dividend;
+
+  logic [31:0] abs_sor, abs_end;
+  assign abs_sor = divisor[31] ? ~divisor + 1 : divisor;
+  assign abs_end = dividend[31] ? ~dividend + 1 : dividend;
+  assign a_lt_b = abs_sor > abs_end;
+  
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
@@ -23,33 +23,33 @@ module divide (
 endmodule
 
 module datapath_dv (
-  input logic [63:0] divisor, dividend,
-  output logic [63:0] quotient,
+  input logic [31:0] divisor, dividend, abs_sor, abs_end,
+  output logic [31:0] quotient,
   output logic [31:0] P,
   input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div, a_lt_b, pass4
 );
-  logic [63:0] A, M, Q;
+  logic [31:0] A, M, Q;
 
 always_ff @(posedge clk) begin
   if (loadregs) begin
-    A <= 0; P <= 64;
-    M <= signed_div & divisor[63] ? (~divisor + 1) : divisor;
-    Q <= signed_div & dividend[63] ? (~dividend + 1) : dividend;
+    A <= 0; P <= 32;
+    M <= abs_sor;
+    Q <= abs_end;
   end
   else if (pass1) begin
     {A,Q} <= {A,Q} << 1;
 end
 else if (pass2) begin
-    if (!A[63]) A <= A - M;
+    if (!A[31]) A <= A - M;
     else A <= A + M;
-    Q[0] <= ~A[63];
+    Q[0] <= ~A[31];
     P <= P - 1;
   end
   else if (pass3) begin
-    if (A[63]) A <= A + M;
+    if (A[31]) A <= A + M;
   end
   else if (signadj) begin
-    if (divisor[63] ^ dividend[63]) Q <= (~Q) + 1;
+    if (divisor[31] ^ dividend[31]) Q <= (~Q) + 1;
   end
 end
 
@@ -59,7 +59,7 @@ end
 endmodule
 
 module control_dv (
-  input logic valid_in, clk, reset, yumi_in, a_lt_b, signed_div,
+  input logic valid_in, clk, reset, yumi_in, a_lt_b,
   input logic [31:0] P,
   output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, pass4
 );
@@ -93,7 +93,7 @@ module control_dv (
       end
       s_pass1: ns = s_pass2;
       s_pass2: ns = (P == 32'b0) ? s_pass3 : s_pass1;
-      s_pass3: ns = signed_div ? s_signadj : s_done;
+      s_pass3: ns = s_signadj;
       s_signadj: ns = s_done;
       s_done: ns = yumi_in ? s_idle : s_done;
       default: ns = s_idle;

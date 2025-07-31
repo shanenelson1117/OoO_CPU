@@ -4,24 +4,27 @@
 // note: carry out is not currently used
 
 module multiply (
-  input logic [31:0] multiplier, multiplicand,
-  input logic valid_in, yumi_in, reset, clk,
-  output logic valid_out, ready, carry_out,
+  input logic [31:0] multiplier, multiplicand,      // register operands
+  input logic valid_in, yumi_in, reset, clk, mulh,  // inputs are valid, system ready, rst, clk, high order bits?
+  output logic valid_out, ready,                    // output is valid, FU ready for input, 
   output logic [63:0] product
 );
 
   logic [31:0] Q, P;
+  logic [63:0] product_inter;
   logic loadregs, shiftregs, addregs, decr_P;
 
   datapath multiply_dp(.*);
   control multiply_cu(.*);
+
+  assign product = mulh ? product_inter[63:32] : product_inter[31:0];
+
 endmodule
 
 // implement booth's algorithm
 module datapath (
-  output logic [63:0] product,
+  output logic [63:0] product_inter,
   output logic [31:0] Q, P,
-  output logic carry_out,
   input logic [31:0] multiplier, multiplicand,
   input logic clk, loadregs, shiftregs, addregs, decr_P
 );
@@ -47,7 +50,7 @@ module datapath (
     end
   end
 
-  assign product = {A, Q};
+  assign product_inter = {A, Q};
 endmodule
 
 module control (
