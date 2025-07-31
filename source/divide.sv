@@ -15,7 +15,7 @@ module divide (
   logic [31:0] abs_sor, abs_end;
   assign abs_sor = divisor[31] & div ? ~divisor + 1 : divisor;
   assign abs_end = dividend[31] & div ? ~dividend + 1 : dividend;
-  assign a_lt_b = div ? abs_sor > abs_end : divisor > dividend;
+  assign a_lt_b = abs_sor > abs_end;
 
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
