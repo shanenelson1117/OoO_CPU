@@ -11,7 +11,7 @@ module two_bit_predictor (
 
     always_ff @(posedge clk) begin
         if (reset) 
-            ps <= n;
+            ps <= t; // may have high frequency of jal so want to branch
         else if (valid)
             ps <= ns;
     end
