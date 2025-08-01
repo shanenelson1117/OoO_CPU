@@ -17,6 +17,8 @@ module pipeline_reg (
             q_reg.instruction <= 32'b0;
             q_reg.pc <= 32'b0;
             q_reg.prediction  <= 1'b0;
+            q_req.branch <= 1'b0;
+            q_reg.jump <= 1'b0;
         end
         else if (!queue_full) begin  // if issue queue can accept new data, update
             q_reg <= d;

@@ -64,6 +64,8 @@ module fetch (
         pipe_in.pc = pc;
         pipe_in.instruction = instruction;
         pipe_in.prediction = (predicition & branch) | jump;  // always jump if jal
+        pipe_in.branch = branch; // might as well not compute these again later
+        pipe_in.jump = jump;
     end
 
 endmodule
