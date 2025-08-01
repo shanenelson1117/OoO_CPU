@@ -6,32 +6,8 @@
 // notes: in issue module we need to pass immediate along with branch pc as well as branch pc with 4 
 // to be able to feed new pc in the event of a mispredicted branch
 // probably need muxes to decide between branch pc and pipeline pc, as well as branch immediate and pipeline immediate
-// logic could look like 
-/*
-if (committed is branch) 
-    if (~committed.taken and committed.result) 
-        then pc_update = br_imm + br_pc
-        flush issue queue, ROB, and pipeline
-    else if (committed.taken and ~committed.result) 
-        then pc_update = br_pc + 4
-        flush issue queue, ROB, and pipeline
-    else {
-    if (pipelineinstruction.isbranch) {
-        if (pipline.istaken) 
-            then pc_update = pipeline.imm + pipeline.pc 
-            flush pipeline 
-        }
-    } else {
-        pc_update = pipeline.pc + 4
-    }
+// then for jump we need to use adder rs with dest = rd, rs1= pc, rs2 = 4
 
-    to decode immediate:
-
-    we need a control signal that decodes jump vs branch used as mux select between 
-    two different sign extenders either se(imm[20:1], 0) (jump) or se(imm[12:1], 0) (branch)
-
-    then for jump we need to use adder rs with dest = rd, rs1= pc, rs2 = 4
-*/
 module fetch (
     input logic clk, reset, 
     input logic enable, // if instruction queue is full we may need to stall
