@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Integer Multiply Functional Unit
+// Stage: Execute
 
 
 module multiply (

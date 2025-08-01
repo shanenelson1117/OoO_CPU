@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Add/Sub functional unit
+// Stage: Execute
 
 module add (  // adder FSM
     input logic clk, reset, valid_in, yumi_in, sub
@@ -106,5 +107,5 @@ module zero_detect (
 	
 	or (or_final, or1, or2, or3, or4);
 	not (zero, or_final);
-    
+
 endmodule 

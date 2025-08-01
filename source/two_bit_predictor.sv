@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: two-bit saturated branch prediction fsm
+// Stage: Fetch
 
 module two_bit_predictor (
     output logic prediction,                // fsm output

@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Instruction Fetch Stage
+// Stage: Fetch
 
 // notes: in issue module we need to pass immediate along with branch pc as well as branch pc with 4 
 // to be able to feed new pc in the event of a mispredicted branch

@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: IF to Issue pipeline register
+// Stage: Fetch -> Issue
 
 module pipeline_reg (
     input  pipe_in_t d,

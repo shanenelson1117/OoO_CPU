@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Global Branch History Shift Register
+// Stage: Fetch
 
 module gbhsr (
     input logic clk, reset, update, valid_in,

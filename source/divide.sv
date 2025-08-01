@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Integer Division Functional Unit
+// Stage: Execute
 
 module divide (
   input logic clk, reset, valid_in, yumi_in,

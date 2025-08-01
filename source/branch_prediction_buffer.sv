@@ -1,6 +1,7 @@
 // Author: Shane Nelson
 // Project: OoO CPU
 // File: Branch Prediction Buffer
+// Stage: Fetch
 
 module bpb (
     input logic [9:0] index_read, index_write,  // indices into FSM array for read, write
@@ -20,7 +21,7 @@ module bpb (
     endgenerate
 
     assign prediction = pred_bus[index_read];
-    
+
 endmodule
 
 module demux_10_to_1024 (
