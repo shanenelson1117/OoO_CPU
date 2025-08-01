@@ -3,6 +3,8 @@
 // File: IF to Issue pipeline register
 // Stage: Fetch -> Issue
 
+`include structs.svh
+
 module pipeline_reg (
     input  pipe_in_t d,
     input  logic reset, clk, queue_full,
