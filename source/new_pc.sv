@@ -17,6 +17,7 @@ module new_pc (
     input logic committed_is_branch, // comes from struct of ROB header
     input logic jump, branch, // is ins in issue stage a branch or a jump or branch
     output logic mispredicted,
+    output logic [31:0] curr_branch_pc, curr_branch_imm_se, // still needed in case of mispredicted branch
     output logic [31:0] pc_update
 );
     logic mis_taken, mis_passed;
@@ -59,6 +60,7 @@ module new_pc (
                 to_be_added = 4;
             end
         end
+    end
 
         assign pc_update = pc_pre + to_be_added;
         assign mispredicted = mis_taken | mis_passed;
