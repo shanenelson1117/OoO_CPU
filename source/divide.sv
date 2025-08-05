@@ -5,6 +5,7 @@
 
 module divide (
   input logic clk, reset, valid_in, yumi_in,
+  input logic [2:0] rs_rob_entry,
   input logic div, // are we doing div or remu (remainder unsigned)
   output logic valid_out, ready,
   input logic [31:0] dividend, divisor, 
@@ -23,6 +24,16 @@ module divide (
   control_dv divide_cu(.*);
   
   assign result = div ? quotient : remainder;
+
+   always_ff @(posedge clk) begin
+        if (reset) begin
+            curr_rob <= 3'b0;
+        end else if (valid_in) begin
+            curr_rob <= rs_rob_entry;
+        end else if (yumi_in) begin
+            curr_rob <= 3'b0;
+        end
+  end
 
 endmodule
 
@@ -87,6 +98,7 @@ module control_dv (
     else
       ps <= ns;
   end 
+
   // update state
   always_comb begin
     case (ps)

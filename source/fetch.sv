@@ -8,7 +8,7 @@
 // probably need muxes to decide between branch pc and pipeline pc, as well as branch immediate and pipeline immediate
 // then for jump we need to use adder rs with dest = rd, rs1= pc, rs2 = 4
 
-`include structs.svh
+ `include structs.svh
 
 module fetch (
     input logic clk, reset, 

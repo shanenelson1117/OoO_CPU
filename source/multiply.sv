@@ -6,6 +6,7 @@
 
 module multiply (
   input logic [31:0] multiplier, multiplicand,      // register operands
+  input logic [2:0] rs_rob_entry,
   input logic valid_in, yumi_in, reset, clk, mulh,  // inputs are valid, system ready, rst, clk, high order bits?
   output logic valid_out, ready,                    // output is valid, FU ready for input, 
   output logic [63:0] result
@@ -19,6 +20,16 @@ module multiply (
   control multiply_cu(.*);
 
   assign result = mulh ? product_inter[63:32] : product_inter[31:0];
+
+  always_ff @(posedge clk) begin
+        if (reset) begin
+            curr_rob <= 3'b0;
+        end else if (valid_in) begin
+            curr_rob <= rs_rob_entry;
+        end else if (yumi_in) begin
+            curr_rob <= 3'b0;
+        end
+    end
 
 endmodule
 

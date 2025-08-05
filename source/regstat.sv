@@ -20,6 +20,7 @@ module regstat (
     input logic clk, reset, // reset should go high when a mispredicted branch is committed
     input logic issue_writes, // does the issued instruction write to a register, also should be 
     // low if no instruction is issued due to no open reserv stats
+    input logic RegWrite, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
     input logic [2:0] commit_ROB, issue_ROB, // ROB number of committing instruction
     output [2:0] Q_j, Q_k // ROB numbers for unready instructions
@@ -48,7 +49,7 @@ five_to_thirtytwo_decoder enable_decode (.sel(issue_dest), .enable(issue_writes)
 genvar j;
 generate
     for (j = 1; j < 32; j++) begin:reg_stat_entries
-        reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j]),
+        reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j] & RegWrite),
             .write_en(enable_bus[j]), .d, .q(reg_status_table[j]));
     end
 endgenerate

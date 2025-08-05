@@ -36,7 +36,7 @@ endmodule
 module register (
     input logic clk, reset, enable,
     input logic [31:0] d,
-    output logic [31:0] q;
+    output logic [31:0] q
 );
     logic [31:0] q_reg;
 
