@@ -53,12 +53,28 @@ module out_of_order (
     logic [31:0] WriteData;
     // CDB
     CDB_packet_t CDB;
-    // from res stations, which are busy
+    // from res stations to rs sched
     logic [3:0] busy_bus;
     // from FU scheduler, have rs outputs been consumed by FU's?
     logic [3:0] consumed_bus;
     // From rs -> fu scheduler, data in rs's
     rs_out_t rs0_data, rs1_data, rs2_data, rs3_data;
+    // from fu's to fu scheduler
+    logic [3:0] ready_bus;
+    // from fu sched to fu
+    logic [2:0] ROB_entry_fu;
+    logic [1:0] branch_type;
+    logic [31:0] A, B;
+    logic [3:0] valid_in_bus;
+    logic ALU_op;
+    // from cdb sched to functional units
+    logic [3:0] yumi_bus;
+    // from fus to cdb scheduler
+    CDB_packet_t out_0, out_1, out_2, out_3;
+    logic [3:0] valid_out_bus;
+    // from ROB to cdb scheduler
+    // 
+    CDB_packet_t out_load;
     
 
     // Fetch Stage
@@ -84,5 +100,19 @@ module out_of_order (
     rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD), .busy_bus, .consumed_bus,
                 .rs0_data, .rs1_data, .rs2_data, .rs3_data);
     
-                
+    // Execute Stage
+    fu_scheduler fu_sched (.rs0_data, .rs1_data, .rs2_data, .rs3_data, .ready_bus, .clk, .reset(reset | mispredicted),
+                .ROB_entry(ROB_entry_fu), .ALU_op, .branch_type, .rs1(A), .rs2(B), .consumed_bus, .valid_in_bus);
+
+     add adder_fu_0 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[0]), .yumi_in(yumi_bus[0]), .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
+                    .branch_type, .valid_out(valid_out_bus[0]), .out(out_0), .ALUop, .ready(ready_bus[0]));
+     
+     add adder_fu_1 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[1]), .yumi_in(yumi_bus[1]), .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
+                    .branch_type, .valid_out(valid_out_bus[1]), .out(out_1), .ALUop, ready(ready_bus[1]));
+     
+     multiply mult_fu (.clk, .reset(reset | mispredicted), .A, .B, .rs_rob_entry(ROB_entry_fu), .yumi_in(yumi_bus[2]), .valid_in(valid_in_bus[2]), .ALUop,
+                    .valid_out(valid_out_bus[2]), .ready(ready_bus[2]), .out(out_2));  
+    
+    divide div_fu (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[3]), .yumi_in(yumi_bus[3]), .rs_rob_entry(ROB_entry_fu), .ALUop,
+                    .valid_out(valid_out_bus[3]), .ready(ready_bus[3]), .dividend(A), .divisor(B), .out(out_3));       
 endmodule

@@ -6,19 +6,23 @@
 `include structs.svh
 
 module add (  // adder FSM
-    input logic clk, reset, valid_in, yumi_in, sub,
-    input logic [2:0] rs_rob_entry,
+    input logic clk, reset, valid_in, yumi_in, ALU_op,
+    input logic [2:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
-    input logic bne, beq, blt, // branch controls, need sub to be high for any branch
-    output logic valid_out, b_taken, consumed,
-    output logic [31:0] result
+    input logic [1:0] branch_type, // branch controls, need sub to be high for any branch
+    output logic valid_out, ready,
+    output CDB_packet_t out
 );
-    logic [31:0] s;
-    logic zero, negative, overflow;
+    logic [31:0] s, result;
+    logic zero, negative, overflow, sub;
     logic b_inter;
     logic [2:0] curr_rob;
 
     adder_32bit adder (.*);
+
+    assign bne = (branch_type == 2'b01) & valid_in;
+    assign beq = (branch_type == 2'b10) & valid_in;
+    assign blt = (branch_type == 2'b11) & valid_in;
 
     assign b_inter = (bne & ~zero) | (beq & zero) | (blt & (negative ^ overflow));
 
@@ -28,14 +32,23 @@ module add (  // adder FSM
             b_taken <= 0;
             curr_rob <= 3'b0;
             consumed <= 0;
+            sub <= 0;
+            ready <= 1;
         end else if (valid_in) begin
             result <= s;
             valid_out <= 1;
             b_taken <= b_inter;
             curr_rob <= rs_rob_entry;
             consumed <= 1;
+            sub <= ALU_op; 
+            ready <= 0;
         end
     end
+
+    assign out.dest_ROB_entry = curr_rob;
+    assign out.result = result;
+    assign out.branch_result = b_taken;
+    assign out.from_memory = 1'b0;
 endmodule
 
 module adder_32bit ( // full adder

@@ -6,29 +6,41 @@
 `include structs.svh
 
 module multiply (
-  input logic [31:0] multiplier, multiplicand,      // register operands
+  input logic [31:0] A, B,      // register operands
   input logic [2:0] rs_rob_entry,
-  input logic valid_in, yumi_in, reset, clk, mulh,  // inputs are valid, system ready, rst, clk, high order bits?
-  output logic valid_out, ready, consumed,     // output is valid, FU ready for input, 
-  output logic [63:0] result
+  input logic valid_in, yumi_in, reset, clk, ALU_op,  // inputs are valid, system ready, rst, clk, high order bits?
+  output logic valid_out, ready,     // output is valid, FU ready for input, 
+  output CDB_packet_t out
 );
-
-  logic [31:0] Q, P;
+  logic [31:0] multiplier, multiplicand;
+  logic [31:0] Q, P, result;
   logic [63:0] product_inter;
-  logic loadregs, shiftregs, addregs, decr_P;
+  logic loadregs, shiftregs, addregs, decr_P, mul_h;
+
+  assign multiplier = A;
+  assign multiplicand = B;
+
 
   datapath multiply_dp(.*);
   control multiply_cu(.*);
 
   assign result = mulh ? product_inter[63:32] : product_inter[31:0];
+  
+  assign out.dest_ROB_entry = curr_rob;
+  assign out.result = result;
+  assign out.branch_result = 1'b0;
+  assign out.from_memory = 1'b0;
 
   always_ff @(posedge clk) begin
         if (reset) begin
             curr_rob <= 3'b0;
+            mul_h <= 0;
         end else if (valid_in) begin
             curr_rob <= rs_rob_entry;
+            mul_h <= ALU_op;
         end else if (yumi_in) begin
             curr_rob <= 3'b0;
+            mul_h <= 0;
         end
     end
 
