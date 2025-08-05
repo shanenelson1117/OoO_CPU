@@ -44,3 +44,12 @@ typedef struct packed {
     logic [2:0] ROB_number;
     logic busy;
 } reg_stat_t;
+
+typedef struct packed {
+    logic [1:0] branch_type;
+    logic [2:0] ALU_op;
+    logic [2:0] ROB_entry;
+    logic [31:0] rs1;
+    logic [31:0] rs2;
+    logic valid_operands;
+} rs_out_t;

@@ -3,12 +3,14 @@
 // File: Add/Sub functional unit
 // Stage: Execute
 
+`include structs.svh
+
 module add (  // adder FSM
     input logic clk, reset, valid_in, yumi_in, sub,
     input logic [2:0] rs_rob_entry,
     input logic [31:0] rs1, rs2,
     input logic bne, beq, blt, // branch controls, need sub to be high for any branch
-    output logic valid_out, b_taken,
+    output logic valid_out, b_taken, consumed,
     output logic [31:0] result
 );
     logic [31:0] s;
@@ -21,19 +23,17 @@ module add (  // adder FSM
     assign b_inter = (bne & ~zero) | (beq & zero) | (blt & (negative ^ overflow));
 
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (reset | yumi_in) begin
             valid_out <= 0;
             b_taken <= 0;
             curr_rob <= 3'b0;
+            consumed <= 0;
         end else if (valid_in) begin
             result <= s;
             valid_out <= 1;
             b_taken <= b_inter;
             curr_rob <= rs_rob_entry;
-        end else if (yumi_in) begin
-            valid_out <= 0;  // clear once result is consumed
-            b_taken <= 0;
-            curr_rob <= 3'b0;
+            consumed <= 1;
         end
     end
 endmodule

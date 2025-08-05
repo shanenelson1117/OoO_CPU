@@ -3,6 +3,8 @@
 // File: two-bit saturated branch prediction fsm
 // Stage: Fetch
 
+`include structs.svh
+
 module two_bit_predictor (
     output logic prediction,                // fsm output
     input logic update, valid, clk, reset   // was branch taken? are we updating state?
@@ -12,7 +14,7 @@ module two_bit_predictor (
 
     always_ff @(posedge clk) begin
         if (reset) 
-            ps <= t; // may have high frequency of jal so want to branch
+            ps <= n;
         else if (valid)
             ps <= ns;
     end

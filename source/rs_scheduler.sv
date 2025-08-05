@@ -3,9 +3,11 @@
 // File: Reservation Station Scheduler
 // Stage: Issue
 
+`include structs.svh
+
 module rs_scheduler (
     input pipe_in_t pipe_out,
-    input logic rs0_busy, rs1_busy, rs2_busy, rs3_busy, // busy signals from each rs
+    input logic [3:0] busy_bus// busy signals from each rs
     input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, // use for jal
     input logic [2:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
     input logic [2:0] Q_j, Q_k,
@@ -39,13 +41,13 @@ assign jump = pipe_out.jump;
 
 always_comb begin
     if (~ROB_full) begin
-        if (~rs0_busy)
+        if (~busy_bus[0])
             rs_dest = 3'b000;
-        else if (~rs1_busy)
+        else if (~busy_bus[1])
             rs_dest = 3'b001;
-        else if (~rs2_busy)
+        else if (~busy_bus[2])
             rs_dest = 3'b010;
-        else if (~rs3_busy)
+        else if (~busy_bus[3])
             rs_dest = 3'b011;
         else 
             rs_dest = 3'b100;

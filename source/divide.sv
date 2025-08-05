@@ -3,11 +3,13 @@
 // File: Integer Division Functional Unit
 // Stage: Execute
 
+`include structs.svh
+
 module divide (
   input logic clk, reset, valid_in, yumi_in,
   input logic [2:0] rs_rob_entry,
   input logic div, // are we doing div or remu (remainder unsigned)
-  output logic valid_out, ready,
+  output logic valid_out, ready, consumed,
   input logic [31:0] dividend, divisor, 
   output logic [31:0] result
 );
@@ -76,7 +78,7 @@ endmodule
 module control_dv (
   input logic valid_in, clk, reset, yumi_in, a_lt_b, div,
   input logic [31:0] P,
-  output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, pass4
+  output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, consumed
 );
   
   enum logic [2:0] {s_idle = 3'b000, s_pass1 = 3'b001, s_pass2 = 3'b010, s_pass3 = 3'b011, s_signadj = 3'b100, s_done = 3'b101, unused1 = 3'b110, s_pass4 = 3'b111} ps, ns;
@@ -86,10 +88,10 @@ module control_dv (
   assign pass1 = (ps == s_pass1);
   assign pass2 = (ps == s_pass2);
   assign pass3 = (ps == s_pass3);
-  assign pass4 = (ps == s_pass4);
   assign signadj = (ps == s_signadj);
   assign valid_out = (ps == s_done);
   assign ready = (ps == s_idle);
+  assign consumed = (ps != s_idle);
 
   // on reset go to idle state
   always_ff @(posedge clk) begin

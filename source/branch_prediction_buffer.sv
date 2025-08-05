@@ -3,6 +3,8 @@
 // File: Branch Prediction Buffer
 // Stage: Fetch
 
+`include structs.svh
+
 module bpb (
     input logic [9:0] index_read, index_write,  // indices into FSM array for read, write
     input clk, reset, update_value,             // was the committed branch taken?

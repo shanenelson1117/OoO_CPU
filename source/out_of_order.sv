@@ -53,23 +53,36 @@ module out_of_order (
     logic [31:0] WriteData;
     // CDB
     CDB_packet_t CDB;
+    // from res stations, which are busy
+    logic [3:0] busy_bus;
+    // from FU scheduler, have rs outputs been consumed by FU's?
+    logic [3:0] consumed_bus;
+    // From rs -> fu scheduler, data in rs's
+    rs_out_t rs0_data, rs1_data, rs2_data, rs3_data;
     
+
+    // Fetch Stage
     fetch fetch_stage (.clk, .reset, .enable(~stall), .update, 
                 .valid_in, .pc_update, .committed_pc, .pipe_in);
     
     pipeline_reg fetch_issue_reg (.clk, .d(pipe_in), .queue_full(stall), 
                 .reset(reset | pipe_in.prediction | mispredicted), .q(pipe_out));
 
-    new_pc gen_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken,
+    // Issue Stage
+    new_pc generate_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken,
                 .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update);
     
-    rs_scheduler res_sched (.pipe_out, .rs0_busy, .rs1_busy, .rs2_busy, .rs3_busy,
+    rs_scheduler res_sched (.pipe_out, .busy_bus,
                 .rs1_data, .rs2_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
                 .rs_input, .rob_input, .stall, .issue_dest, .ROB_entry, .rs_dest);
     
-    regfile regs (.rs1, .rs2, .rd, .WriteData, .rs1_data, .rs2_data, .clk, .reset);
+    regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1_data, .rs2_data, .clk, .reset);
 
-    regstat reg_status (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), .issue_dest, .RegWrite,
+    regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), .issue_dest, .RegWrite,
                 .Q_j, .Q_k);
+    
+    rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD), .busy_bus, .consumed_bus,
+                .rs0_data, .rs1_data, .rs2_data, .rs3_data);
+    
                 
 endmodule

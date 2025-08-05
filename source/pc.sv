@@ -3,6 +3,8 @@
 // File: Program Counter & Instruction Fetch
 // Stage: Fetch
 
+`include structs.svh
+
 module pc (instruction, pc, reset, clk, pc_update, enable);
 	output logic [31:0] instruction;
 	output logic [31:0] pc;
