@@ -38,7 +38,7 @@ module multiply (
             mul_h <= 0;
         end else if (valid_in) begin
             curr_rob <= rs_rob_entry;
-            mul_h <= ALU_op;
+            mul_h <= ALUop;
         end else if (yumi_in) begin
             curr_rob <= 4'b0;
             mul_h <= 0;
