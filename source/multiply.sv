@@ -25,7 +25,7 @@ module multiply (
   datapath multiply_dp(.*);
   control multiply_cu(.*);
 
-  assign result = mulh ? product_inter[63:32] : product_inter[31:0];
+  assign result = mul_h ? product_inter[63:32] : product_inter[31:0];
   
   assign out.dest_ROB_entry = curr_rob;
   assign out.result = result;

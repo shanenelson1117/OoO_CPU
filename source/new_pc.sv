@@ -18,7 +18,7 @@ module new_pc (
     input logic [31:0] commit_pc, commit_imm_se,
     input logic commit_taken, commit_result, 
     input pipe_in_t pipe_out,
-    input logic committed_is_branch, // comes from struct of ROB header
+    input logic committed_is_branch, clk, // comes from struct of ROB header
     output logic mispredicted,
     output logic [31:0] curr_branch_pc, curr_branch_imm_se, // still needed in case of mispredicted branch
     output logic [31:0] pc_update
@@ -26,7 +26,7 @@ module new_pc (
 
     logic [31:0] pipe_pc, instruction;
     logic pipe_taken, jump, branch;
-    logic mis_taken, mis_passed;
+    logic mis_taken, mis_passed, mispredict_flush;
     logic [31:0] pc_pre, to_be_added, i;
 
     assign pipe_pc = pipe_out.pc;
@@ -75,7 +75,7 @@ module new_pc (
     end
 
     assign pc_update = pc_pre + to_be_added;
-    assign mispredicted_flush = mis_taken | mis_passed & committed_is_branch;
+    assign mispredict_flush = mis_taken | mis_passed & committed_is_branch;
 
     always_ff @(posedge clk) begin
         mispredicted <= mispredict_flush;
