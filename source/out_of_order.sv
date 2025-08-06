@@ -99,6 +99,10 @@ module out_of_order (
     // from rob to commit 
     ROB_entry_t head;
     logic rob_head_ready;
+    // from commit to regstat
+    logic [3:0] commit_ROB;
+
+
 
     
     // Fetch Stage
@@ -110,7 +114,7 @@ module out_of_order (
 
     // Issue Stage
     new_pc generate_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken(commit_prediction),
-                .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update);
+                .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch);
     
     rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full,
                 .rs1_data, .rs2_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
@@ -119,14 +123,14 @@ module out_of_order (
     regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1_data, .rs2_data, .clk, .reset);
 
     regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), 
-                .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB);
+                .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB(ROB_entry));
     
     rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD), 
                     .busy_bus, .consumed_bus, .rs0_data, .rs1_data, .rs2_data, .rs3_data);
     
     lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB), 
                     .din(lqss_out), .dout(lsq_out),
-                    .full(lsq_full), .head_ready, .head_load, .dout(lsq_out));
+                    .full(lsq_full), .head_ready, .head_load);
 
     lsq_scheduler lsq_sched (.in(lsq_input), .out(lqss_out), .wr_en, .lsq_full);
 
@@ -140,37 +144,37 @@ module out_of_order (
                     .valid_in(valid_in_bus[0]), .yumi_in(yumi_bus[0]), 
                     .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
                     .branch_type, .valid_out(valid_out_bus[0]), 
-                    .out(out_0), .ALUop, .ready(ready_bus[0]));
+                    .out(out_0), .ALUop(ALU_op), .ready(ready_bus[0]));
      
     add adder_fu_1 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[1]), 
                     .yumi_in(yumi_bus[1]), .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
                     .branch_type, .valid_out(valid_out_bus[1]), .out(out_1), 
-                    .ALUop, ready(ready_bus[1]));
+                    .ALUop(ALU_op), .ready(ready_bus[1]));
      
     multiply mult_fu (.clk, .reset(reset | mispredicted), .A, .B, .rs_rob_entry(ROB_entry_fu), 
-                    .yumi_in(yumi_bus[2]), .valid_in(valid_in_bus[2]), .ALUop,
+                    .yumi_in(yumi_bus[2]), .valid_in(valid_in_bus[2]), .ALUop(ALU_op),
                     .valid_out(valid_out_bus[2]), .ready(ready_bus[2]), .out(out_2));  
     
     divide div_fu (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[3]), .yumi_in(yumi_bus[3]), 
-                    .rs_rob_entry(ROB_entry_fu), .ALUop, .valid_out(valid_out_bus[3]), .ready(ready_bus[3]), 
+                    .rs_rob_entry(ROB_entry_fu), .ALUop(ALU_op), .valid_out(valid_out_bus[3]), .ready(ready_bus[3]), 
                     .dividend(A), .divisor(B), .out(out_3));
 
     // Data Memory
     memory data_memory (.clk, .ROB_head_store, .head_load, .head_ready, .mem_in(lsq_out), .mem_read_out(out_load), 
                     .rd_en, .rd_en_rob, .valid_out(valid_out_bus[4]), .reset(reset | mispredicted), 
-                    .yummy_in(yummy_bus[4]));  
+                    .yummy_in(yumi_bus[4]));  
 
     // Write Back
     cdb_scheduler cdb (.valid_out_bus, .adder_0_out(out_0), .adder_1_out(out_1), .mult_out(out_2), 
                     .div_out(out_3), .mem_out(out_load), .new_CDB(CDB, 
-                    .yummi_in_bus(yummi_bus)));
+                    .yummi_in_bus(yumi_bus)));
     
     // Commit
     rob reorder_buffer (.new_entry(scheduled_rob_entry), .CDB_in(CDB), .clk, .reset(reset | mispredicted), 
                     .wr_en(wr_en_rob), .rd_en(rob_read_enable),
                     .head, .head_ready(rob_head_ready), .full(rob_full), .ROB_head_store, .ROB_entry);
 
-    commit commit_unit (.head, .rob_head_ready, .rd_en_rob, .RegWrite, .commit_ROB, .rd, .commit_is_branch, 
+    commit commit_unit (.head, .rob_head_ready, .rd_en_rob, .RegWrite, .commit_ROB, .rd, .commit_is_branch(commmitted_is_branch), 
                     .commit_prediction, .commit_result,
                     .WriteData, .committed_pc, .commit_imm_se, .rd_en(rob_read_enable));
 endmodule
