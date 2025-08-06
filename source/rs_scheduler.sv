@@ -15,7 +15,7 @@ module rs_scheduler (
     input logic [3:0] Q_j, Q_k,
     output rs_data_t rs_input, // create RS packet
     output ROB_entry_t rob_input, // create ROB packet
-    output logic [1:0] rs_dest,
+    output logic [2:0] rs_dest,
     output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
     output logic issue_writes, // ...
     output logic stall, // if no avail rs or rob slot, do not advance pipeline

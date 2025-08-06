@@ -6,7 +6,7 @@
 `include "structs.svh"
 
 module add (  // adder FSM
-    input logic clk, reset, valid_in, yumi_in, ALU_op,
+    input logic clk, reset, valid_in, yumi_in, ALUop,
     input logic [3:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
     input logic [1:0] branch_type, // branch controls, need sub to be high for any branch

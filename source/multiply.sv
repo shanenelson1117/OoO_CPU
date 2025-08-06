@@ -8,7 +8,7 @@
 module multiply (
   input logic [31:0] A, B,      // register operands
   input logic [3:0] rs_rob_entry,
-  input logic valid_in, yumi_in, reset, clk, ALU_op,  // inputs are valid, system ready, rst, clk, high order bits?
+  input logic valid_in, yumi_in, reset, clk, ALUop,  // inputs are valid, system ready, rst, clk, high order bits?
   output logic valid_out, ready,     // output is valid, FU ready for input, 
   output CDB_packet_t out
 );
@@ -82,7 +82,7 @@ endmodule
 module control (
   input logic valid_in, clk, reset, yumi_in,
   input logic [31:0] Q, P,
-  output logic loadregs, shiftregs, addregs, decr_P, valid_out, ready, consumed
+  output logic loadregs, shiftregs, addregs, decr_P, valid_out, ready,
 );
   
   enum logic [1:0] {s_idle = 2'b00, s_add = 2'b01, s_shift = 2'b10, s_done = 2'b11} ps, ns;
@@ -94,7 +94,6 @@ module control (
   assign decr_P = (ps == s_add);
   assign valid_out = (ps == s_done);
   assign ready = (ps == s_idle);
-  assign consumed = !ready;
 
   // on reset go to idle state
   always_ff @(posedge clk) begin

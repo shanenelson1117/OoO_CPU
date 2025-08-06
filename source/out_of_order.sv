@@ -45,7 +45,7 @@ module out_of_order (
     // from rs scheduler, which register does issuing instruction write
     logic [4:0] issue_dest;
     // from rs scheduler, what rs is the packet going to
-    logic [1:0] rs_dest;
+    logic [2:0] rs_dest;
     // from commit unit which register are we writing to, need this to 
     logic [4:0] rd;
     // from commit unit, are we writing the registers
@@ -53,7 +53,7 @@ module out_of_order (
     // write data from value field of commit unit
     logic [31:0] WriteData;
     // CDB
-    CDB_packet_t CDB;
+    CDB_packet_t CDB_out;
     // from res stations to rs sched
     logic [3:0] busy_bus;
     // from FU scheduler, have rs outputs been consumed by FU's?
@@ -107,28 +107,29 @@ module out_of_order (
     
     // Fetch Stage
     fetch fetch_stage (.clk, .reset, .enable(~stall | ~mispredicted), .update(commit_result), 
-                .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in);
+                .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in, .stall);
     
     pipeline_reg fetch_issue_reg (.clk, .d(pipe_in), .queue_full(stall), 
                 .reset(reset | (pipe_out.prediction & ~stall) | mispredicted), .q(pipe_out));
 
     // Issue Stage
     new_pc generate_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken(commit_prediction),
-                .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch);
+                .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch, .clk,
+                .curr_branch_pc(pipe_out.pc));
     
     rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full,
-                .rs1reg_data, .rs2reg_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
+                .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
                 .rs_input, .rob_input, .stall, .issue_dest, .ROB_entry, .rs_dest);
     
-    regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1reg_data, .rs2reg_data, .clk, .reset);
+    regfile registers (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk, .reset);
 
     regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), 
                 .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB(ROB_entry));
     
-    rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD), 
+    rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD_out), 
                     .busy_bus, .consumed_bus, .rs0_data, .rs1_data, .rs2_data, .rs3_data);
     
-    lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB), 
+    lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB_out), 
                     .din(lqss_out), .dout(lsq_out),
                     .full(lsq_full), .head_ready, .head_load);
 
@@ -166,11 +167,11 @@ module out_of_order (
 
     // Write Back
     cdb_scheduler cdb (.valid_out_bus, .adder_0_out(out_0), .adder_1_out(out_1), .mult_out(out_2), 
-                    .div_out(out_3), .mem_out(out_load), .new_CDB(CDB), 
+                    .div_out(out_3), .mem_out(out_load), .new_CDB(CDB_out), 
                     .yummi_in_bus(yumi_bus));
     
     // Commit
-    rob reorder_buffer (.new_entry(scheduled_rob_entry), .CDB_in(CDB), .clk, .reset(reset | mispredicted), 
+    rob reorder_buffer (.new_entry(scheduled_rob_entry), .CDB_in(CDB_out), .clk, .reset(reset | mispredicted), 
                     .wr_en(wr_en_rob), .rd_en(rob_read_enable),
                     .head, .head_ready(rob_head_ready), .full(rob_full), .ROB_head_store, .ROB_entry);
 

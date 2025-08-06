@@ -8,7 +8,7 @@
 module divide (
   input logic clk, reset, valid_in, yumi_in,
   input logic [3:0] rs_rob_entry,
-  input logic ALU_op, // are we doing div or remu (remainder unsigned)
+  input logic ALUop, // are we doing div or remu (remainder unsigned)
   output logic valid_out, ready,
   input logic [31:0] dividend, divisor, 
   output CDB_packet_t out
@@ -51,7 +51,7 @@ endmodule
 module datapath_dv (
   input logic [31:0] divisor, dividend, abs_sor, abs_end,
   output logic [31:0] quotient, P, remainder,
-  input logic clk, loadregs, pass1, pass2, pass3, signadj, signed_div, a_lt_b, pass4
+  input logic clk, loadregs, pass1, pass2, pass3, signadj, ALUop, a_lt_b, pass4
 );
   logic [31:0] A, M, Q;
 
@@ -85,9 +85,9 @@ end
 endmodule
 
 module control_dv (
-  input logic valid_in, clk, reset, yumi_in, a_lt_b, div,
+  input logic valid_in, clk, reset, yumi_in, a_lt_b, ALUop,
   input logic [31:0] P,
-  output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready, consumed
+  output logic loadregs, pass1, pass2, pass3, signadj, valid_out, ready
 );
   
   enum logic [2:0] {s_idle = 3'b000, s_pass1 = 3'b001, s_pass2 = 3'b010, s_pass3 = 3'b011, s_signadj = 3'b100, s_done = 3'b101, unused1 = 3'b110, s_pass4 = 3'b111} ps, ns;
@@ -100,7 +100,6 @@ module control_dv (
   assign signadj = (ps == s_signadj);
   assign valid_out = (ps == s_done);
   assign ready = (ps == s_idle);
-  assign consumed = (ps != s_idle);
 
   // on reset go to idle state
   always_ff @(posedge clk) begin
@@ -120,7 +119,7 @@ module control_dv (
       end
       s_pass1: ns = s_pass2;
       s_pass2: ns = (P == 32'b0) ? s_pass3 : s_pass1;
-      s_pass3: ns = div ? s_signadj : s_done;
+      s_pass3: ns = ALUop ? s_signadj : s_done;
       s_signadj: ns = s_done;
       s_done: ns = yumi_in ? s_idle : s_done;
       default: ns = s_idle;

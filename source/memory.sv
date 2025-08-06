@@ -17,7 +17,7 @@ module memory (
     output logic valid_out             // Valid signal for memory read
 );
     logic write_enable, read_enable;
-    logic [31:0] mem_result_reg;
+    logic [31:0] mem_result_reg, read_data;
     logic [3:0] mem_rob_entry_reg;
     logic mem_valid_reg;
 

@@ -14,21 +14,20 @@ module pipeline_reg (
     input  logic reset, clk, queue_full,
     output pipe_in_t q
 );
+
     pipe_in_t q_reg;
+    
     logic flush;
 
-    assign q = q_reg;
 
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin  // flush reg on reset or flush
-            q_reg.instruction <= 32'b0;
-            q_reg.pc <= 32'b0;
-            q_reg.prediction  <= 1'b0;
-            q_req.branch <= 1'b0;  
-            q_reg.jump <= 1'b0;
+            q_reg <= '0;
         end
         else if (!queue_full) begin  // if issue queue can accept new data, update
             q_reg <= d;
         end
     end
+
+     assign q = q_reg;
 endmodule
