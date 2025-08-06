@@ -10,7 +10,7 @@ module rs_scheduler (
     input logic [3:0] busy_bus, // busy signals from each rs
     input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, // use for jal
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
-    input logic rob_full,
+    input logic rob_full, clk, reset,
     input logic lsq_full,
     input logic [3:0] Q_j, Q_k,
     output rs_data_t rs_input, // create RS packet
@@ -30,7 +30,7 @@ module rs_scheduler (
     logic [3:0] Q_temp_j, Q_temp_k;
     logic branch, jump;
 
-    ROB_packet_t new_packet;
+    ROB_entry_t rob_input;
 
     always_ff @(posedge clk) begin
         if (reset) begin
