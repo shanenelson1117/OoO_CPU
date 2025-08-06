@@ -20,6 +20,7 @@ module lsq #(parameter DEPTH = 4) (
 );
 
     logic [1:0] wptr, rptr;
+    logic empty;
 
 
     lsq_packet_t lsq_data [DEPTH];

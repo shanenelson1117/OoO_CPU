@@ -104,7 +104,7 @@ module fu_scheduler (
             end
             else begin
                 valid_in_bus = 4'b0000;
-                d = 4'0;
+                d = 4'b0;
                 ns = waiting;
             end
         end

@@ -16,7 +16,7 @@ module gbhsr (
 
     generate 
         for (i = 0; i < 10; i++) begin:gbhsr_dffs
-            D_FF bit (.d(d[i]), .q(history[i]), .clk, .reset);
+            D_FF biti (.d(d[i]), .q(history[i]), .clk, .reset);
         end
     endgenerate
 

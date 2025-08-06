@@ -5,9 +5,9 @@
 `include "structs.svh"
 
 module lsq_scheduler (
-    input lsq_input in,
+    input lsq_packet_t in,
     input logic lsq_full,
-    output lsq_input out,
+    output lsq_packet_t out,
     output logic wr_en
 );
     assign out = in;
