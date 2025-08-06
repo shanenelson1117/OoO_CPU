@@ -39,7 +39,7 @@ module divide (
             div <= 0;
         end else if (valid_in) begin
             curr_rob <= rs_rob_entry;
-            div <= ALU_op;
+            div <= ALUop;
         end else if (yumi_in) begin
             curr_rob <= 4'b0;
             div <= 0;

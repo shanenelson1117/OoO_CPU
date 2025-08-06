@@ -18,6 +18,8 @@ module add (  // adder FSM
     logic b_inter, b_taken;
     logic [3:0] curr_rob;
 
+	assign sub = ALUop;
+
     adder_32bit adder (.*);
 
     assign bne = (branch_type == 2'b01) & valid_in;
@@ -38,7 +40,7 @@ module add (  // adder FSM
             valid_out <= 1;
             b_taken <= b_inter;
             curr_rob <= rs_rob_entry;
-            sub <= ALU_op; 
+            sub <= ALUop; 
             ready <= 0;
         end
     end
