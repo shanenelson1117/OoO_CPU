@@ -20,7 +20,7 @@ module new_pc (
     input pipe_in_t pipe_out,
     input logic committed_is_branch, clk, // comes from struct of ROB header
     output logic mispredicted,
-    output logic [31:0] curr_branch_pc, curr_branch_imm_se, // still needed in case of mispredicted branch
+    output logic [31:0] curr_branch_imm_se, // still needed in case of mispredicted branch
     output logic [31:0] pc_update
 );  
 

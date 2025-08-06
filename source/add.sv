@@ -73,7 +73,7 @@ module adder_32bit ( // full adder
 	assign carry = c_bus[32];
 	
 	xor of (overflow, c_bus[32], c_bus[31]);
-    zero_detect z_flag (.bus(s), .zero(zero));
+	assign zero = (s == 32'b0)
 	assign negative = s[31];
 	
 endmodule 
@@ -101,7 +101,7 @@ module half_add (sum, c_out, a, b); // half adder
 endmodule 
 
 module zero_detect (
-	input logic [63:0] bus,
+	input logic [31:0] bus,
 	output logic zero
 	);
 	

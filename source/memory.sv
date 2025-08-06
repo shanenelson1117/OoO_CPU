@@ -36,7 +36,7 @@ module memory (
         .write_data(mem_in.result),  
         .write_enable(write_enable),
         .read_enable(read_enable),
-        .xfer_size(4),               
+        .xfer_size(4'b0100),               
         .read_data(read_data)
     );
 

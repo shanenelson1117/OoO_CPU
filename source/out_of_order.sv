@@ -114,8 +114,7 @@ module out_of_order (
 
     // Issue Stage
     new_pc generate_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken(commit_prediction),
-                .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch, .clk,
-                .curr_branch_pc(pipe_out.pc));
+                .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch, .clk);
     
     rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full,
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
@@ -126,7 +125,7 @@ module out_of_order (
     regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), 
                 .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB(ROB_entry));
     
-    rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD_out), 
+    rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CDB_out), 
                     .busy_bus, .consumed_bus, .rs0_data, .rs1_data, .rs2_data, .rs3_data);
     
     lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB_out), 
