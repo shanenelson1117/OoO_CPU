@@ -1,0 +1,369 @@
+# Reading C:/intelFPGA_lite/17.0/modelsim_ase/tcl/vsim/pref.tcl
+do runlab.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/divide.sv 
+# -- Compiling package divide_sv_unit
+# -- Compiling module divide
+# -- Compiling module datapath_dv
+# -- Compiling module control_dv
+# -- Compiling module divide_tb
+# 
+# Top level modules:
+# 	divide_tb
+# End time: 14:44:23 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/add.sv 
+# -- Compiling package add_sv_unit
+# -- Compiling module add
+# -- Compiling module adder_32bit
+# -- Compiling module full_add
+# -- Compiling module half_add
+# -- Compiling module zero_detect
+# 
+# Top level modules:
+# 	add
+# 	zero_detect
+# End time: 14:44:23 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/branch_prediction_buffer.sv 
+# -- Compiling package branch_prediction_buffer_sv_unit
+# -- Compiling module bpb
+# -- Compiling module demux_10_to_1024
+# 
+# Top level modules:
+# 	bpb
+# End time: 14:44:23 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/cdb_scheduler.sv 
+# -- Compiling package cdb_scheduler_sv_unit
+# -- Compiling module cdb_scheduler
+# 
+# Top level modules:
+# 	cdb_scheduler
+# End time: 14:44:23 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/commit.sv 
+# -- Compiling package commit_sv_unit
+# -- Compiling module commit
+# 
+# Top level modules:
+# 	commit
+# End time: 14:44:23 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/D_FF.sv 
+# -- Compiling module D_FF
+# 
+# Top level modules:
+# 	D_FF
+# End time: 14:44:23 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:23 on Aug 06,2025
+# vlog -reportprogress 300 source/datamem.sv 
+# -- Compiling module datamem
+# -- Compiling module datamem_testbench
+# 
+# Top level modules:
+# 	datamem_testbench
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/fetch.sv 
+# -- Compiling package fetch_sv_unit
+# -- Compiling module fetch
+# 
+# Top level modules:
+# 	fetch
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/fu_scheduler.sv 
+# -- Compiling package fu_scheduler_sv_unit
+# -- Compiling module fu_scheduler
+# 
+# Top level modules:
+# 	fu_scheduler
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/gbhsr.sv 
+# -- Compiling package gbhsr_sv_unit
+# -- Compiling module gbhsr
+# 
+# Top level modules:
+# 	gbhsr
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/instructmem.sv 
+# -- Compiling module instructmem
+# -- Compiling module instructmem_testbench
+# 
+# Top level modules:
+# 	instructmem_testbench
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/lsq.sv 
+# -- Compiling package lsq_sv_unit
+# -- Compiling module lsq
+# 
+# Top level modules:
+# 	lsq
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/lsq_scheduler.sv 
+# -- Compiling package lsq_scheduler_sv_unit
+# -- Compiling module lsq_scheduler
+# 
+# Top level modules:
+# 	lsq_scheduler
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/memory.sv 
+# -- Compiling package memory_sv_unit
+# -- Compiling module memory
+# 
+# Top level modules:
+# 	memory
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/multiply.sv 
+# -- Compiling package multiply_sv_unit
+# -- Compiling module multiply
+# -- Compiling module datapath
+# -- Compiling module control
+# -- Compiling module multiply_tb
+# 
+# Top level modules:
+# 	multiply_tb
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/new_pc.sv 
+# -- Compiling package new_pc_sv_unit
+# -- Compiling module new_pc
+# 
+# Top level modules:
+# 	new_pc
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/out_of_order.sv 
+# -- Compiling package out_of_order_sv_unit
+# -- Compiling module out_of_order
+# 
+# Top level modules:
+# 	out_of_order
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/pc.sv 
+# -- Compiling package pc_sv_unit
+# -- Compiling module pc
+# 
+# Top level modules:
+# 	pc
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/pipeline_reg.sv 
+# -- Compiling package pipeline_reg_sv_unit
+# -- Compiling module pipeline_reg
+# 
+# Top level modules:
+# 	pipeline_reg
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/regfile.sv 
+# -- Compiling package regfile_sv_unit
+# -- Compiling module regfile
+# -- Compiling module register
+# 
+# Top level modules:
+# 	regfile
+# End time: 14:44:24 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:24 on Aug 06,2025
+# vlog -reportprogress 300 source/regstat.sv 
+# -- Compiling package regstat_sv_unit
+# -- Compiling module regstat
+# -- Compiling module reg_status_entry
+# -- Compiling module five_to_thirtytwo_decoder
+# 
+# Top level modules:
+# 	regstat
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/rob.sv 
+# -- Compiling package rob_sv_unit
+# -- Compiling module rob
+# 
+# Top level modules:
+# 	rob
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/rob_scheduler.sv 
+# -- Compiling package rob_scheduler_sv_unit
+# -- Compiling module rob_scheduler
+# 
+# Top level modules:
+# 	rob_scheduler
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/rs.sv 
+# -- Compiling package rs_sv_unit
+# -- Compiling module rs_module
+# -- Compiling module rs
+# 
+# Top level modules:
+# 	rs_module
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/rs_scheduler.sv 
+# -- Compiling package rs_scheduler_sv_unit
+# -- Compiling module rs_scheduler
+# 
+# Top level modules:
+# 	rs_scheduler
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/structs.svh 
+# 
+# Top level modules:
+# 	--none--
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/tl_test.sv 
+# -- Compiling module tl_test
+# 
+# Top level modules:
+# 	tl_test
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 14:44:25 on Aug 06,2025
+# vlog -reportprogress 300 source/two_bit_predictor.sv 
+# -- Compiling package two_bit_predictor_sv_unit
+# -- Compiling module two_bit_predictor
+# 
+# Top level modules:
+# 	two_bit_predictor
+# End time: 14:44:25 on Aug 06,2025, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim -voptargs=""+acc"" -t 1ps -lib work tl_test 
+# Start time: 14:44:25 on Aug 06,2025
+# Loading sv_std.std
+# Loading work.tl_test
+# Loading work.out_of_order_sv_unit
+# Loading work.out_of_order
+# Loading work.fetch_sv_unit
+# Loading work.fetch
+# Loading work.pc_sv_unit
+# Loading work.pc
+# Loading work.instructmem
+# Loading work.gbhsr_sv_unit
+# Loading work.gbhsr
+# Loading work.branch_prediction_buffer_sv_unit
+# Loading work.bpb
+# Loading work.demux_10_to_1024
+# Loading work.pipeline_reg_sv_unit
+# Loading work.pipeline_reg
+# Loading work.new_pc_sv_unit
+# Loading work.new_pc
+# Loading work.rs_scheduler_sv_unit
+# Loading work.rs_scheduler
+# Loading work.regfile_sv_unit
+# Loading work.regfile
+# Loading work.regstat_sv_unit
+# Loading work.five_to_thirtytwo_decoder
+# Loading work.regstat
+# Loading work.rs_sv_unit
+# Loading work.rs_module
+# Loading work.rs
+# Loading work.lsq_sv_unit
+# Loading work.lsq
+# Loading work.lsq_scheduler_sv_unit
+# Loading work.lsq_scheduler
+# Loading work.rob_scheduler_sv_unit
+# Loading work.rob_scheduler
+# Loading work.fu_scheduler_sv_unit
+# Loading work.fu_scheduler
+# Loading work.add_sv_unit
+# Loading work.add
+# Loading work.adder_32bit
+# Loading work.multiply_sv_unit
+# Loading work.multiply
+# Loading work.datapath
+# Loading work.control
+# Loading work.divide_sv_unit
+# Loading work.divide
+# Loading work.datapath_dv
+# Loading work.control_dv
+# Loading work.memory_sv_unit
+# Loading work.memory
+# Loading work.datamem
+# Loading work.cdb_scheduler_sv_unit
+# Loading work.cdb_scheduler
+# Loading work.rob_sv_unit
+# Loading work.rob
+# Loading work.commit_sv_unit
+# Loading work.commit
+# Loading work.D_FF
+# Loading work.two_bit_predictor_sv_unit
+# Loading work.two_bit_predictor
+# Loading work.register
+# Loading work.reg_status_entry
+# Loading work.full_add
+# Loading work.half_add
+# .main_pane.wave.interior.cs.body.pw.wf
+# .main_pane.structure.interior.cs.body.struct
+# .main_pane.objects.interior.cs.body.tree
+# Running benchmark: source/benchmarks/benchmark1.riscv
+# Starting single_cycle testbench...
+# ** Note: $finish    : source/tl_test.sv(35)
+#    Time: 1007500 ns  Iteration: 1  Instance: /tl_test
+# 1
+# Break in Module tl_test at source/tl_test.sv line 35

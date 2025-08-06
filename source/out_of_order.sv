@@ -133,8 +133,6 @@ module out_of_order (
                     .full(lsq_full), .head_ready, .head_load);
 
     lsq_scheduler lsq_sched (.in(lsq_input), .out(lqss_out), .wr_en, .lsq_full);
-
-    rob_scheduler rob_sched (.in(rob_input), .out(scheduled_rob_entry), .wr_en(wr_en_rob), .rob_full);
     
     // Execute Stage
     fu_scheduler fu_sched (.rs0_data, .rs1_data, .rs2_data, .rs3_data, .ready_bus, .clk, .reset(reset | mispredicted),
@@ -170,8 +168,8 @@ module out_of_order (
                     .yummi_in_bus(yumi_bus));
     
     // Commit
-    rob reorder_buffer (.new_entry(scheduled_rob_entry), .CDB_in(CDB_out), .clk, .reset(reset | mispredicted), 
-                    .wr_en(wr_en_rob), .rd_en(rob_read_enable),
+    rob reorder_buffer (.new_entry(rob_input), .CDB_in(CDB_out), .clk, .reset(reset | mispredicted), 
+                     .rd_en(rob_read_enable),
                     .head, .head_ready(rob_head_ready), .full(rob_full), .ROB_head_store, .ROB_entry);
 
     commit commit_unit (.head, .rob_head_ready, .rd_en_rob, .RegWrite, .commit_ROB, .rd, .commit_is_branch(commmitted_is_branch), 

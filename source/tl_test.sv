@@ -32,6 +32,7 @@ module tl_test;
     // Run long enough to execute all instructions including the B HALT
     repeat (200) @(posedge clk);
     
+    $finish;
   end
 
 endmodule

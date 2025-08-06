@@ -8,7 +8,6 @@ module rob #(parameter DEPTH = 16) (
     input ROB_entry_t new_entry, // from rs scheduler
     input CDB_packet_t CDB_in,
     input logic clk, reset, 
-    input logic wr_en,      // from rob scheduler
     input logic rd_en,      // dequeue from commit unit
     output ROB_entry_t head, // combinational read of the head
     output logic head_ready,
@@ -18,6 +17,8 @@ module rob #(parameter DEPTH = 16) (
 );
     logic [3:0] wptr, rptr;
     logic empty;
+
+    assign wr_en = (new_entry.ROB_number != 4'b0000);
 
     ROB_entry_t rob_data [DEPTH];
 
