@@ -15,7 +15,7 @@ module add (  // adder FSM
 );
     logic [31:0] s, result;
     logic zero, negative, overflow, sub;
-    logic b_inter;
+    logic b_inter, b_taken;
     logic [3:0] curr_rob;
 
     adder_32bit adder (.*);
@@ -31,7 +31,6 @@ module add (  // adder FSM
             valid_out <= 0;
             b_taken <= 0;
             curr_rob <= 4'b0;
-            consumed <= 0;
             sub <= 0;
             ready <= 1;
         end else if (valid_in) begin
@@ -39,7 +38,6 @@ module add (  // adder FSM
             valid_out <= 1;
             b_taken <= b_inter;
             curr_rob <= rs_rob_entry;
-            consumed <= 1;
             sub <= ALU_op; 
             ready <= 0;
         end
@@ -62,13 +60,13 @@ module adder_32bit ( // full adder
 	
 	assign c_bus[0] = sub;
 
-    assign b = sub ? b : ~b;
+    assign b = sub ? rs2 : ~rs2;
 	
 	genvar i;
 	
 	generate 
 		for (i=0; i < 32; i++)begin:add_loop
-			full_add addi (s[i], c_bus[i+1], a[i], b[i], c_bus[i]);
+			full_add addi (s[i], c_bus[i+1], rs1[i], rs2[i], c_bus[i]);
 		end
 	endgenerate 
 	
