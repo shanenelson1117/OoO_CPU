@@ -17,6 +17,7 @@ module rob #(parameter DEPTH = 16) (
     output logic [3:0] ROB_entry // available rob entry to rs scheduler
 );
     logic [3:0] wptr, rptr;
+    logic empty;
 
     ROB_entry_t rob_data [DEPTH];
 
@@ -43,13 +44,13 @@ module rob #(parameter DEPTH = 16) (
                 end
                 else if (rob_data[i].itype == 2'b10) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
-                        rob_data[i].result <= CDB_in.result;
+                        rob_data[i].value <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end
                 end
                 else if (rob_data[i].itype == 2'b11) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
-                        rob_data[i].result <= CDB_in.result;
+                        rob_data[i].value <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end
                 end

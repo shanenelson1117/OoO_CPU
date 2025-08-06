@@ -11,6 +11,6 @@ module rob_scheduler (
     output logic wr_en
 );
     assign out = in;
-    assign wr_en = ~rob_full & (in.ROB_entry != 4'b0000);
+    assign wr_en = ~rob_full & (in.ROB_number != 4'b0000);
     
 endmodule

@@ -7,7 +7,7 @@
 
 module rs_scheduler (
     input pipe_in_t pipe_out,
-    input logic [3:0] busy_bus// busy signals from each rs
+    input logic [3:0] busy_bus, // busy signals from each rs
     input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, // use for jal
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
     input logic rob_full,
@@ -111,7 +111,7 @@ module rs_scheduler (
             alu_op = 3'b0;
             issue_writes = ~stall;
             V_j = (Q_j == 0) ? rs1_data : 31'b0;
-            V_k = {20{ins[31]}, ins[31:20]};
+            V_k = {{20{ins[31]}}, ins[31:20]};
             Q_temp_j = Q_j;
             Q_temp_k = 4'b0;
             branch_type = 2'b0;
@@ -130,7 +130,7 @@ module rs_scheduler (
             alu_op = 3'b0;
             issue_writes = ~stall;
             V_j = (Q_j == 0) ? rs1_data : 31'b0;
-            V_k =  {20{ins[31]}, ins[31:20]};
+            V_k =  {{20{ins[31]}}, ins[31:20]};
             Q_temp_j = Q_j;
             Q_temp_k = 4'b0;
             branch_type = 2'b0;
@@ -141,7 +141,7 @@ module rs_scheduler (
             issue_writes = 1'b0;
             alu_op = 3'b000;
             V_j = (Q_j == 0) ? rs1_data : 31'b0;
-            V_k =  {20{ins[31]}, ins[31:25], ins[11:7]};
+            V_k =  {{20{ins[31]}}, ins[31:25], ins[11:7]};
             Q_temp_j = Q_j;
             Q_temp_k = 4'b0;
             branch_type = 2'b0;
