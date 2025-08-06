@@ -17,7 +17,7 @@ module commit (
 );  
     always_comb begin
         if (rob_head_ready) begin
-            if (head.type == 2'b00) begin
+            if (head.itype == 2'b00) begin
                 commit_is_branch = 1;
                 commit_prediction = head.branch_pred;
                 commit_result = head.branch_result;
@@ -27,7 +27,7 @@ module commit (
                 WriteData = 32'b0;
                 rd_en = 1;
             end
-            else if (head.type == 2'b01) begin
+            else if (head.itype == 2'b01) begin
                 commit_is_branch = 0;
                 commit_prediction = head.branch_pred;
                 commit_result = head.branch_result;

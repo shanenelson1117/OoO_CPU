@@ -168,27 +168,27 @@ module rs_scheduler (
         if (ins[6:0] == 7'b0100011) begin
             // unknown for now
             rob_input.destination = 32'bX;
-            rob_input.type = 2'b01;
+            rob_input.itype = 2'b01;
             rob_input.value = rs2_data;
             rob_input.ready = 1'b1;
         end
         // branch
         else if (branch) begin
-            rob_input.type = 2'b00;
+            rob_input.itype = 2'b00;
             rob_input.value = curr_branch_imm_se;
             rob_input.destination = curr_branch_pc;
             rob_input.ready = 1'b0;
         end
         // load
         else if (ins[6:0] == 7'b0000011) begin
-            rob_input.type = 2'b11;
+            rob_input.itype = 2'b11;
             rob_input.value = 32'bX; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
             rob_input.ready = 1'b0;
         end
         // register output
         else begin
-            rob_input.type = 2'b10;
+            rob_input.itype = 2'b10;
             rob_input.value = 32'bX; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
             rob_input.ready = 1'b0;

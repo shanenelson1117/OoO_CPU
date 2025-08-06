@@ -23,7 +23,7 @@ typedef struct packed {
     logic branch_result;
     logic [31:0] destination; // register or address (for branches this could be the pc of the branch)
     logic [31:0] value; // value to be written or se immediate for branches
-    logic [1:0] type; // branch (00), store (01), register dest (10), load (11)
+    logic [1:0] itype; // branch (00), store (01), register dest (10), load (11)
     // use type[1] as a regwrite signal
     logic ready;
     //logic value_ready; unnecessary, if ROB_of_store != 0 then value is not ready

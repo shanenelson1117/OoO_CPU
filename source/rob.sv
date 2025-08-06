@@ -35,19 +35,19 @@ module rob #(parameter DEPTH = 16) (
         if (~reset) begin
             for (int i = 1; i < DEPTH; i++) begin
                 // branch
-                if (rob_data[i].type == 2'b00) begin
+                if (rob_data[i].itype == 2'b00) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
                         rob_data[i].branch_result <= CDB_in.branch_result;
                         rob_data[i].ready <= 1;
                     end
                 end
-                else if (rob_data[i].type == 2'b10) begin
+                else if (rob_data[i].itype == 2'b10) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
                         rob_data[i].result <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end
                 end
-                else if (rob_data[i].type == 2'b11) begin
+                else if (rob_data[i].itype == 2'b11) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
                         rob_data[i].result <= CDB_in.result;
                         rob_data[i].ready <= 1;
@@ -79,6 +79,6 @@ module rob #(parameter DEPTH = 16) (
     assign full = ((wptr + 1 == DEPTH ? 1 : wptr + 1) == rptr);
     assign empty = (wptr == rptr);
     assign head_ready  = head.ready;
-    assign ROB_head_store = head.type == 2'b01;
+    assign ROB_head_store = head.itype == 2'b01;
 
 endmodule
