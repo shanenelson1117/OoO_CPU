@@ -28,7 +28,7 @@ module out_of_order (
     // busy signals from RSs
     logic rs0_busy, rs1_busy, rs2_busy, rs3_busy;
     // read data from regfile
-    logic [31:0] rs1_data, rs2_data;
+    logic [31:0] rs1reg_data, rs2reg_data;
     // available ROB-entry from rob unit
     logic [3:0] ROB_entry;
     // Q_j, Q_k from regstat
@@ -117,10 +117,10 @@ module out_of_order (
                 .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch);
     
     rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full,
-                .rs1_data, .rs2_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
+                .rs1reg_data, .rs2reg_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
                 .rs_input, .rob_input, .stall, .issue_dest, .ROB_entry, .rs_dest);
     
-    regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1_data, .rs2_data, .clk, .reset);
+    regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1ref_data, .rs2reg_data, .clk, .reset);
 
     regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), 
                 .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB(ROB_entry));
@@ -167,7 +167,7 @@ module out_of_order (
     // Write Back
     cdb_scheduler cdb (.valid_out_bus, .adder_0_out(out_0), .adder_1_out(out_1), .mult_out(out_2), 
                     .div_out(out_3), .mem_out(out_load), .new_CDB(CDB), 
-                    .yummi_in_bus(yumi_bus)));
+                    .yummi_in_bus(yumi_bus));
     
     // Commit
     rob reorder_buffer (.new_entry(scheduled_rob_entry), .CDB_in(CDB), .clk, .reset(reset | mispredicted), 
