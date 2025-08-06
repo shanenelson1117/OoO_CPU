@@ -134,7 +134,7 @@ module out_of_order (
 
     lsq_scheduler lsq_sched (.in(lsq_input), .out(lqss_out), .wr_en, .lsq_full);
 
-    rob_scheduler rob_sched (.in(rob_input) .out(scheduled_rob_entry), .wr_en(wr_en_rob), .rob_full);
+    rob_scheduler rob_sched (.in(rob_input), .out(scheduled_rob_entry), .wr_en(wr_en_rob), .rob_full);
     
     // Execute Stage
     fu_scheduler fu_sched (.rs0_data, .rs1_data, .rs2_data, .rs3_data, .ready_bus, .clk, .reset(reset | mispredicted),
@@ -166,7 +166,7 @@ module out_of_order (
 
     // Write Back
     cdb_scheduler cdb (.valid_out_bus, .adder_0_out(out_0), .adder_1_out(out_1), .mult_out(out_2), 
-                    .div_out(out_3), .mem_out(out_load), .new_CDB(CDB, 
+                    .div_out(out_3), .mem_out(out_load), .new_CDB(CDB), 
                     .yummi_in_bus(yumi_bus)));
     
     // Commit
