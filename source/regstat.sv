@@ -66,10 +66,11 @@ endmodule
 module reg_status_entry (
     input logic clk, reset,
     input logic write_en,
+    input logic clear,
     input reg_stat_t d,
     output reg_stat_t q
 );
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset)
             q <= '{default: '0};
         else if (clear)
