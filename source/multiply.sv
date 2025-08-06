@@ -7,7 +7,7 @@
 
 module multiply (
   input logic [31:0] A, B,      // register operands
-  input logic [2:0] rs_rob_entry,
+  input logic [3:0] rs_rob_entry,
   input logic valid_in, yumi_in, reset, clk, ALU_op,  // inputs are valid, system ready, rst, clk, high order bits?
   output logic valid_out, ready,     // output is valid, FU ready for input, 
   output CDB_packet_t out
@@ -16,6 +16,7 @@ module multiply (
   logic [31:0] Q, P, result;
   logic [63:0] product_inter;
   logic loadregs, shiftregs, addregs, decr_P, mul_h;
+  logic [3:0] curr_rob;
 
   assign multiplier = A;
   assign multiplicand = B;
@@ -33,13 +34,13 @@ module multiply (
 
   always_ff @(posedge clk) begin
         if (reset) begin
-            curr_rob <= 3'b0;
+            curr_rob <= 4'b0;
             mul_h <= 0;
         end else if (valid_in) begin
             curr_rob <= rs_rob_entry;
             mul_h <= ALU_op;
         end else if (yumi_in) begin
-            curr_rob <= 3'b0;
+            curr_rob <= 4'b0;
             mul_h <= 0;
         end
     end

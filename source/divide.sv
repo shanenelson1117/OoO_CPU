@@ -7,7 +7,7 @@
 
 module divide (
   input logic clk, reset, valid_in, yumi_in,
-  input logic [2:0] rs_rob_entry,
+  input logic [3:0] rs_rob_entry,
   input logic ALU_op, // are we doing div or remu (remainder unsigned)
   output logic valid_out, ready,
   input logic [31:0] dividend, divisor, 
@@ -15,6 +15,7 @@ module divide (
 );
   logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div;
   logic [31:0] P, quotient, remainder, result;
+  logic [3:0] curr_rob;
 
   logic [31:0] abs_sor, abs_end;
   assign abs_sor = divisor[31] & div ? ~divisor + 1 : divisor;
@@ -34,13 +35,13 @@ module divide (
 
    always_ff @(posedge clk) begin
         if (reset) begin
-            curr_rob <= 3'b0;
+            curr_rob <= 4'b0;
             div <= 0;
         end else if (valid_in) begin
             curr_rob <= rs_rob_entry;
             div <= ALU_op;
         end else if (yumi_in) begin
-            curr_rob <= 3'b0;
+            curr_rob <= 4'b0;
             div <= 0;
         end
   end

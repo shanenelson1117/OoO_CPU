@@ -13,7 +13,7 @@
 module fetch (
     input logic clk, reset, 
     input logic enable, // if instruction queue is full we may need to stall
-    input logic update, valid_in,   // are we updating gbshr or have we just committed a b/j
+    input logic update, valid_in,   // are we updating gbshr or have we just committed a branch
     input logic [31:0] pc_update,  // new pc, 
     input logic [31:0] committed_pc, // used to update prediction fsm
     output pipe_in_t pipe_in   // pc, instruction, branch prediction (taken?)

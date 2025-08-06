@@ -22,43 +22,43 @@ module regstat (
     // low if no instruction is issued due to no open reserv stats
     input logic RegWrite, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
-    input logic [2:0] commit_ROB, issue_ROB, // ROB number of committing instruction
-    output [2:0] Q_j, Q_k // ROB numbers for unready instructions
+    input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
+    output [3:0] Q_j, Q_k // ROB numbers for unready instructions
 );
 
-reg_stat_t reg_status_table [31:0]; // data
-reg_stat_t d; // new data
-logic [31:0] reset_bus, enable_bus; // one-hot enable and reset buses
-logic reset_enable;
+    reg_stat_t reg_status_table [31:0]; // data
+    reg_stat_t d; // new data
+    logic [31:0] reset_bus, enable_bus; // one-hot enable and reset buses
+    logic reset_enable;
 
-// new regstat_entry conditionally applied to specified entry
-always_comb begin
-    d.ROB_number = issue_ROB;
-    d.busy = 1'b1;
-end
-
-// only 0-out the entry if the committed instruction is the most recent writer to the register
-assign reset_enable = (reg_status_table[commit_dest].ROB_number == commit_ROB);
-
-// Generate one-hot enable and reset buses
-five_to_thirtytwo_decoder reset_decode (.sel(commit_dest), .enable(reset_enable), .out(reset_bus));
-five_to_thirtytwo_decoder enable_decode (.sel(issue_dest), .enable(issue_writes), .out(enable_bus));
-
-
-// generate entries
-genvar j;
-generate
-    for (j = 1; j < 32; j++) begin:reg_stat_entries
-        reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j] & RegWrite),
-            .write_en(enable_bus[j]), .d, .q(reg_status_table[j]));
+    // new regstat_entry conditionally applied to specified entry
+    always_comb begin
+        d.ROB_number = issue_ROB;
+        d.busy = 1'b1;
     end
-endgenerate
 
-// read ROB_number fields of operands
-always_comb begin
-    Q_j = reg_status_table[rs1].ROB_number;
-    Q_k = reg_status_table[rs2].ROB_number;
-end
+    // only 0-out the entry if the committed instruction is the most recent writer to the register
+    assign reset_enable = (reg_status_table[commit_dest].ROB_number == commit_ROB);
+
+    // Generate one-hot enable and reset buses
+    five_to_thirtytwo_decoder reset_decode (.sel(commit_dest), .enable(reset_enable), .out(reset_bus));
+    five_to_thirtytwo_decoder enable_decode (.sel(issue_dest), .enable(issue_writes), .out(enable_bus));
+
+
+    // generate entries
+    genvar j;
+    generate
+        for (j = 1; j < 32; j++) begin:reg_stat_entries
+            reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j] & RegWrite),
+                .write_en(enable_bus[j]), .d, .q(reg_status_table[j]));
+        end
+    endgenerate
+
+    // read ROB_number fields of operands
+    always_comb begin
+        Q_j = reg_status_table[rs1].ROB_number;
+        Q_k = reg_status_table[rs2].ROB_number;
+    end
 
 endmodule
 

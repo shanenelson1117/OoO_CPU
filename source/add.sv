@@ -7,7 +7,7 @@
 
 module add (  // adder FSM
     input logic clk, reset, valid_in, yumi_in, ALU_op,
-    input logic [2:0] rs_rob_entry, 
+    input logic [3:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
     input logic [1:0] branch_type, // branch controls, need sub to be high for any branch
     output logic valid_out, ready,
@@ -16,7 +16,7 @@ module add (  // adder FSM
     logic [31:0] s, result;
     logic zero, negative, overflow, sub;
     logic b_inter;
-    logic [2:0] curr_rob;
+    logic [3:0] curr_rob;
 
     adder_32bit adder (.*);
 
@@ -30,7 +30,7 @@ module add (  // adder FSM
         if (reset | yumi_in) begin
             valid_out <= 0;
             b_taken <= 0;
-            curr_rob <= 3'b0;
+            curr_rob <= 4'b0;
             consumed <= 0;
             sub <= 0;
             ready <= 1;

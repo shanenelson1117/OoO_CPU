@@ -9,7 +9,7 @@ module fu_scheduler (
     input rs_out_t rs0_data, rs1_data, rs2_data, rs3_data,
     input logic [3:0] ready_bus,
     input logic clk, reset,
-    output logic [2:0] ROB_entry,
+    output logic [3:0] ROB_entry,
     output logic ALU_op,
     output logic [1:0] branch_type,
     output logic [31:0] rs1, rs2,

@@ -44,7 +44,7 @@ module rs (
             q_reg.Q_k <= 3'b0;
             q_reg.V_j <= 32'b0;
             q_reg.V_k <= 32'b0;
-            q_reg.ROB_entry <= 3'b0;
+            q_reg.ROB_entry <= 4'b0;
             q_reg.ALU_op <= 3'b0;
             q_reg.branch_type <= 2'b0;
             q_reg.busy <= 1'b0;
@@ -55,11 +55,11 @@ module rs (
         else begin
             // update operands with CDB data
             if (CBD_in.dest_ROB_entry == q_reg.Q_j) begin
-                q_reg.Q_j <= 3'b0;
+                q_reg.Q_j <= 4'b0;
                 q_reg.V_j <= CBD_in.result;
             end
             if (CBD_in.dest_ROB_entry == q_reg.Q_k) begin
-                q_reg.Q_k <= 3'b0;
+                q_reg.Q_k <= 4'b0;
                 q_reg.V_k <= CBD_in.result;
             end
         end
