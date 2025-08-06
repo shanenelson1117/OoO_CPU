@@ -33,7 +33,7 @@ module fetch (
     assign index_read = history ^ pc[9:0];
     assign index_write = history ^ committed_pc;
 
-    bpb pred_buffer (.clk, .reset, .update_value(update), .update_valid(valid_in)
+    bpb pred_buffer (.clk, .reset, .update_value(update), .update_valid(valid_in),
                     .index_read, .index_write, .prediction);
 
     pipe_in_t pipe_in;
