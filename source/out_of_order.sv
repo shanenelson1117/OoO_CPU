@@ -90,7 +90,7 @@ module out_of_order (
     logic head_load;
     lsq_packet_t lsq_out;
     // dequeue signal from dmem to rob for stores
-    logic rd_en_rob; // (called store_retire in commit unit)
+    logic rd_en_rob; 
     // Rob scheduler to rob
     ROB_entry_t scheduled_rob_entry;
     logic wr_en_rob;
@@ -100,19 +100,19 @@ module out_of_order (
     ROB_entry_t head;
     logic rob_head_ready;
 
-
+    
     // Fetch Stage
-    fetch fetch_stage (.clk, .reset, .enable(~stall), .update, 
-                .valid_in, .pc_update, .committed_pc, .pipe_in);
+    fetch fetch_stage (.clk, .reset, .enable(~stall | ~mispredicted), .update(commit_result), 
+                .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in);
     
     pipeline_reg fetch_issue_reg (.clk, .d(pipe_in), .queue_full(stall), 
-                .reset(reset | pipe_in.prediction | mispredicted), .q(pipe_out));
+                .reset(reset | (pipe_out.prediction & ~stall) | mispredicted), .q(pipe_out));
 
     // Issue Stage
     new_pc generate_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken(commit_prediction),
                 .commit_result, .pipe_out, .mispredicted, .curr_branch_imm_se, .pc_update);
     
-    rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input,
+    rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full,
                 .rs1_data, .rs2_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
                 .rs_input, .rob_input, .stall, .issue_dest, .ROB_entry, .rs_dest);
     
@@ -124,7 +124,7 @@ module out_of_order (
     rs_module reservation_stations (.clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CBD), 
                     .busy_bus, .consumed_bus, .rs0_data, .rs1_data, .rs2_data, .rs3_data);
     
-    lsq load_store_queue (.clk, .reset(reset | misprediction), .wr_en, .rd_en, .CDB_in(CDB), 
+    lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB), 
                     .din(lqss_out), .dout(lsq_out),
                     .full(lsq_full), .head_ready, .head_load, .dout(lsq_out));
 

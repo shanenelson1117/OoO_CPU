@@ -37,7 +37,7 @@ module memory (
         .read_data(read_data)
     );
 
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             mem_result_reg     <= '0;
             mem_rob_entry_reg  <= '0;

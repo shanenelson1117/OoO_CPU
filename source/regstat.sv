@@ -13,7 +13,7 @@ should read register rs1 and/or rs2. Later have muxes and such that will correct
 into rs.
 */
 
-`include structs.svh
+`include "structs.svh"
 
 module regstat (
     input logic [4:0] rs1, rs2, // from instruction in issue stage

@@ -3,7 +3,7 @@
 // File: IF to Issue pipeline register
 // Stage: Fetch -> Issue
 
-`include structs.svh
+`include "structs.svh"
 
 // register reset should be high if instruction in issue stage is a taken branch or a jump.
 // but not if the instruction queue is full. In that case we want to disable writes to the pipe
@@ -19,7 +19,7 @@ module pipeline_reg (
 
     assign q = q_reg;
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk or posedge reset) begin
         if (reset) begin  // flush reg on reset or flush
             q_reg.instruction <= 32'b0;
             q_reg.pc <= 32'b0;

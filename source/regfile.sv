@@ -3,7 +3,7 @@
 // File: Register File
 // Stage: Issue/Commit
 
-`include structs.svh
+`include "structs.svh"
 
 module regfile (
     input logic [4:0] rs1, rs2, // registers to read, from issue stage rs scheduler
@@ -42,7 +42,7 @@ module register (
 );
     logic [31:0] q_reg;
 
-    always_ff (@posedge clk) begin
+    always_ff (@posedge clk or posedge reset) begin
         if (reset) 
             q_reg <= 32'b0;
         else if (enable)

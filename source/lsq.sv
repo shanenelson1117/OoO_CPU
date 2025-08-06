@@ -25,7 +25,7 @@ module lsq #(parameter DEPTH = 4) (
     lsq_packet_t lsq_data [DEPTH];
 
     // Write logic
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             wptr <= 0;
         end else if (wr_en && !full) begin
@@ -55,12 +55,12 @@ module lsq #(parameter DEPTH = 4) (
     // read logic 
     assign dout = lsq_data[rptr];
 
-    always_ff @(posedge clk or posedge reset) begin
-    if (reset) begin
-        rptr <= 0;
-    end else if (rd_en && !empty) begin
-        rptr <= (rptr == DEPTH - 1) ? 0 : rptr + 1;
-    end
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            rptr <= 0;
+        end else if (rd_en && !empty) begin
+            rptr <= (rptr == DEPTH - 1) ? 0 : rptr + 1;
+        end
     end
 
     // Status outputs

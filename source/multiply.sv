@@ -3,7 +3,7 @@
 // File: Integer Multiply Functional Unit
 // Stage: Execute
 
-`include structs.svh
+`include "structs.svh"
 
 module multiply (
   input logic [31:0] A, B,      // register operands

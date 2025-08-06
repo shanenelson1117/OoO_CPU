@@ -3,7 +3,7 @@
 // File: Functional Unit Scheduler
 // Stage: Execute
 
-`include structs.svh
+`include "structs.svh"
 
 module fu_scheduler (
     input rs_out_t rs0_data, rs1_data, rs2_data, rs3_data,
@@ -30,7 +30,7 @@ module fu_scheduler (
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            q <= 4'bX;
+            q <= 4'b0;
         end
         else begin
             q <= d;

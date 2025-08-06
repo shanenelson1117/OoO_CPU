@@ -3,7 +3,7 @@
 // File: Add/Sub functional unit
 // Stage: Execute
 
-`include structs.svh
+`include "structs.svh"
 
 module add (  // adder FSM
     input logic clk, reset, valid_in, yumi_in, ALU_op,

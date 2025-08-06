@@ -3,7 +3,7 @@
 // File: Reservation Stations
 // Stage: Issue -> Execute
 
-`include structs.svh
+`include "structs.svh"
 
 module rs_module (
     input logic clk, reset, mispredicted,

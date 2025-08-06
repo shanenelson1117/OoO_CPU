@@ -2,6 +2,8 @@
 // Project: OoO CPU
 // File: reorder buffer scheduler
 
+`include "structs.svh"
+
 module rob_scheduler (
     input ROB_entry_t in,
     input logic rob_full,

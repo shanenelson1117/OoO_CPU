@@ -2,6 +2,8 @@
 // Project: OoO CPU
 // File: Commit Unit
 
+`include "structs.svh"
+
 module commit (
     input ROB_entry_t head,
     input logic rob_head_ready,

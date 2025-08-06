@@ -3,21 +3,26 @@
 // File: Program Counter & Instruction Fetch
 // Stage: Fetch
 
-`include structs.svh
+`include "structs.svh"
 
-module pc (instruction, pc, reset, clk, pc_update, enable);
-	output logic [31:0] instruction;
-	output logic [31:0] pc;
-	input logic reset, clk, queue_full;  // if issue queue full disable pc_writes
-	input logic [31:0] pc_update;
+module pc (
+	output logic [31:0] instruction,
+	output logic [31:0] pc,
+	input logic reset, clk, stall,
+	input logic [31:0] pc_update
+);
+
+	logic [31:0] new_pc;
+
+	assign new_pc = stall ? pc : pc_update;
 
 	// set up PC register
 	always_ff @(posedge clk) begin
         if (reset) begin
             pc <= 32'b0;
         end
-        else if (!queue_full) begin
-            pc <= pc_update;
+        else begin
+            pc <= new_pc;
         end
         
     end
