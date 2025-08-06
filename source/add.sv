@@ -73,7 +73,7 @@ module adder_32bit ( // full adder
 	assign carry = c_bus[32];
 	
 	xor of (overflow, c_bus[32], c_bus[31]);
-	assign zero = (s == 32'b0)
+	assign zero = (s == 32'b0);
 	assign negative = s[31];
 	
 endmodule 
