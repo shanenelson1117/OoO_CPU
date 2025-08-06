@@ -118,7 +118,7 @@ module out_of_order (
     
     rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full,
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
-                .rs_input, .rob_input, .stall, .issue_dest, .ROB_entry, .rs_dest);
+                .rs_input, .new_packet(rob_input), .stall, .issue_dest, .ROB_entry, .rs_dest);
     
     regfile registers (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk, .reset);
 

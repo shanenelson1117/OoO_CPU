@@ -21,8 +21,8 @@ module regfile (
     // Generate regs
     genvar i;
 
-    assign reg_data[0] = 32'b0;
-    
+    assign RegData[0] = 32'b0;
+
     generate
         for (i = 1; i < 32; i++) begin:registers
             register reg_i (.clk, .reset, .enable(enable_bus[i]), .d(WriteData), .q(RegData[i]));

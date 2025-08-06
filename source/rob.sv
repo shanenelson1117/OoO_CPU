@@ -22,7 +22,7 @@ module rob #(parameter DEPTH = 16) (
     ROB_entry_t rob_data [DEPTH];
 
     // Write logic
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             wptr <= 1;
         end else if (wr_en && !full) begin
@@ -42,12 +42,14 @@ module rob #(parameter DEPTH = 16) (
                         rob_data[i].ready <= 1;
                     end
                 end
+                // store
                 else if (rob_data[i].itype == 2'b10) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
                         rob_data[i].value <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end
                 end
+                // load
                 else if (rob_data[i].itype == 2'b11) begin
                     if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
                         rob_data[i].value <= CDB_in.result;
@@ -61,7 +63,7 @@ module rob #(parameter DEPTH = 16) (
     // read logic 
     assign head = rob_data[rptr];
 
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             rptr <= 1;
         end 

@@ -14,7 +14,7 @@ module rs_scheduler (
     input logic lsq_full,
     input logic [3:0] Q_j, Q_k,
     output rs_data_t rs_input, // create RS packet
-    output ROB_entry_t rob_input, // create ROB packet
+    output ROB_entry_t new_packet, // create ROB packet
     output logic [2:0] rs_dest,
     output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
     output logic issue_writes, // ...
@@ -29,6 +29,17 @@ module rs_scheduler (
     logic [31:0] V_k, V_j;
     logic [3:0] Q_temp_j, Q_temp_k;
     logic branch, jump;
+
+    ROB_packet_t new_packet;
+
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            new_packet <= '0;
+        end
+        else begin
+            new_packet <= rob_input;
+        end
+    end
 
     assign prediction = pipe_out.prediction;
 
@@ -167,7 +178,7 @@ module rs_scheduler (
         // store
         if (ins[6:0] == 7'b0100011) begin
             // unknown for now
-            rob_input.destination = 32'bX;
+            rob_input.destination = 32'b0;
             rob_input.itype = 2'b01;
             rob_input.value = rs2_data;
             rob_input.ready = 1'b1;
@@ -182,7 +193,7 @@ module rs_scheduler (
         // load
         else if (ins[6:0] == 7'b0000011) begin
             rob_input.itype = 2'b11;
-            rob_input.value = 32'bX; // to be updated later
+            rob_input.value = 32'b0; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
             rob_input.ready = 1'b0;
         end
