@@ -70,7 +70,7 @@ module fu_scheduler (
             end
             else begin
                 valid_in_bus = 4'b0000;
-                d = 4'bX;
+                d = 4'b0;
                 ns = waiting;
             end
         end
@@ -104,7 +104,7 @@ module fu_scheduler (
             end
             else begin
                 valid_in_bus = 4'b0000;
-                d = 4'X;
+                d = 4'0;
                 ns = waiting;
             end
         end
@@ -138,7 +138,7 @@ module fu_scheduler (
             end
             else begin
                 valid_in_bus = 4'b0000;
-                d = 4'bX;
+                d = 4'b0;
                 ns = waiting;
             end
         end
@@ -173,18 +173,18 @@ module fu_scheduler (
             end
             else begin
                 valid_in_bus = 4'b0000;
-                d = 4'bX;
+                d = 4'b0;
                 ns = waiting;
             end
         end
         else begin
-            ALU_op = 1'bX;
-            ROB_entry = 3'bX;
-            branch_type = 2'bX;
-            rs1 = 32'bX;
-            rs2 = 32'bX;
+            ALU_op = 1'b0;
+            ROB_entry = 3'b0;
+            branch_type = 2'b0;
+            rs1 = 32'b0;
+            rs2 = 32'b0;
             valid_in_bus = 4'b0000;
-            d = 4'bX;
+            d = 4'b0;
             ns = waiting;
         end
     end
