@@ -36,12 +36,10 @@ module fetch (
     bpb pred_buffer (.clk, .reset, .update_value(update), .update_valid(valid_in),
                     .index_read, .index_write, .prediction);
 
-    pipe_in_t pipe_in;
-
     always_comb begin
         pipe_in.pc = pc;
         pipe_in.instruction = instruction;
-        pipe_in.prediction = (predicition & branch) | jump;  // always jump if jal
+        pipe_in.prediction = (prediction & branch) | jump;  // always jump if jal
         pipe_in.branch = branch; // might as well not compute these again later
         pipe_in.jump = jump;
     end
