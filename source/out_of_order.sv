@@ -120,7 +120,7 @@ module out_of_order (
                 .rs1reg_data, .rs2reg_data, .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
                 .rs_input, .rob_input, .stall, .issue_dest, .ROB_entry, .rs_dest);
     
-    regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1ref_data, .rs2reg_data, .clk, .reset);
+    regfile registers (.rs1, .rs2, .rd, .WriteData, .rs1reg_data, .rs2reg_data, .clk, .reset);
 
     regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), 
                 .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB(ROB_entry));

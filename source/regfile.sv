@@ -42,7 +42,7 @@ module register (
 );
     logic [31:0] q_reg;
 
-    always_ff (@posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) 
             q_reg <= 32'b0;
         else if (enable)
