@@ -66,7 +66,7 @@ REMU x5, x3, x2      # x5 = 0
 SW   x3, 0(x0)       # mem[0] = 12
 LW   x6, 0(x0)       # x6 = 12
 BEQ  x4, x6, next    # taken
-ADDI x7, x0, 0       # skipped
+ADDI x7, x0, 1       # skipped
 
 next:
 JAL x10, end
