@@ -58,13 +58,13 @@ module new_pc (
             if (branch & pipe_taken)  begin
                 pc_pre = pipe_pc;
                 // branch immediate
-                to_be_added = {19{i[31]}, i[31], i[7], i[30:25], i[11:8], 1'b0};
+                to_be_added = {{19{i[31]}}, i[31], i[7], i[30:25], i[11:8], 1'b0};
             end
             // unconditional jump
             else if (jump) begin
                 pc_pre = pipe_pc;
                 // jump immediate
-                to_be_added = {11{i[31]}, i[31], i[19:12], i[20], i[30:21], 1'b0};
+                to_be_added = {{11{i[31]}}, i[31], i[19:12], i[20], i[30:21], 1'b0};
             end
             // no branch or predicted not taken
             else begin
