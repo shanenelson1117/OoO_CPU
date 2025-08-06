@@ -23,7 +23,7 @@ module regstat (
     input logic RegWrite, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
     input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
-    output [3:0] Q_j, Q_k // ROB numbers for unready instructions
+    output logic [3:0] Q_j, Q_k // ROB numbers for unready instructions
 );
 
     reg_stat_t reg_status_table [31:0]; // data
