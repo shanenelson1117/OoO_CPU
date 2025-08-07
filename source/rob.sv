@@ -18,9 +18,9 @@ module rob #(parameter DEPTH = 16) (
     logic [3:0] wptr, rptr;
     logic empty;
 
-    assign wr_en = (new_entry.ROB_number != 4'b0000);
-
     ROB_entry_t rob_data [DEPTH];
+
+    assign wr_en = new_entry.ROB_number == wptr;
 
     // Write logic
     always_ff @(posedge clk) begin

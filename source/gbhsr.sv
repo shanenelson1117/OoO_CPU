@@ -12,7 +12,7 @@ module gbhsr (
     logic [9:0] d;
     genvar i;
 
-    assign d = valid_in ? {history[8:0], update} : history;
+    assign d = (valid_in == 1'b1) ? {history[8:0], update} : history;
 
     generate 
         for (i = 0; i < 10; i++) begin:gbhsr_dffs

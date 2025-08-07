@@ -6,7 +6,7 @@
 `include "structs.svh"
 
 module rs_module (
-    input logic clk, reset, mispredicted,
+    input logic clk, reset, mispredicted, stall,
     input logic [2:0] rs_dest,
     input rs_data_t d,
     input CDB_packet_t CBD_in,
@@ -14,15 +14,22 @@ module rs_module (
     output logic [3:0] busy_bus,
     output rs_out_t rs0_data, rs1_data, rs2_data, rs3_data
 );
+    logic wr_en0, wr_en1, wr_en2, wr_en3;
+
     // Instantiate reservation stations
-    rs rs0 (.CBD_in, .d, .rs_number(3'b000), .rs_dest, .clk, .reset(mispredicted | reset |
+    rs rs0 (.CBD_in, .d, .rs_number(3'b000), .wr_en(wr_en0), .clk, .reset(mispredicted | reset |
             consumed_bus[0]), .busy(busy_bus[0]), .out(rs0_data));
-    rs rs1 (.CBD_in, .d, .rs_number(3'b001), .rs_dest, .clk, .reset(mispredicted | reset |
+    rs rs1 (.CBD_in, .d, .rs_number(3'b001), .wr_en(wr_en1), .clk, .reset(mispredicted | reset |
             consumed_bus[1]), .busy(busy_bus[1]), .out(rs1_data));
-    rs rs2 (.CBD_in, .d, .rs_number(3'b010), .rs_dest, .clk, .reset(mispredicted | reset |
+    rs rs2 (.CBD_in, .d, .rs_number(3'b010), .wr_en(wr_en2), .clk, .reset(mispredicted | reset |
             consumed_bus[2]), .busy(busy_bus[2]), .out(rs2_data));
-    rs rs3 (.CBD_in, .d, .rs_number(3'b011), .rs_dest, .clk, .reset(mispredicted | reset |
+    rs rs3 (.CBD_in, .d, .rs_number(3'b011), .wr_en(wr_en3), .clk, .reset(mispredicted | reset |
             consumed_bus[3]), .busy(busy_bus[3]), .out(rs3_data));
+
+    assign wr_en0 = (rs_dest == 3'b000) & ~stall;
+    assign wr_en1 = (rs_dest == 3'b001) & ~stall;
+    assign wr_en2 = (rs_dest == 3'b010) & ~stall;
+    assign wr_en3 = (rs_dest == 3'b011) & ~stall;
 
 endmodule
 
@@ -30,8 +37,8 @@ endmodule
 module rs (
     input CDB_packet_t CBD_in,
     input rs_data_t d,
-    input logic [2:0] rs_number, rs_dest,
-    input logic clk, reset, // reset should be reset | mispredicted | FU_consumed
+    input logic [2:0] rs_number,
+    input logic clk, reset, wr_en, // reset should be reset | mispredicted | FU_consumed
     output logic busy, // ready for FU, in progress
     output rs_out_t out
 );
@@ -49,8 +56,9 @@ module rs (
             q_reg.branch_type <= 2'b0;
             q_reg.busy <= 1'b0;
         end
-        else if ((rs_number == rs_dest)) begin
+        else if ((wr_en)) begin
             q_reg <= d;
+            $display("Cycle %0t: RS%0d took instruction with ROB_entry %0d", $time, rs_number, d.ROB_entry);
         end
         else begin
             // update operands with CDB data
@@ -64,6 +72,7 @@ module rs (
             end
         end
     end
+
 
     logic valid_operands_reg;
 

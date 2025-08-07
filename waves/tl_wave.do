@@ -1,24 +1,41 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -childformat {{/tl_test/dut/fetch_issue_reg/q.pc -radix binary} {/tl_test/dut/fetch_issue_reg/q.instruction -radix binary}} -expand -subitemconfig {/tl_test/dut/fetch_issue_reg/q.pc {-height 15 -radix binary} /tl_test/dut/fetch_issue_reg/q.instruction {-height 15 -radix binary}} /tl_test/dut/fetch_issue_reg/q
-add wave -noupdate -label stall /tl_test/dut/res_sched/stall
-add wave -noupdate -radix unsigned /tl_test/dut/reorder_buffer/rptr
-add wave -noupdate -radix unsigned /tl_test/dut/reorder_buffer/wptr
-add wave -noupdate -radix unsigned -childformat {{{/tl_test/dut/reorder_buffer/rob_data[0]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[1]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[2]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[3]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[4]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[5]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[6]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[7]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[8]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[9]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[10]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[11]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[12]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[13]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[14]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[15]} -radix unsigned}} -expand -subitemconfig {{/tl_test/dut/reorder_buffer/rob_data[0]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[1]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[2]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[3]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[4]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[5]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[6]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[7]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[8]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[9]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[10]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[11]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[12]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[13]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[14]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[15]} {-height 15 -radix unsigned}} /tl_test/dut/reorder_buffer/rob_data
-add wave -noupdate -expand /tl_test/dut/CDB_out
-add wave -noupdate -radix unsigned -childformat {{{/tl_test/dut/reg_status_register/reg_status_table[31]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[30]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[29]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[28]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[27]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[26]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[25]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[24]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[23]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[22]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[21]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[20]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[19]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[18]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[17]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[16]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[15]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[14]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[13]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[12]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[11]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[10]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[9]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[8]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[7]} -radix decimal} {{/tl_test/dut/reg_status_register/reg_status_table[6]} -radix unsigned} {{/tl_test/dut/reg_status_register/reg_status_table[5]} -radix unsigned} {{/tl_test/dut/reg_status_register/reg_status_table[4]} -radix unsigned} {{/tl_test/dut/reg_status_register/reg_status_table[3]} -radix unsigned} {{/tl_test/dut/reg_status_register/reg_status_table[2]} -radix unsigned} {{/tl_test/dut/reg_status_register/reg_status_table[1]} -radix unsigned} {{/tl_test/dut/reg_status_register/reg_status_table[0]} -radix decimal}} -subitemconfig {{/tl_test/dut/reg_status_register/reg_status_table[31]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[30]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[29]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[28]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[27]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[26]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[25]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[24]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[23]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[22]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[21]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[20]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[19]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[18]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[17]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[16]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[15]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[14]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[13]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[12]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[11]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[10]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[9]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[8]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[7]} {-height 15 -radix decimal} {/tl_test/dut/reg_status_register/reg_status_table[6]} {-height 15 -radix unsigned} {/tl_test/dut/reg_status_register/reg_status_table[5]} {-height 15 -radix unsigned} {/tl_test/dut/reg_status_register/reg_status_table[4]} {-height 15 -radix unsigned} {/tl_test/dut/reg_status_register/reg_status_table[3]} {-height 15 -radix unsigned} {/tl_test/dut/reg_status_register/reg_status_table[2]} {-height 15 -radix unsigned} {/tl_test/dut/reg_status_register/reg_status_table[1]} {-height 15 -radix unsigned} {/tl_test/dut/reg_status_register/reg_status_table[0]} {-height 15 -radix decimal}} /tl_test/dut/reg_status_register/reg_status_table
-add wave -noupdate -expand /tl_test/dut/registers/RegData
-add wave -noupdate /tl_test/dut/fetch_stage/program_counter/pc
-add wave -noupdate /tl_test/dut/fetch_stage/program_counter/clk
-add wave -noupdate /tl_test/dut/data_memory/the_mem/mem
-add wave -noupdate /tl_test/dut/reorder_buffer/rd_en
-add wave -noupdate /tl_test/dut/rob_sched/wr_en
-add wave -noupdate /tl_test/clk
+add wave -noupdate -radix decimal /tl_test/dut/fetch_stage/program_counter/pc
+add wave -noupdate -expand /tl_test/dut/res_sched/pipe_out
+add wave -noupdate /tl_test/dut/res_sched/busy_bus
+add wave -noupdate /tl_test/dut/res_sched/rob_full
+add wave -noupdate /tl_test/dut/res_sched/lsq_full
+add wave -noupdate /tl_test/dut/res_sched/stall
+add wave -noupdate /tl_test/dut/res_sched/ROB_entry
+add wave -noupdate /tl_test/dut/res_sched/rob_input
+add wave -noupdate /tl_test/dut/res_sched/new_packet
+add wave -noupdate /tl_test/dut/reservation_stations/rs0_data
+add wave -noupdate /tl_test/dut/reservation_stations/rs1_data
+add wave -noupdate /tl_test/dut/reservation_stations/rs2_data
+add wave -noupdate /tl_test/dut/reservation_stations/rs3_data
+add wave -noupdate /tl_test/dut/cdb/new_CDB
+add wave -noupdate /tl_test/dut/cdb/yummi_in_bus
+add wave -noupdate /tl_test/dut/fu_sched/ready_bus
+add wave -noupdate /tl_test/dut/cdb/valid_out_bus
+add wave -noupdate /tl_test/dut/reorder_buffer/wptr
+add wave -noupdate /tl_test/dut/reorder_buffer/rptr
+add wave -noupdate /tl_test/dut/res_sched/clk
+add wave -noupdate /tl_test/dut/reorder_buffer/head
+add wave -noupdate -childformat {{{/tl_test/dut/reorder_buffer/rob_data[1]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[2]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[3]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[4]} -radix unsigned} {{/tl_test/dut/reorder_buffer/rob_data[5]} -radix unsigned}} -subitemconfig {{/tl_test/dut/reorder_buffer/rob_data[1]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[2]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[3]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[4]} {-height 15 -radix unsigned} {/tl_test/dut/reorder_buffer/rob_data[5]} {-height 15 -radix unsigned}} /tl_test/dut/reorder_buffer/rob_data
+add wave -noupdate /tl_test/dut/reservation_stations/rs3_data.ALU_op
+add wave -noupdate /tl_test/dut/reservation_stations/rs2_data.ALU_op
+add wave -noupdate /tl_test/dut/reservation_stations/rs1_data.ALU_op
+add wave -noupdate /tl_test/dut/reservation_stations/rs0_data.ALU_op
+add wave -noupdate /tl_test/dut/reservation_stations/rs3_data.ROB_entry
+add wave -noupdate /tl_test/dut/reservation_stations/rs2_data.ROB_entry
+add wave -noupdate /tl_test/dut/reservation_stations/rs1_data.ROB_entry
+add wave -noupdate /tl_test/dut/reservation_stations/rs0_data.ROB_entry
+add wave -noupdate /tl_test/dut/registers/RegData
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {43557055 ps} 0}
+WaveRestoreCursors {{Cursor 1} {49352513 ps} 0}
 quietly wave cursor active 1
-configure wave -namecolwidth 205
-configure wave -valuecolwidth 220
+configure wave -namecolwidth 314
+configure wave -valuecolwidth 211
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
 configure wave -snapdistance 10
@@ -29,6 +46,6 @@ configure wave -gridoffset 0
 configure wave -gridperiod 1
 configure wave -griddelta 40
 configure wave -timeline 0
-configure wave -timelineunits ns
+configure wave -timelineunits ps
 update
-WaveRestoreZoom {85928571 ps} {86870577 ps}
+WaveRestoreZoom {35437328 ps} {57585665 ps}

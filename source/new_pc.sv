@@ -17,7 +17,7 @@ also mispredicted should be used as a ROB and Issue Queue flush signal
 module new_pc (
     input logic [31:0] commit_pc, commit_imm_se,
     input logic commit_taken, commit_result, 
-    input pipe_in_t pipe_out,
+    input pipe_in_t pipe_in,
     input logic committed_is_branch, clk, // comes from struct of ROB header
     output logic mispredicted,
     output logic [31:0] curr_branch_imm_se, // still needed in case of mispredicted branch
@@ -26,14 +26,14 @@ module new_pc (
 
     logic [31:0] pipe_pc, instruction;
     logic pipe_taken, jump, branch;
-    logic mis_taken, mis_passed, mispredict_flush;
+    logic mis_taken, mis_passed;
     logic [31:0] pc_pre, to_be_added, i;
 
-    assign pipe_pc = pipe_out.pc;
-    assign instruction = pipe_out.instruction;
-    assign jump = pipe_out.jump;
-    assign branch = pipe_out.branch;
-    assign pipe_taken = pipe_out.prediction;
+    assign pipe_pc = pipe_in.pc;
+    assign instruction = pipe_in.instruction;
+    assign jump = pipe_in.jump;
+    assign branch = pipe_in.branch;
+    assign pipe_taken = pipe_in.prediction;
 
     assign i = instruction;
     assign mis_taken = commit_taken & ~commit_result;
@@ -75,9 +75,6 @@ module new_pc (
     end
 
     assign pc_update = pc_pre + to_be_added;
-    assign mispredict_flush = mis_taken | mis_passed & committed_is_branch;
-
-    always_ff @(posedge clk) begin
-        mispredicted <= mispredict_flush;
-    end 
+    assign mispredicted = mis_taken | mis_passed & committed_is_branch;
+ 
 endmodule

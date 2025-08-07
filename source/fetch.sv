@@ -25,9 +25,13 @@ module fetch (
 
     pc program_counter (.*);
 
+    logic [6:0] opcode;
+
+    
+
     // predecode
-    assign branch = instruction[6] & instruction[5] & instruction[1] & instruction[0];
-    assign jump = branch & instruction[2] & instruction[3];
+    assign branch = opcode == 7'b1100011;
+    assign jump = opcode == 7'b1101111;
 
     gbhsr history_reg (.*);
 

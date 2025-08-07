@@ -32,15 +32,8 @@ module rs_scheduler (
 
     ROB_entry_t rob_input;
 
-    always_ff @(posedge clk) begin
-        if (reset) begin
-            new_packet <= '0;
-        end
-        else begin
-            new_packet <= rob_input;
-        end
-    end
-
+    assign new_packet = rob_input;
+    
     assign prediction = pipe_out.prediction;
 
     assign ins = pipe_out.instruction;
@@ -49,6 +42,7 @@ module rs_scheduler (
 
     assign branch = pipe_out.branch;
     assign jump = pipe_out.jump;
+
 
     always_comb begin
         if (~rob_full && ~lsq_full) begin
