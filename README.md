@@ -6,4 +6,4 @@ The processor is capable of executing: `ADD, ADDI, SUB, SW, LW, MUL, MULH, DIV, 
 BEQ, BLT,` and  `JAL`.
 
 ## Benchmarks
-Included are a set of benchmarks, which when run by the testbench validate the processors correctness.
+Included are a set of benchmarks, which when run by the testbench, validate the processors correctness.
