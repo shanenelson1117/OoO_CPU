@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Top Level
 
-`include "structs.svh"
+`include "source/structs.svh"
 
 module out_of_order (
     input clk, reset
