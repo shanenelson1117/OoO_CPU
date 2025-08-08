@@ -13,7 +13,7 @@ module out_of_order (
     //--------------------------------------
 
     // fetch-issue pipeline register packets
-    pipe_in_t pipe_in, pipe_out;
+    pipe_in_t pipe_in, pipe_out;  
     // come from commit unit (branch result and wether or not we commit a branch)
     logic update, valid_in; 
     // from new pc unit
