@@ -20,7 +20,7 @@ vlog "source/lsq_scheduler.sv"
 vlog "source/memory.sv"
 vlog "source/multiply.sv"
 vlog "source/new_pc.sv"
-vlog "source/out_of_order.sv"
+vlog "out_of_order.sv"
 vlog "source/pc.sv"
 vlog "source/pipeline_reg.sv"
 vlog "source/regfile.sv"
@@ -52,3 +52,4 @@ view signals
 run -all
 
 # End
+
