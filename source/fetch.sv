@@ -16,7 +16,7 @@ module fetch (
     input logic update, valid_in,   // are we updating gbshr or have we just committed a branch
     input logic [31:0] pc_update,  // new pc, 
     input logic [31:0] committed_pc, // used to update prediction fsm
-    input logic stall,
+    input logic stall, mispredicted,
     output pipe_in_t pipe_in   // pc, instruction, branch prediction (taken?)
 );
     logic [31:0] pc, instruction;
@@ -27,7 +27,7 @@ module fetch (
 
     logic [6:0] opcode;
 
-    
+    assign opcode = instruction[6:0];
 
     // predecode
     assign branch = opcode == 7'b1100011;

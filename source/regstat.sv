@@ -23,7 +23,8 @@ module regstat (
     input logic RegWrite, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
     input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
-    output logic [3:0] Q_j, Q_k // ROB numbers for unready instructions
+    output logic [3:0] Q_j, Q_k, // ROB numbers for unready instructions
+    output logic rs1reg_busy, rs2reg_busy
 );
 
     reg_stat_t reg_status_table [31:0]; // data
@@ -54,10 +55,14 @@ module regstat (
         end
     endgenerate
 
+    assign reg_status_table[0].ROB_number = 4'b0;
+    assign reg_status_table[0].busy = 0;
     // read ROB_number fields of operands
     always_comb begin
         Q_j = reg_status_table[rs1].ROB_number;
         Q_k = reg_status_table[rs2].ROB_number;
+        rs1reg_busy = reg_status_table[rs1].busy;
+        rs2reg_busy = reg_status_table[rs2].busy;
     end
 
 endmodule

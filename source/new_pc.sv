@@ -26,7 +26,7 @@ module new_pc (
 
     logic [31:0] pipe_pc, instruction;
     logic pipe_taken, jump, branch;
-    logic mis_taken, mis_passed;
+    logic mis_taken, mis_passed, mis_temp;
     logic [31:0] pc_pre, to_be_added, i;
 
     assign pipe_pc = pipe_in.pc;
@@ -73,8 +73,8 @@ module new_pc (
             end
         end
     end
-
+    assign curr_branch_imm_se = branch ? {{19{i[31]}}, i[31], i[7], i[30:25], i[11:8], 1'b0} : to_be_added;
     assign pc_update = pc_pre + to_be_added;
-    assign mispredicted = mis_taken | mis_passed & committed_is_branch;
+    assign mispredicted = (mis_taken | mis_passed) & (committed_is_branch);
  
 endmodule

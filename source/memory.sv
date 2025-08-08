@@ -58,5 +58,6 @@ module memory (
     assign mem_read_out.result         = mem_result_reg;
     assign mem_read_out.branch_result  = 1'bX;
     assign mem_read_out.from_memory    = mem_valid_reg;
+    assign mem_read_out.load_step1 = 0;
 
 endmodule

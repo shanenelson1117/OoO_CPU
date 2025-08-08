@@ -11,12 +11,12 @@ module rob #(parameter DEPTH = 16) (
     input logic rd_en,      // dequeue from commit unit
     output ROB_entry_t head, // combinational read of the head
     output logic head_ready,
-    output logic full,
+    output logic full, empty,
     output logic ROB_head_store,
     output logic [3:0] ROB_entry // available rob entry to rs scheduler
 );
     logic [3:0] wptr, rptr;
-    logic empty;
+  
 
     ROB_entry_t rob_data [DEPTH];
 
@@ -45,14 +45,14 @@ module rob #(parameter DEPTH = 16) (
                 end
                 // store
                 else if (rob_data[i].itype == 2'b10) begin
-                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
+                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry && (~CDB_in.load_step1)) begin
                         rob_data[i].value <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end
                 end
                 // load
-                else if (rob_data[i].itype == 2'b11) begin
-                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
+                else if ((rob_data[i].itype == 2'b11) && CDB_in.from_memory) begin
+                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry && (~CDB_in.load_step1)) begin
                         rob_data[i].value <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end

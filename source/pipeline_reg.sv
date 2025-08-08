@@ -24,7 +24,7 @@ module pipeline_reg (
         if (reset) begin  // flush reg on reset or flush
             q_reg <= '0;
         end
-        else if (!queue_full) begin  // if issue queue can accept new data, update
+        else begin  // if issue queue can accept new data, update
             q_reg <= d;
         end
     end

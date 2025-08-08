@@ -8,13 +8,13 @@
 module pc (
 	output logic [31:0] instruction,
 	output logic [31:0] pc,
-	input logic reset, clk, stall,
+	input logic reset, clk, stall, mispredicted,
 	input logic [31:0] pc_update
 );
 
 	logic [31:0] new_pc;
 
-	assign new_pc = stall ? pc : pc_update;
+	assign new_pc = stall & ~mispredicted ? pc : pc_update;
 
 	// set up PC register
 	always_ff @(posedge clk) begin

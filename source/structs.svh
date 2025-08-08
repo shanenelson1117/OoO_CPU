@@ -13,7 +13,7 @@ typedef struct packed {
     logic [2:0] ALU_op; // what operation must be performed
     // 000: add, 001: sub, 100: mul, 101: mul_h, 011: div, 010: remu
     logic [1:0] branch_type; // 00 (not branch) 01 (bne) 10 (beq) 11 (blt) control signals for alu
-    logic busy;
+    logic busy, load;
 } rs_data_t;
 
 
@@ -33,6 +33,7 @@ typedef struct packed {
     logic [3:0] dest_ROB_entry;
     logic [31:0] result;
     logic branch_result;
+    logic load_step1;
     logic from_memory;
 } CDB_packet_t;
 
@@ -47,7 +48,7 @@ typedef struct packed {
     logic [3:0] ROB_entry;
     logic [31:0] rs1;
     logic [31:0] rs2;
-    logic valid_operands;
+    logic valid_operands, load;
 } rs_out_t;
 
 typedef struct packed {

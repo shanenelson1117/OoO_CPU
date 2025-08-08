@@ -33,11 +33,13 @@ module out_of_order (
     logic [3:0] ROB_entry;
     // Q_j, Q_k from regstat
     logic [3:0] Q_j, Q_k;
+    logic rs1reg_busy;
+    logic rs2reg_busy;
     // decoded rs input from rs scheduler
     rs_data_t rs_input;
     // decoded rob input from rs scheduler
     ROB_entry_t rob_input;
-    logic rob_full;
+    logic rob_full, empty;
     // regfile read selects from rs scheduler
     logic [4:0] rs1, rs2;
     // does the issued instruction write to regfile
@@ -46,6 +48,7 @@ module out_of_order (
     logic [4:0] issue_dest;
     // from rs scheduler, what rs is the packet going to
     logic [2:0] rs_dest;
+    logic load; // is ins a load?
     // from commit unit which register are we writing to, need this to 
     logic [4:0] rd;
     // from commit unit, are we writing the registers
@@ -106,8 +109,8 @@ module out_of_order (
 
     
     // Fetch Stage
-    fetch fetch_stage (.clk, .reset, .enable(~stall | ~mispredicted), .update(commit_result), 
-                .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in, .stall);
+    fetch fetch_stage (.clk, .reset, .enable(~stall | mispredicted), .update(commit_result), 
+                .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in, .stall, .mispredicted);
     
     pipeline_reg fetch_issue_reg (.clk, .d(pipe_in), .queue_full(stall), 
                 .reset(reset | mispredicted), .q(pipe_out));
@@ -117,16 +120,16 @@ module out_of_order (
 
     // Issue Stage
     
-    rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, 
+    rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes,
                 .rs_input, .new_packet(rob_input), .stall, .issue_dest, .ROB_entry, .rs_dest, .clk, .reset(reset | mispredicted));
     
     regfile registers (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk, .reset);
 
-    regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), 
+    regstat reg_status_register (.rs1, .rs2, .clk, .reset, .issue_writes, .commit_dest(rd), .rs1reg_busy, .rs2reg_busy,
                 .issue_dest, .RegWrite, .Q_j, .Q_k, .commit_ROB, .issue_ROB(ROB_entry));
     
-    rs_module reservation_stations (.stall, .clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CBD_in(CDB_out), 
+    rs_module reservation_stations (.stall, .clk, .reset, .mispredicted, .rs_dest, .d(rs_input), .CDB_in(CDB_out), 
                     .busy_bus, .consumed_bus, .rs0_data, .rs1_data, .rs2_data, .rs3_data);
     
     lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB_out), 
@@ -137,15 +140,15 @@ module out_of_order (
     
     // Execute Stage
     fu_scheduler fu_sched (.rs0_data, .rs1_data, .rs2_data, .rs3_data, .ready_bus, .clk, .reset(reset | mispredicted),
-                    .ROB_entry(ROB_entry_fu), .ALU_op, .branch_type, .rs1(A), .rs2(B), .consumed_bus, .valid_in_bus);
+                    .ROB_entry(ROB_entry_fu), .ALU_op, .branch_type, .rs1(A), .rs2(B), .consumed_bus, .valid_in_bus, .load);
 
-    add adder_fu_0 (.clk, .reset(reset | mispredicted), 
+    add adder_fu_0 (.clk, .reset(reset | mispredicted), .load,
                     .valid_in(valid_in_bus[0]), .yumi_in(yumi_bus[0]), 
                     .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
                     .branch_type, .valid_out(valid_out_bus[0]), 
                     .out(out_0), .ALUop(ALU_op), .ready(ready_bus[0]));
      
-    add adder_fu_1 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[1]), 
+    add adder_fu_1 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[1]), .load,
                     .yumi_in(yumi_bus[1]), .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
                     .branch_type, .valid_out(valid_out_bus[1]), .out(out_1), 
                     .ALUop(ALU_op), .ready(ready_bus[1]));
@@ -170,10 +173,10 @@ module out_of_order (
     
     // Commit
     rob reorder_buffer (.new_entry(rob_input), .CDB_in(CDB_out), .clk, .reset(reset | mispredicted), 
-                     .rd_en(rob_read_enable), 
+                     .rd_en(rob_read_enable), .empty,
                     .head, .head_ready(rob_head_ready), .full(rob_full), .ROB_head_store, .ROB_entry);
 
-    commit commit_unit (.head, .rob_head_ready, .rd_en_rob, .RegWrite, .commit_ROB, .rd, .commit_is_branch(commmitted_is_branch), 
-                    .commit_prediction, .commit_result,
+    commit commit_unit (.head, .rob_head_ready, .rd_en_rob, .RegWrite, .commit_ROB, .rd, .commit_is_branch(committed_is_branch), 
+                    .commit_prediction, .commit_result, .empty,
                     .WriteData, .committed_pc, .commit_imm_se, .rd_en(rob_read_enable));
 endmodule

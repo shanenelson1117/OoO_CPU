@@ -15,8 +15,9 @@ add wave -noupdate /tl_test/dut/stall
 add wave -noupdate /tl_test/dut/fetch_stage/instruction
 add wave -noupdate -radix unsigned /tl_test/dut/fetch_stage/index_read
 add wave -noupdate /tl_test/dut/fetch_stage/history_reg/history
+add wave -noupdate /tl_test/dut/fetch_stage/jump
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {102771466 ps} 0}
+WaveRestoreCursors {{Cursor 1} {59121219 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 283
 configure wave -valuecolwidth 212
@@ -32,4 +33,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {23134208 ps}
+WaveRestoreZoom {52748691 ps} {75882899 ps}

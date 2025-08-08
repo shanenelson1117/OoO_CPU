@@ -6,7 +6,7 @@
 `include "structs.svh"
 
 module add (  // adder FSM
-    input logic clk, reset, valid_in, yumi_in, ALUop,
+    input logic clk, reset, valid_in, yumi_in, ALUop, load,
     input logic [3:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
     input logic [1:0] branch_type, // branch controls, need sub to be high for any branch
@@ -16,13 +16,14 @@ module add (  // adder FSM
     logic [31:0] s, result;
     logic zero, negative, overflow, sub;
     logic b_inter, b_taken;
+	logic load_step1;
     logic [3:0] curr_rob;
 
     adder_32bit adder (.*);
 
-    assign bne = (branch_type == 2'b01) & valid_in;
-    assign beq = (branch_type == 2'b10) & valid_in;
-    assign blt = (branch_type == 2'b11) & valid_in;
+    assign bne = (branch_type == 2'b01);
+    assign beq = (branch_type == 2'b10);
+    assign blt = (branch_type == 2'b11);
 
     assign b_inter = (bne & ~zero) | (beq & zero) | (blt & (negative ^ overflow));
 
@@ -33,6 +34,7 @@ module add (  // adder FSM
             curr_rob <= 4'b0;
             sub <= 0;
             ready <= 1;
+			load_step1 <= 0;
         end else if (valid_in) begin
             result <= s;
             valid_out <= 1;
@@ -40,9 +42,11 @@ module add (  // adder FSM
             curr_rob <= rs_rob_entry;
             sub <= ALUop; 
             ready <= 0;
+			load_step1 <= load;
         end
     end
 
+	assign out.load_step1 = load_step1;
     assign out.dest_ROB_entry = curr_rob;
     assign out.result = result;
     assign out.branch_result = b_taken;
@@ -51,22 +55,23 @@ endmodule
 
 module adder_32bit ( // full adder
 	input logic [31:0] rs1, rs2,
-	input logic sub,
+	input logic sub, ALUop,
 	output logic [31:0] s,
 	output logic zero, overflow, negative
 	);
 	
 	logic [32:0] c_bus;
+	logic [31:0] b;
 	
-	assign c_bus[0] = sub;
+	assign c_bus[0] = ALUop;
 
-    assign b = sub ? rs2 : ~rs2;
+    assign b = ~ALUop ? rs2 : ~rs2;
 	
 	genvar i;
 	
 	generate 
 		for (i=0; i < 32; i++)begin:add_loop
-			full_add addi (s[i], c_bus[i+1], rs1[i], rs2[i], c_bus[i]);
+			full_add addi (s[i], c_bus[i+1], rs1[i], b[i], c_bus[i]);
 		end
 	endgenerate 
 	
