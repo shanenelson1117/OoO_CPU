@@ -1,1 +1,9 @@
 # OoO_CPU
+This project is an Out of Order Execution processor implemented using Tomasulo's algorithm and speculative execution. The processor is based on a subset of the RISC-V architecture. I implement speculative execution with a (10,2) correlating branch predictor and a 16 entry reorder buffer (ROB). The use of reservation stations and a register-status register along with Tomasulo's algorithm allows the processor to execute long running multiplication and division instructions while progressing on other (shorter running) instructions. Before allowing instructions after a branch to change architectural state (register/memory values) the processor ensures that the branch was correctly predicted, this process is facilitated by the ROB which is implemented as a synchronous circular FIFO queue which holds instructions in program order. 
+
+## Instructions
+The processor is capable of executing: `ADD, ADDI, SUB, SW, LW, MUL, MULH, DIV, REMU, BNE,
+BEQ, BLT,` and  `JAL`.
+
+## Benchmarks
+Included are a set of benchmarks, which when run by the testbench validate the processors correctness.
