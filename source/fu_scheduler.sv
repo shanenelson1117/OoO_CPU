@@ -21,6 +21,7 @@ module fu_scheduler (
     assign consumed_bus = d;
 
     always_comb begin
+        // If rs #0 has valid operands, assign an FU if any are ready
         if (rs0_data.valid_operands) begin
 
             ALU_op = rs0_data.ALU_op[0];
@@ -56,6 +57,7 @@ module fu_scheduler (
                  
             end
         end
+        // diddo for rs #1
         else if (rs1_data.valid_operands) begin
 
             ALU_op = rs1_data.ALU_op[0];

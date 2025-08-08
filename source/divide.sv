@@ -31,6 +31,7 @@ module divide (
   
   assign result = div ? quotient : remainder;
 
+  // generate outbound cdb packet
   assign out.dest_ROB_entry = curr_rob;
   assign out.result = result;
   assign out.branch_result = 1'b0;

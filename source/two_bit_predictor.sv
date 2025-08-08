@@ -19,6 +19,7 @@ module two_bit_predictor (
             ps <= ns;
     end
 
+    // state transitions
     always_comb begin
         case (ps)
             N: ns = update ? n : N;

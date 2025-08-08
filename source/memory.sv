@@ -22,14 +22,15 @@ module memory (
     logic mem_valid_reg;
 
 
-    assign read_enable   = head_load & head_ready;
-    assign write_enable  = ROB_head_store & head_ready;
+    assign read_enable   = head_load & head_ready; // read mem whenever head is a load
+    assign write_enable  = ROB_head_store & head_ready; // write mem if ROB head is store and is ready
     assign valid_out     = mem_valid_reg;
 
     // lsq, rob dequeue signals
     assign rd_en     = mem_valid_reg | write_enable;
     assign rd_en_rob = write_enable;
 
+    // Data memory
     datamem the_mem (
         .clk(clk),
         .address(mem_in.address),
@@ -40,6 +41,8 @@ module memory (
         .read_data(read_data)
     );
 
+    // Register data output to keep packets valid if not chosen by CDB scheduler
+    // also match timing with other FU's
     always_ff @(posedge clk) begin
         if (reset) begin
             mem_result_reg     <= '0;
@@ -54,6 +57,7 @@ module memory (
         end
     end
 
+    // Assign outgoing CDB packet
     assign mem_read_out.dest_ROB_entry = mem_rob_entry_reg;
     assign mem_read_out.result         = mem_result_reg;
     assign mem_read_out.branch_result  = 1'bX;

@@ -1,4 +1,10 @@
+// Author: Shane Nelson
+// Project: OoO CPU
+// File: Top Level Test Bench
+
 `timescale 1ns/10ps
+
+
 module tl_test;
 
   logic clk;
@@ -75,7 +81,7 @@ module tl_test;
     // Optional: verify that x0 is still 0
     assert(dut.registers.RegData[0] == 0);
 
-    $display("✅ All register assertions passed.");
+    $display("All tests passed!");
     $finish;
   end
 

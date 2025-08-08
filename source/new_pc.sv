@@ -36,6 +36,8 @@ module new_pc (
     assign pipe_taken = pipe_in.prediction;
 
     assign i = instruction;
+
+    // Committing branch is mispredicted?
     assign mis_taken = commit_taken & ~commit_result;
     assign mis_passed = ~commit_taken & commit_result;
 
@@ -73,6 +75,7 @@ module new_pc (
             end
         end
     end
+    // output branch immediate to save for later in case of misprediction
     assign curr_branch_imm_se = branch ? {{19{i[31]}}, i[31], i[7], i[30:25], i[11:8], 1'b0} : to_be_added;
     assign pc_update = pc_pre + to_be_added;
     assign mispredicted = (mis_taken | mis_passed) & (committed_is_branch);

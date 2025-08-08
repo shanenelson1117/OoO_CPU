@@ -20,13 +20,15 @@ module add (  // adder FSM
     logic [3:0] curr_rob;
 
     adder_32bit adder (.*);
-
+	
+	// branch logic
     assign bne = (branch_type == 2'b01);
     assign beq = (branch_type == 2'b10);
     assign blt = (branch_type == 2'b11);
 
     assign b_inter = (bne & ~zero) | (beq & zero) | (blt & (negative ^ overflow));
 
+	// 2-state fsm
     always_ff @(posedge clk) begin
         if (reset | yumi_in) begin
             valid_out <= 0;
@@ -46,6 +48,7 @@ module add (  // adder FSM
         end
     end
 
+	// generate cdb packet
 	assign out.load_step1 = load_step1;
     assign out.dest_ROB_entry = curr_rob;
     assign out.result = result;
@@ -53,6 +56,7 @@ module add (  // adder FSM
     assign out.from_memory = 1'b0;
 endmodule
 
+// 32-bit adder
 module adder_32bit ( // full adder
 	input logic [31:0] rs1, rs2,
 	input logic sub, ALUop,
@@ -83,6 +87,7 @@ module adder_32bit ( // full adder
 	
 endmodule 
 
+// full adder
 module full_add (sum, c_out, a, b, c_in); // full adder
 	input logic a, b, c_in;
 	output logic c_out, sum;
@@ -96,37 +101,12 @@ module full_add (sum, c_out, a, b, c_in); // full adder
 	
 endmodule
 
+//half-adder
 module half_add (sum, c_out, a, b); // half adder
 	input logic a, b;
 	output logic sum, c_out;
 	
 	xor sum_calc (sum, a, b);
 	and carry_calc (c_out, a, b);
-
-endmodule 
-
-module zero_detect (
-	input logic [31:0] bus,
-	output logic zero
-	);
-	
-	logic [15:0] inner_or;
-	logic or1, or2, or3, or4, or_final;
-	
-	genvar i;
-	
-	generate
-		for (i = 0; i < 16; i++) begin:or_loop
-			or (inner_or[i], bus[4*i], bus[(4*i)+1], bus[(4*i)+2], bus[(4*i)+3]);
-		end
-	endgenerate
-	
-	or (or1, inner_or[0], inner_or[1], inner_or[2], inner_or[3]);
-	or (or2, inner_or[4], inner_or[5], inner_or[6], inner_or[7]);
-	or (or3, inner_or[8], inner_or[9], inner_or[10], inner_or[11]);
-	or (or4, inner_or[12], inner_or[13], inner_or[14], inner_or[15]);
-	
-	or (or_final, or1, or2, or3, or4);
-	not (zero, or_final);
 
 endmodule 

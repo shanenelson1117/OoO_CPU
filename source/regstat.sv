@@ -3,16 +3,6 @@
 // File: Register Status Register
 // Stage: Issue
 
-/*
-If both regstat.commit_destination.ROB == commit.ROB, then regstat.commit_destination.busy = 0,
-if not then do not update. Need some way to tell rs scheduler that one of the operands is invalid, due to 
-it being a branch, a store, or an arithmetic immediate instruction.
-
-If either of Q_j or Q_k are not 0, then we should read the zero register. If either are 0 then we 
-should read register rs1 and/or rs2. Later have muxes and such that will correctly place intermediates
-into rs.
-*/
-
 `include "structs.svh"
 
 module regstat (

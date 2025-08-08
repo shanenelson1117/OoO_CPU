@@ -23,6 +23,7 @@ module fetch (
     logic branch, prediction, jump; // is the instruction a branch/jump
     logic [9:0] history, index_read, index_write;
 
+    // Proggram counter
     pc program_counter (.*);
 
     logic [6:0] opcode;
@@ -33,14 +34,18 @@ module fetch (
     assign branch = opcode == 7'b1100011;
     assign jump = opcode == 7'b1101111;
 
+    // Global branch history shift register
     gbhsr history_reg (.*);
 
+    // Index into bpb to generate branch prediction
     assign index_read = history ^ pc[9:0];
+    // Index into bpb to change fsm states on a branch committal
     assign index_write = history ^ committed_pc;
 
     bpb pred_buffer (.clk, .reset, .update_value(update), .update_valid(valid_in),
                     .index_read, .index_write, .prediction);
 
+    // Generate pipeline register packet
     always_comb begin
         pipe_in.pc = pc;
         pipe_in.instruction = instruction;

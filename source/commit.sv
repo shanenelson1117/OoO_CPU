@@ -15,6 +15,8 @@ module commit (
     output logic [31:0] WriteData, committed_pc, commit_imm_se,
     output logic rd_en // dequeue head
 );  
+    // Generate signals that are used to write to the reg file or correct a misprediction
+    // and also send dequeue signal to the ROB if head is committed
     always_comb begin
         if (rob_head_ready & ~empty) begin
             // BRANCH

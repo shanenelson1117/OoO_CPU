@@ -16,6 +16,7 @@ module bpb (
 
     genvar i;
 
+    // generate array of branch predictors
     generate 
         for (i = 0; i < 1024; i++) begin : bpb_fsms
             two_bit_predictor fsm (.clk, .reset, .update(update_valid), .valid(update_bus[i]), .prediction(pred_bus[i]));
@@ -26,6 +27,7 @@ module bpb (
 
 endmodule
 
+// 10 bit binary to 1024 one-hot decoder
 module demux_10_to_1024 (
     input  logic       en,         
     input  logic [9:0] sel,        

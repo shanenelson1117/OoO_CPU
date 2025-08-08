@@ -22,7 +22,7 @@ module lsq #(parameter DEPTH = 4) (
     logic [1:0] wptr, rptr;
     logic empty;
 
-
+    // the data
     lsq_packet_t lsq_data [DEPTH];
 
     // Write logic
@@ -40,7 +40,8 @@ module lsq #(parameter DEPTH = 4) (
         if (~reset) begin
             for (int i = 0; i < DEPTH; i++) begin
                 // Forward store result
-                if ((lsq_data[i].Q_store == CDB_in.dest_ROB_entry) && (lsq_data[i].Q_store != 4'b0000)) begin
+                if ((lsq_data[i].Q_store == CDB_in.dest_ROB_entry) && 
+                        (lsq_data[i].Q_store != 4'b0000)) begin // Make sure that we are not forwarding from a bogus cdb packet
                     lsq_data[i].Q_store <= 4'b0000;
                     lsq_data[i].result <= CDB_in.result;
                 end
@@ -56,6 +57,7 @@ module lsq #(parameter DEPTH = 4) (
     // read logic 
     assign dout = lsq_data[rptr];
 
+    // Advance read pointer if we dequeue head
     always_ff @(posedge clk) begin
         if (reset) begin
             rptr <= 0;

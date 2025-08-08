@@ -16,13 +16,16 @@ module regfile (
     logic [31:0] enable_bus;
     logic [31:0] RegData [31:0];
 
+    // Route write enable signal to correct register
     five_to_thirtytwo_decoder regfile_enable_decode (.sel(rd), .enable(RegWrite), .out(enable_bus));
 
     // Generate regs
     genvar i;
 
+    // hardware x0 <- 0's
     assign RegData[0] = 32'b0;
 
+    // generate regs
     generate
         for (i = 1; i < 32; i++) begin:registers
             register reg_i (.clk, .reset, .enable(enable_bus[i]), .d(WriteData), .q(RegData[i]));

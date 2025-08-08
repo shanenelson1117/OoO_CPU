@@ -14,6 +14,7 @@ module pc (
 
 	logic [31:0] new_pc;
 
+	// Do not stall on a mispredicted branch or the correct pc will be lost
 	assign new_pc = stall & ~mispredicted ? pc : pc_update;
 
 	// set up PC register
@@ -27,7 +28,7 @@ module pc (
         
     end
 	
-	// fetch
+	// fetch next instruction
 	instructmem inst (.address(pc), .instruction, .clk);
 	
 endmodule // PC
