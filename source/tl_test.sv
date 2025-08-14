@@ -51,7 +51,7 @@ module tl_test;
 */
 
   // uncomment for benchmark 2
-
+/*
     // Register assertions
     assert(dut.registers.RegData[1]  == 10);          // x1
     assert(dut.registers.RegData[2]  == 3);           // x2
@@ -80,6 +80,58 @@ module tl_test;
 
     // Optional: verify that x0 is still 0
     assert(dut.registers.RegData[0] == 0);
+*/
+
+    //uncomment for benchmark 4
+
+    assert(dut.registers.RegData[0]  == 0);            // x0 (hardwired)
+    assert(dut.registers.RegData[1]  == 2047);         // x1 = 0x7FF
+    assert(dut.registers.RegData[2]  == -1);           // x2 = 0xFFFFFFFF
+    assert(dut.registers.RegData[3]  == 5);            // x3
+    assert(dut.registers.RegData[4]  == 0);            // x4
+    
+    // WAW/WAR chain
+    assert(dut.registers.RegData[5]  == 2);            // x5 = (1 + 2) + (-1)
+    
+    // Load-use + store/load hazards
+    assert(dut.registers.RegData[6]  == 5);            // x6 = mem[0] (initial 5)
+    assert(dut.registers.RegData[7]  == 10);           // x7 = x6 + x6
+    assert(dut.registers.RegData[8]  == 6);            // x8 = (mem[0]=5) + 1
+    assert(dut.registers.RegData[9]  == 6);            // x9 = mem[4] = 6
+    
+    // Div / Remu / Div (no div-by-zero here)
+    assert(dut.registers.RegData[10] == 10);           // x10
+    assert(dut.registers.RegData[11] == 3);            // x11
+    assert(dut.registers.RegData[12] == 3);            // x12 = 10 / 3
+    assert(dut.registers.RegData[13] == 1);            // x13 = 10 %u 3
+    assert(dut.registers.RegData[14] == 0);            // x14 = 1 / 3 => 0 (trunc to zero)
+    assert(dut.registers.RegData[15] == 0);            // x15 (unused)
+    assert(dut.registers.RegData[16] == 0);            // x16 (unused)
+    
+    // MULH signed edge cases
+    assert(dut.registers.RegData[17] == -1);           // x17 = MULH(10, -1) = 0xFFFFFFFF
+    assert(dut.registers.RegData[18] == 0);            // x18 = MULH(-1, -1) = 0
+    
+    // Branch loops / taken-skipped blocks
+    assert(dut.registers.RegData[19] == 5);            // x19 loop to 5
+    assert(dut.registers.RegData[20] == 0);            // x20 skipped
+    assert(dut.registers.RegData[21] == 0);            // x21 skipped twice
+    
+    // ROB fill loop + “mispredict” line
+    assert(dut.registers.RegData[22] == 2047);         // x22 = 0x7FF
+    assert(dut.registers.RegData[23] == 42);           // x23 executed (beq x0,x1 NOT taken)
+    
+    // Long-latency FU chain
+    assert(dut.registers.RegData[24] == 25);           // x24 = 5 * 5
+    assert(dut.registers.RegData[25] == 125);          // x25 = 25 * 5
+    assert(dut.registers.RegData[26] == 25);           // x26 = 125 / 5
+    assert(dut.registers.RegData[27] == 125);          // x27 = 25 * 5
+    assert(dut.registers.RegData[28] == 25);           // x28 = 125 / 5
+    
+    // Mem loops
+    assert(dut.registers.RegData[29] == 40);           // x29 = end pointer
+    assert(dut.registers.RegData[30] == 40);           // x30 = loop bound
+    assert(dut.registers.RegData[31] == 1);            // x31 = last store value
 
     $display("All tests passed!");
     $finish;
