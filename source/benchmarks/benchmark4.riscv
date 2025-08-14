@@ -76,7 +76,7 @@
 
 // Force mispredict flush when ROB is busy
     00000000000100000000010001100011 // 132 beq  x0, x1, should_skip         taken
-    00000010101000000000101110010011 // 136 addi x23, x0, 42                skipped
+    00000010101000000000101110010011 // 136 addi x23, x0, 42                not skipped
 // should_skip:
 
 // -------------------------------------------------
