@@ -1,4 +1,4 @@
- // High stress/corner case test. Needs ~5000 cycles.
+ // High stress/corner case test. Needs ~8000 cycles.
 
 // -------------------------------------------------
 // 1. Basic init
