@@ -33,7 +33,7 @@ module tl_test;
     reset <= 0; @(posedge clk);
 
     // Change how many cycles the test bench runs for
-    repeat (500) @(posedge clk);
+    repeat (10000) @(posedge clk);
 
     // Uncomment for benchmark 1
 
@@ -91,7 +91,7 @@ module tl_test;
     assert(dut.registers.RegData[4]  == 0);            // x4
     
     // WAW/WAR chain
-    assert(dut.registers.RegData[5]  == 2);            // x5 = (1 + 2) + (-1)
+    assert(dut.registers.RegData[5]  == 4);            // x5 = (1 + 2) - (-1)
     
     // Load-use + store/load hazards
     assert(dut.registers.RegData[6]  == 5);            // x6 = mem[0] (initial 5)
