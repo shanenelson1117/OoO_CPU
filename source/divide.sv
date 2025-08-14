@@ -31,31 +31,31 @@ module divide (
   
   assign result = div ? quotient : remainder;
 
-  // generate outbound cdb packet
   assign out.dest_ROB_entry = curr_rob;
   assign out.result = result;
   assign out.branch_result = 1'b0;
-  assign out.from_memory = 1'b0;
+  assign out.from_commit = 1'b0;
   assign out.load_step1 = 0;
 
-   always_ff @(posedge clk) begin
-        if (reset) begin
-            curr_rob <= 4'b0;
-            div <= 0;
-            sor_msb <= 0;
-            end_msb <= 0;
-        end else if (valid_in) begin
-            curr_rob <= rs_rob_entry;
-            div <= ALUop;
-            sor_msb <= divisor[31];
-            end_msb <= dividend[31];
-        end else if (yumi_in) begin
-            curr_rob <= 4'b0;
-            div <= 0;
-            sor_msb <= 0;
-            end_msb <= 0;
-        end
-  end
+  // register rs signals
+  always_ff @(posedge clk) begin
+      if (reset) begin
+          curr_rob <= 4'b0;
+          div <= 0;
+          sor_msb <= 0;
+          end_msb <= 0;
+      end else if (valid_in) begin
+          curr_rob <= rs_rob_entry;
+          div <= ALUop;
+          sor_msb <= divisor[31];
+          end_msb <= dividend[31];
+      end else if (yumi_in) begin
+          curr_rob <= 4'b0;
+          div <= 0;
+          sor_msb <= 0;
+          end_msb <= 0;
+      end
+end
 
 endmodule
 
