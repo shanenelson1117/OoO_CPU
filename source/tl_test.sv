@@ -32,7 +32,7 @@ module tl_test;
     reset <= 1; @(posedge clk);
     reset <= 0; @(posedge clk);
 
-    // Run long enough to execute all instructions
+    // Change how many cycles the test bench runs for
     repeat (500) @(posedge clk);
 
     // Uncomment for benchmark 1
