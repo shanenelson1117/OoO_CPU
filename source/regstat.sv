@@ -3,6 +3,16 @@
 // File: Register Status Register
 // Stage: Issue
 
+/*
+If both regstat.commit_destination.ROB == commit.ROB, then regstat.commit_destination.busy = 0,
+if not then do not update. Need some way to tell rs scheduler that one of the operands is invalid, due to 
+it being a branch, a store, or an arithmetic immediate instruction.
+
+If either of Q_j or Q_k are not 0, then we should read the zero register. If either are 0 then we 
+should read register rs1 and/or rs2. Later have muxes and such that will correctly place intermediates
+into rs.
+*/
+
 `include "structs.svh"
 
 module regstat (
@@ -10,7 +20,7 @@ module regstat (
     input logic clk, reset, // reset should go high when a mispredicted branch is committed
     input logic issue_writes, // does the issued instruction write to a register, also should be 
     // low if no instruction is issued due to no open reserv stats
-    input logic RegWrite, // are we actually writing to register
+    input logic RegWrite, stall, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
     input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
     output logic [3:0] Q_j, Q_k, // ROB numbers for unready instructions
@@ -18,7 +28,7 @@ module regstat (
 );
 
     reg_stat_t reg_status_table [31:0]; // data
-    reg_stat_t d; // new data
+    reg_stat_t d, d_reg, d_temp; // new data
     logic [31:0] reset_bus, enable_bus; // one-hot enable and reset buses
     logic reset_enable;
 
@@ -28,12 +38,20 @@ module regstat (
         d.busy = 1'b1;
     end
 
+    
+
+ 
+    five_to_thirtytwo_decoder enable_decode (
+        .sel(issue_dest),
+        .enable(issue_writes),
+        .out(enable_bus)
+    );
+
     // only 0-out the entry if the committed instruction is the most recent writer to the register
-    assign reset_enable = (reg_status_table[commit_dest].ROB_number == commit_ROB);
+    assign reset_enable = (reg_status_table[commit_dest].ROB_number == commit_ROB) && (~(issue_dest == commit_dest) & issue_writes);
 
     // Generate one-hot enable and reset buses
     five_to_thirtytwo_decoder reset_decode (.sel(commit_dest), .enable(reset_enable), .out(reset_bus));
-    five_to_thirtytwo_decoder enable_decode (.sel(issue_dest), .enable(issue_writes), .out(enable_bus));
 
 
     // generate entries
@@ -41,12 +59,13 @@ module regstat (
     generate
         for (j = 1; j < 32; j++) begin:reg_stat_entries
             reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j] & RegWrite),
-                .write_en(enable_bus[j]), .d, .q(reg_status_table[j]));
+                .write_en(enable_bus[j]), .d(d), .q(reg_status_table[j]), .stall);
         end
     endgenerate
 
     assign reg_status_table[0].ROB_number = 4'b0;
     assign reg_status_table[0].busy = 0;
+
     // read ROB_number fields of operands
     always_comb begin
         Q_j = reg_status_table[rs1].ROB_number;
@@ -61,7 +80,7 @@ endmodule
 module reg_status_entry (
     input logic clk, reset,
     input logic write_en,
-    input logic clear,
+    input logic clear, stall,
     input reg_stat_t d,
     output reg_stat_t q
 );
@@ -72,6 +91,7 @@ module reg_status_entry (
             q <= '{default: '0};
         else if (write_en)
             q <= d;
+        
     end
 
 endmodule
