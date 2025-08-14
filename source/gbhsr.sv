@@ -6,10 +6,8 @@
 `include "structs.svh"
 
 module gbhsr (
-    input logic clk, reset, 
-    input logic update, // Branch result of committed branch
-    input logic valid_in, // Are we committing a branch?
-    output logic [9:0] history // 10-bit global branch history
+    input logic clk, reset, update, valid_in,
+    output logic [9:0] history
 );
     logic [9:0] d;
     genvar i;
