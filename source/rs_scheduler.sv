@@ -8,19 +8,19 @@
 module rs_scheduler (
     input pipe_in_t pipe_out,
     input logic [3:0] busy_bus, // busy signals from each rs
-    input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, // use for jal
+    input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, WriteData,// use for jal
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
     input logic rob_full, clk, reset,
-    input logic lsq_full,
+    input logic lsq_full, valid_commit,
     input CDB_packet_t new_CDB,
-    input logic [3:0] Q_j, Q_k,
+    input logic [3:0] Q_j, Q_k, commit_ROB,
     input logic rs1reg_busy, rs2reg_busy,
     output rs_data_t rs_input, // create RS packet
     output ROB_entry_t new_packet, // create ROB packet
     output logic [2:0] rs_dest,
     output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
     output logic issue_writes, // ...
-    output logic stall, // if no avail rs or rob slot, do not advance pipeline
+    output logic stall, stall_reg, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
     output lsq_packet_t lsq_input
 );
     logic [31:0] curr_branch_pc;
@@ -30,24 +30,61 @@ module rs_scheduler (
     logic [1:0] branch_type;
     logic [31:0] V_k, V_j;
     logic [3:0] Q_temp_j, Q_temp_k;
-    logic branch, jump, temp_load;
+    logic branch, jump, temp_load, past_rd, issue_writes_temp;
 
     ROB_entry_t rob_input;
 
+
+    // Handshake with pipeline reg to not advance instruction on stall
+    typedef enum logic [0:0] { S_EMPTY=1'b0, S_HOLD=1'b1 } state_t;
+    state_t ps, ns;
+
+    // Latched instruction and metadata
+    pipe_in_t instr_hold;
+
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            ps <= S_EMPTY;
+            instr_hold <= '0;
+        end else begin
+            ps <= ns;
+            // Capture the instruction when first entering HOLD
+            if (ps == S_EMPTY && ns == S_HOLD) begin
+                instr_hold <= pipe_out;
+            end
+        end
+    end
+
+    // Next state logic
+    always_comb begin
+        ns = ps;
+        case (ps)
+            S_EMPTY: if (stall) ns = S_HOLD;
+            S_HOLD : if (!stall) ns = S_EMPTY;
+        endcase
+    end
+
+    // Stall signal comes from registered state
+    assign pc_pipe_stall = (ps == S_HOLD);
+
+
+    // hold instruction
+    assign ins = (ps == S_HOLD) ? instr_hold.instruction   : pipe_out.instruction;
+
     assign new_packet = rob_input;
+
+    // do not change reg stat if we are about to stall
+    assign issue_writes = (ns == S_HOLD) ? 1'b0: issue_writes_temp;
     
-    assign prediction = pipe_out.prediction;
+    assign prediction = (ps == S_HOLD) ? instr_hold.prediction : pipe_out.prediction;
 
-    assign ins = pipe_out.instruction;
+    assign curr_branch_pc = (ps == S_HOLD) ? instr_hold.pc : pipe_out.pc;
 
-    assign curr_branch_pc = pipe_out.pc;
-
-    assign branch = pipe_out.branch;
-    assign jump = pipe_out.jump;
-
+    assign branch =  (ps == S_HOLD) ? instr_hold.branch : pipe_out.branch;
+    assign jump = (ps == S_HOLD) ? instr_hold.jump : pipe_out.jump;
 
     always_comb begin
-        if (~rob_full && ~lsq_full) begin
+        if ((~rob_full && ~lsq_full)) begin
             if (ins[6:0] == 7'b0000000)
                 rs_dest = 3'b100;
             else if (~busy_bus[0])
@@ -63,9 +100,8 @@ module rs_scheduler (
         end
         else rs_dest = 3'b111; // invalid rs_signal
     end
-
+    // decode instruction
     assign stall = (rs_dest[2] & rs_dest[0]) | rob_full | lsq_full;
-
     // decode instruction
     always_comb begin
         rs1 = ins[19:15];
@@ -74,29 +110,31 @@ module rs_scheduler (
         // arithmetic
         if (ins[6:0] == 7'b0110011) begin
             branch_type = 2'b00;
-            issue_writes = ~stall;
+            issue_writes_temp = 1;
             temp_load = 0;
             // CDB forwarding resolves 0-2 data hazard
-            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_j = new_CDB.result;
                 Q_temp_j = '0;
             end
+        
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
-                Q_temp_j = Q_j;
+                Q_temp_j = '0;
             end
             else begin
                 V_j = 32'b0;
                 Q_temp_j = Q_j;
             end
 
-            if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+            if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_k = new_CDB.result;
                 Q_temp_k = '0;
             end
+   
             else if (~rs2reg_busy) begin
                 V_k = rs2_data;
-                Q_temp_k = Q_k;
+                Q_temp_k = '0;
             end
             else begin
                 V_k = 32'b0;
@@ -125,29 +163,31 @@ module rs_scheduler (
         // branches
         else if (branch) begin
             alu_op = 3'b001;
-            issue_writes = 1'b0;
+            issue_writes_temp = 1'b0;
             temp_load = 0;
 
-            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+           if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_j = new_CDB.result;
                 Q_temp_j = '0;
             end
+           
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
-                Q_temp_j = Q_j;
+                Q_temp_j = '0;
             end
             else begin
                 V_j = 32'b0;
                 Q_temp_j = Q_j;
             end
 
-            if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+            if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_k = new_CDB.result;
                 Q_temp_k = '0;
             end
+            
             else if (~rs2reg_busy) begin
                 V_k = rs2_data;
-                Q_temp_k = Q_k;
+                Q_temp_k = '0;
             end
             else begin
                 V_k = 32'b0;
@@ -164,14 +204,15 @@ module rs_scheduler (
         // ADDI
         else if (ins[6:0] == 7'b0010011) begin
             alu_op = 3'b0;
-            issue_writes = ~stall;
-            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+            issue_writes_temp = 1;
+            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_j = new_CDB.result;
                 Q_temp_j = '0;
             end
+    
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
-                Q_temp_j = Q_j;
+                Q_temp_j = '0;
             end
             else begin
                 V_j = 32'b0;
@@ -185,7 +226,7 @@ module rs_scheduler (
         end
         else if (jump) begin
             alu_op = 3'b0;
-            issue_writes = ~stall;
+            issue_writes_temp = 1;
             temp_load = 0;
             V_j = curr_branch_pc;
             V_k = {29'b0, 3'b100};
@@ -196,15 +237,15 @@ module rs_scheduler (
         // load
         else if (ins[6:0] == 7'b0000011) begin
             alu_op = 3'b0;
-            issue_writes = ~stall;
+            issue_writes_temp = 1;
             temp_load = 1;
-            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_j = new_CDB.result;
                 Q_temp_j = '0;
             end
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
-                Q_temp_j = Q_j;
+                Q_temp_j = '0;
             end
             else begin
                 V_j = 32'b0;
@@ -218,15 +259,16 @@ module rs_scheduler (
         // store
         else begin
             // Need ROB to have access to operand buses in case rs2 is not available
-            issue_writes = 1'b0;
+            issue_writes_temp = 1'b0;
             alu_op = 3'b000;
-           if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0)) begin
+			temp_load = 1;
+            if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_j = new_CDB.result;
                 Q_temp_j = '0;
             end
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
-                Q_temp_j = Q_j;
+                Q_temp_j = '0;
             end
             else begin
                 V_j = 32'b0;
@@ -245,17 +287,17 @@ module rs_scheduler (
         rs_input.V_j = V_j;
         rs_input.V_k = V_k;
         rs_input.load = temp_load;
-        rs_input.ROB_entry = ROB_entry;
+        rs_input.ROB_entry = stall ? 4'b0000 : ROB_entry;
         rs_input.ALU_op = alu_op;
         rs_input.branch_type = branch_type;
-        rs_input.busy = 1'b1;
+        rs_input.busy = stall ? 1'b0 : 1'b1;
     end
 
     // assemble ROB input packet
     always_comb begin
-        rob_input.ROB_number = (stall | ins[6:0] == 7'b0000000) ? 4'b0000 : ROB_entry; // send invalid packet if stall
+        rob_input.ROB_number = (stall | (ins[6:0] == 7'b0000000)) ? 4'b0000 : ROB_entry; // send invalid packet if stall
         rob_input.branch_pred = prediction;
-        rob_input.branch_result = 1'bX; // to be updated later
+        rob_input.branch_result = 1'b0; // to be updated later
         // store
         if (ins[6:0] == 7'b0100011) begin
             // unknown for now
@@ -282,7 +324,7 @@ module rs_scheduler (
         // register output
         else begin
             rob_input.itype = 2'b10;
-            rob_input.value = 32'bX; // to be updated later
+            rob_input.value = 32'b0; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
             rob_input.ready = 1'b0;
         end
@@ -293,7 +335,7 @@ module rs_scheduler (
         if (~stall) begin
             // load
             if (ins[6:0] == 7'b0000011) begin
-                lsq_input.load = 1;
+                lsq_input.load = ~stall;
                 lsq_input.store = 0;
                 lsq_input.address = '0;
                 lsq_input.result = '0;
@@ -304,12 +346,21 @@ module rs_scheduler (
             // store
             else if (ins[6:0] == 7'b0100011) begin
                 lsq_input.load = 0;
-                lsq_input.store = 1;
+                lsq_input.store = ~stall;
                 lsq_input.address = '0;
-                lsq_input.result = (new_CDB.dest_ROB_entry == Q_k) ? new_CDB.result : rs2;
+                if ((new_CDB.dest_ROB_entry == Q_k) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1))
+                    lsq_input.result = new_CDB.result;
+                else
+                    lsq_input.result = rs2_data;
+
                 lsq_input.ROB_entry = ROB_entry;
                 lsq_input.address_valid = 0;
-                lsq_input.Q_store = (new_CDB.dest_ROB_entry == Q_k) ? '0: Q_k;
+
+                if ((new_CDB.dest_ROB_entry == Q_k) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1))
+                    lsq_input.Q_store = '0;
+                else
+                    lsq_input.Q_store = Q_k;
+    
             end
             // not valid if not load or store
             else begin
