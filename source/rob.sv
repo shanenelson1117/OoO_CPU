@@ -26,6 +26,9 @@ module rob #(parameter DEPTH = 16) (
     always_ff @(posedge clk) begin
         if (reset) begin
             wptr <= 1;
+            for (int i = 0; i < DEPTH; i++) begin
+                rob_data[i].ready <= 0;
+            end
         end else if (wr_en && !full) begin
             rob_data[wptr] <= new_entry;
             wptr <= (wptr == DEPTH - 1) ? 1 : wptr + 1;
@@ -35,28 +38,24 @@ module rob #(parameter DEPTH = 16) (
     // CDB forwarding logic
     always_ff @(posedge clk) begin
         if (~reset) begin
+		  
+
             for (int i = 1; i < DEPTH; i++) begin
                 // branch
                 if (rob_data[i].itype == 2'b00) begin
-                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry) begin
+                    if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
                         rob_data[i].branch_result <= CDB_in.branch_result;
                         rob_data[i].ready <= 1;
                     end
                 end
-                // store
-                else if (rob_data[i].itype == 2'b10) begin
-                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry && (~CDB_in.load_step1)) begin
+                // load, reg_dest
+                else if (rob_data[i].itype[1]) begin
+                    if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
                         rob_data[i].value <= CDB_in.result;
                         rob_data[i].ready <= 1;
                     end
                 end
-                // load
-                else if ((rob_data[i].itype == 2'b11) && CDB_in.from_memory) begin
-                    if (rob_data[i].ROB_number == CDB_in.dest_ROB_entry && (~CDB_in.load_step1)) begin
-                        rob_data[i].value <= CDB_in.result;
-                        rob_data[i].ready <= 1;
-                    end
-                end
+
             end
         end
     end
