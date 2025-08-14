@@ -27,14 +27,12 @@ module multiply (
 
   assign result = mul_h ? product_inter[63:32] : product_inter[31:0];
   
-  // Assemble outgoing CDB packet
   assign out.dest_ROB_entry = curr_rob;
   assign out.result = result;
   assign out.branch_result = 1'b0;
-  assign out.from_memory = 1'b0;
+  assign out.from_commit = 1'b0;
   assign out.load_step1 = 0;
 
-  // Register rs signals to allow freeing of rs
   always_ff @(posedge clk) begin
         if (reset) begin
             curr_rob <= 4'b0;
@@ -61,7 +59,7 @@ module datapath (
   logic [31:0] A, B;
   logic temp_C;
 
-  // compute arithmetic follow Booth's algo
+  // compute arithmetic
   always_ff @(posedge clk) begin
     if (loadregs) begin
       A <= 0; Q1 <= 0; P <= 32;
@@ -128,7 +126,7 @@ module multiply_tb;
   CDB_packet_t out;
 
   // Instantiate the multiply unit
-  multiply dut (
+  multiply uut (
     .A(A), .B(B),
     .rs_rob_entry(rs_rob_entry),
     .valid_in(valid_in),
