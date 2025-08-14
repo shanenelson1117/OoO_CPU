@@ -10,4 +10,4 @@ BEQ, BLT,` and  `JAL`.
 The benchmark riscv machine code files can be found in "source/benchmarks".
 
 ## Benchmarks
-Included are a set of benchmarks, which when run by the testbench, validate the processors correctness. To change which testbench is run, edit `instructmem.sv` to change the included file to be the chosen benchmark. Also change the testbench to included the correct register assertions and necessary amount of cycles. Included is a modelsim `runlab.do` file and necessary wave files.
+Included are a set of benchmarks, which when run by the testbench, validate the processors correctness. To change which testbench is run, edit `instructmem.sv` to change the include file to be the chosen benchmark. Also change the testbench to included the correct register assertions and necessary amount of cycles. Included is a modelsim `runlab.do` file and necessary wave files.
