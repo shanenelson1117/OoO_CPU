@@ -26,7 +26,6 @@ vlog "source/pipeline_reg.sv"
 vlog "source/regfile.sv"
 vlog "source/regstat.sv"
 vlog "source/rob.sv"
-vlog "source/rob_scheduler.sv"
 vlog "source/rs.sv"
 vlog "source/rs_scheduler.sv"
 vlog "source/structs.svh"
@@ -52,4 +51,5 @@ view signals
 run -all
 
 # End
+
 
