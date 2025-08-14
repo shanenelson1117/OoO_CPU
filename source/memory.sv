@@ -9,7 +9,7 @@ module memory (
     input  logic ROB_head_store,       // Is ROB head a store
     input  logic head_load,            // Is LSQ head a load
     input  logic head_ready,           // Is LSQ/ROB head ready
-    input  logic yummy_in,
+    input  logic yummy_in, empty,
     input  lsq_packet_t mem_in,        // LSQ head data
     output CDB_packet_t mem_read_out,  // Data to CDB
     output logic rd_en,                // Tell LSQ to remove head
@@ -22,15 +22,14 @@ module memory (
     logic mem_valid_reg;
 
 
-    assign read_enable   = head_load & head_ready; // read mem whenever head is a load
-    assign write_enable  = ROB_head_store & head_ready; // write mem if ROB head is store and is ready
+    assign read_enable   = head_load & head_ready & ~empty & ~mem_valid_reg;
+    assign write_enable  = ROB_head_store & head_ready & ~empty;
     assign valid_out     = mem_valid_reg;
 
     // lsq, rob dequeue signals
-    assign rd_en     = mem_valid_reg | write_enable;
+    assign rd_en     = read_enable | write_enable;
     assign rd_en_rob = write_enable;
 
-    // Data memory
     datamem the_mem (
         .clk(clk),
         .address(mem_in.address),
@@ -41,8 +40,6 @@ module memory (
         .read_data(read_data)
     );
 
-    // Register data output to keep packets valid if not chosen by CDB scheduler
-    // also match timing with other FU's
     always_ff @(posedge clk) begin
         if (reset) begin
             mem_result_reg     <= '0;
@@ -57,11 +54,10 @@ module memory (
         end
     end
 
-    // Assign outgoing CDB packet
     assign mem_read_out.dest_ROB_entry = mem_rob_entry_reg;
     assign mem_read_out.result         = mem_result_reg;
-    assign mem_read_out.branch_result  = 1'bX;
-    assign mem_read_out.from_memory    = mem_valid_reg;
+    assign mem_read_out.branch_result  = 1'b0;
+    assign mem_read_out.from_commit = 0;
     assign mem_read_out.load_step1 = 0;
 
 endmodule
