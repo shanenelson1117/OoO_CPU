@@ -1,5 +1,8 @@
 // Will need more like ~2500 cycles
 
+// 0's out mem[0-299] then writes the 4-byte int 1 to every 4-byte section in mem 0-299
+// Essentially initializes an array of 75 ints to 0, then sets each index to 1 
+
 // init loop
 00000000000000000000000010010011 // addi x1, x0, 0
 00010010110000000000000100010011 // addi x2, x0, 300
