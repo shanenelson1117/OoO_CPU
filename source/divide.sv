@@ -28,7 +28,8 @@ module divide (
   // instantiate datapath and control
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
-  
+
+  // If a < b, switch derived remainder and quotient. Remainder should be a and quotient should be 0
   assign result = (div & ~a_lt_b_reg) | (~div & a_lt_b_reg) ? quotient : remainder;
 
   assign out.dest_ROB_entry = curr_rob;
