@@ -13,7 +13,7 @@ module divide (
   input logic [31:0] dividend, divisor, 
   output CDB_packet_t out
 );
-  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div;
+  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div, a_lt_b_reg;
   logic [31:0] P, quotient, remainder, result;
   logic [3:0] curr_rob;
   // register operand msb's
@@ -29,7 +29,7 @@ module divide (
   datapath_dv divide_dp(.*);
   control_dv divide_cu(.*);
   
-  assign result = div ? quotient : remainder;
+  assign result = (div & ~a_lt_b_reg) | (~div & a_lt_b_reg) ? quotient : remainder;
 
   assign out.dest_ROB_entry = curr_rob;
   assign out.result = result;
@@ -44,16 +44,19 @@ module divide (
           div <= 0;
           sor_msb <= 0;
           end_msb <= 0;
+          a_lt_b_reg <= 0;
       end else if (valid_in) begin
           curr_rob <= rs_rob_entry;
           div <= ALUop;
           sor_msb <= divisor[31];
           end_msb <= dividend[31];
+          a_lt_b_reg <= a_lt_b;
       end else if (yumi_in) begin
           curr_rob <= 4'b0;
           div <= 0;
           sor_msb <= 0;
           end_msb <= 0;
+          a_lt_b_reg <= 0;
       end
 end
 
