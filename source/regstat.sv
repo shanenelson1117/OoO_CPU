@@ -48,7 +48,7 @@ module regstat (
     );
 
     // only 0-out the entry if the committed instruction is the most recent writer to the register
-    assign reset_enable = (reg_status_table[commit_dest].ROB_number == commit_ROB) && (~(issue_dest == commit_dest) & issue_writes);
+    assign reset_enable = (reg_status_table[commit_dest].ROB_number == commit_ROB) && ~((issue_dest == commit_dest) & issue_writes);
 
     // Generate one-hot enable and reset buses
     five_to_thirtytwo_decoder reset_decode (.sel(commit_dest), .enable(reset_enable), .out(reset_bus));
