@@ -4,26 +4,30 @@
 // Stage: Fetch -> Issue
 
 `include "structs.svh"
-
+`timescale 1ps/1ps
+// register reset should be high if instruction in issue stage is a taken branch or a jump.
+// but not if the instruction queue is full. In that case we want to disable writes to the pipe
+// register because we arent advancing the pipeline. if branch_taken & ~queue_full, then flush the reg.
+// also flush when incorrect branch is committed.
 module pipeline_reg (
     input  pipe_in_t d,
-    input  logic reset, clk, queue_full,
+    input  logic reset, clk, queue_full, stall,
     output pipe_in_t q
 );
 
     pipe_in_t q_reg;
     
-    logic flush;
+
+    assign q_reg = stall ? q_reg: d; 
 
 
     always_ff @(posedge clk) begin
         if (reset) begin  // flush reg on reset or flush
-            q_reg <= '0;
+            q <= '0;
         end
         else begin  // if issue queue can accept new data, update
-            q_reg <= d;
+            q <= q_reg;
         end
     end
 
-     assign q = q_reg;
 endmodule
