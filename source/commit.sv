@@ -9,11 +9,12 @@ module commit (
     input logic rob_head_ready, empty,
     input logic rd_en_rob, // from memory unit, is store at head of queue done?
     output logic RegWrite, // register file write enable
-    output logic [3:0] commit_ROB,
+    output logic [3:0] commit_ROB, 
     output logic [4:0] rd,
     output logic commit_is_branch, commit_prediction, commit_result,
     output logic [31:0] WriteData, committed_pc, commit_imm_se,
-    output logic rd_en // dequeue head
+    output logic rd_en, valid_commit, // dequeue head
+    output CDB_packet_t commit_packet
 );  
     // Generate signals that are used to write to the reg file or correct a misprediction
     // and also send dequeue signal to the ROB if head is committed
@@ -29,6 +30,7 @@ module commit (
                 commit_imm_se = head.value;
                 WriteData = 32'b0;
                 rd_en = 1;
+                valid_commit = 1;
             end
             // STORE
             else if (head.itype == 2'b01) begin
@@ -40,6 +42,7 @@ module commit (
                 commit_imm_se = '0;
                 WriteData = 32'b0;
                 rd_en = rd_en_rob;
+                valid_commit = rd_en_rob;
             end
             // Load / Reg Dest
             else begin
@@ -51,6 +54,7 @@ module commit (
                 commit_imm_se = '0;
                 WriteData = head.value;
                 rd_en = 1;
+                valid_commit = 1;
             end
         end
         // Invalid (non-committing cycle)
@@ -63,10 +67,20 @@ module commit (
             commit_imm_se = '0;
             WriteData = '0;
             rd_en = 0;
+            valid_commit = 0;
         end
     end
 
     assign commit_ROB = rd_en ? head.ROB_number : '0;
     assign rd = rd_en ? head.destination[4:0] : '0;
+
+
+    // Set up CDB packet
+    assign commit_packet.dest_ROB_entry = (rd_en && head.itype[1]) ? head.ROB_number : '0;
+    assign commit_packet.result = WriteData;
+    assign commit_packet.branch_result = 0;
+    assign commit_packet.load_step1 = 0;
+    assign commit_packet.from_commit = 1;
+
 
 endmodule
