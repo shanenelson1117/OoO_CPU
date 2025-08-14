@@ -15,20 +15,22 @@ module lsq #(parameter DEPTH = 4) (
 
     output logic             full,
     output logic             head_ready,
-    output logic             head_load,
+    output logic             head_load, empty, 
     output lsq_packet_t      dout          // combinational output
 );
 
     logic [1:0] wptr, rptr;
-    logic empty;
 
-    // the data
+
     lsq_packet_t lsq_data [DEPTH];
 
     // Write logic
     always_ff @(posedge clk) begin
         if (reset) begin
             wptr <= 0;
+            for (int i = 0; i < DEPTH; i++) begin
+                lsq_data[i].address_valid <= 0;
+            end
         end else if (wr_en && !full) begin
             lsq_data[wptr] <= din;
             wptr <= (wptr == DEPTH - 1) ? 0 : wptr + 1;
@@ -40,13 +42,12 @@ module lsq #(parameter DEPTH = 4) (
         if (~reset) begin
             for (int i = 0; i < DEPTH; i++) begin
                 // Forward store result
-                if ((lsq_data[i].Q_store == CDB_in.dest_ROB_entry) && 
-                        (lsq_data[i].Q_store != 4'b0000)) begin // Make sure that we are not forwarding from a bogus cdb packet
+                if ((lsq_data[i].Q_store == CDB_in.dest_ROB_entry) && (lsq_data[i].Q_store != 4'b0000) && ~(CDB_in.load_step1)) begin
                     lsq_data[i].Q_store <= 4'b0000;
                     lsq_data[i].result <= CDB_in.result;
                 end
                 // Fill in computed load/store address
-                if (lsq_data[i].ROB_entry == CDB_in.dest_ROB_entry && (lsq_data[i].ROB_entry != 4'b0000)) begin
+                if ((lsq_data[i].ROB_entry == CDB_in.dest_ROB_entry) && ~lsq_data[i].address_valid && (CDB_in.load_step1)) begin
                     lsq_data[i].address <= CDB_in.result;
                     lsq_data[i].address_valid  <= 1'b1;
                 end
@@ -57,7 +58,6 @@ module lsq #(parameter DEPTH = 4) (
     // read logic 
     assign dout = lsq_data[rptr];
 
-    // Advance read pointer if we dequeue head
     always_ff @(posedge clk) begin
         if (reset) begin
             rptr <= 0;
@@ -69,7 +69,7 @@ module lsq #(parameter DEPTH = 4) (
     // Status outputs
     assign full        = ((wptr + 1) % DEPTH) == rptr;
     assign empty       = (wptr == rptr);
-    assign head_ready  = lsq_data[rptr].address_valid && (lsq_data[rptr].Q_store == 4'b0000);
+    assign head_ready  = lsq_data[rptr].address_valid & (lsq_data[rptr].Q_store == 4'b0000);
     assign head_load   = lsq_data[rptr].load;
 
 endmodule
