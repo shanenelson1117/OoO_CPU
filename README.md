@@ -5,5 +5,9 @@ This project is an Out of Order Execution processor implemented using Tomasulo's
 The processor is capable of executing: `ADD, ADDI, SUB, SW, LW, MUL, MULH, DIV, REMU, BNE,
 BEQ, BLT,` and  `JAL`.
 
+## Files
+`out_of_order.sv` is the top level modules. All modules used by the top level are included in the "source" folder, including the testbench, `tl_test.sv`.
+The benchmark riscv machine code files can be found in "source/benchmarks".
+
 ## Benchmarks
-Included are a set of benchmarks, which when run by the testbench, validate the processors correctness.
+Included are a set of benchmarks, which when run by the testbench, validate the processors correctness. 
