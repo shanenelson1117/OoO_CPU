@@ -19,14 +19,14 @@ typedef struct packed {
     logic [3:0] Q_j, Q_k; // ROB entry # for unready operands (0 if operand is ready)
     logic [31:0] V_j, V_k; // Value of ready operands
     logic [3:0] ROB_entry; // What is the ROB entry associated with this instruction
-    logic [3:0] ALU_op; // what operation must be performed
+    ALU_op_t [3:0] ALU_op; // what operation must be performed
     // 000: add, 001: sub, 100: mul, 101: mul_h, 011: div, 010: remu
-    logic [2:0] branch_type; // see enum below
+    branch_type_t [2:0] branch_type; // see enum below
     logic busy, load; // is the rs waiting for operands? is the operation a load?
 } rs_data_t;
 
 // alu operation types
-enum logic [3:0] {
+typedef enum logic [3:0] {
     ADD = 4'b0000,
     XOR = 4'b0001,
     OR = 4'b0010,
@@ -40,11 +40,11 @@ enum logic [3:0] {
     REMU = 4'b1010,
     SRL = 4'b1000,
     SRA = 4'b1001,
-    SLL = 4'b1111,
-}
+    SLL = 4'b1111
+} ALU_op_t;
 
 // branch types
-enum logic [2:0] {
+typedef enum logic [2:0] {
     BEQ = 3'b000,
     BNE = 3'b001,
     BLT = 3'b100,
@@ -52,7 +52,7 @@ enum logic [2:0] {
     BLTU = 3'b110,
     BGEU = 3'b111,
     NB = 3'b010
-}
+} branch_type_t;
 
 // Reorder buffer entry format
 typedef struct packed {
@@ -62,7 +62,7 @@ typedef struct packed {
     logic [3:0] ras_pointer; // ras pointer at time of issue, used to roll back ras on mispredicted branch
     logic [31:0] destination; // register or address (for branches the pc of the branch)
     logic [31:0] value; // value to be written (se immediate for branches)
-    logic [2:0] itype; // instruction type, branch (00), store (01), register dest (10), load (11)
+    logic [1:0] itype; // instruction type, branch (00), store (01), register dest (10), load (11)
     logic ready; // is the entry raedy to be committed?
     logic jalr;
 } ROB_entry_t; 
@@ -84,8 +84,8 @@ typedef struct packed {
 
 // data needed by fu's from rs 
 typedef struct packed {
-    logic [2:0] branch_type; // branch type
-    logic [3:0] ALU_op; // alu operation to perform
+    branch_type_t [2:0] branch_type; // branch type
+    ALU_op_t [3:0] ALU_op; // alu operation to perform
     logic [3:0] ROB_entry; // rob entry associated with rs
     logic [31:0] rs1; // operand 1
     logic [31:0] rs2; // operand 2
