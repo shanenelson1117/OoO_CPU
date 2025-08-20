@@ -31,6 +31,9 @@ vlog "source/rs_scheduler.sv"
 vlog "source/structs.svh"
 vlog "source/tl_test.sv"
 vlog "source/two_bit_predictor.sv"
+vlog "source/shift.sv"
+vlog "source/ras.sv"
+vlog "source/jalrq.sv"
 
 # Call vsim to invoke simulator
 #     Make sure the last item on the line is the name of the
