@@ -2,29 +2,6 @@
 // Project: OoO CPU
 // Contains structs for various storage and transfer applications
 
-
-// fetch-issue pipeline register data format
-typedef struct packed {
-    logic [31:0] pc;   
-    logic [31:0] instruction;
-    logic prediction; // was a branch predicted?
-    logic branch; // was instruction a branch?
-    logic jump; // was instruction a jal?
-    logic [3:0] ras_ptr;
-    logic [31:0] jalr_address;
-} pipe_in_t;
-
-// reservation station data format
-typedef struct packed {
-    logic [3:0] Q_j, Q_k; // ROB entry # for unready operands (0 if operand is ready)
-    logic [31:0] V_j, V_k; // Value of ready operands
-    logic [3:0] ROB_entry; // What is the ROB entry associated with this instruction
-    ALU_op_t ALU_op; // what operation must be performed
-    // 000: add, 001: sub, 100: mul, 101: mul_h, 011: div, 010: remu
-    branch_type_t branch_type; // see enum below
-    logic busy, load; // is the rs waiting for operands? is the operation a load?
-} rs_data_t;
-
 // alu operation types
 typedef enum logic [3:0] {
     ADD = 4'b0000,
@@ -53,6 +30,28 @@ typedef enum logic [2:0] {
     BGEU = 3'b111,
     NB = 3'b010
 } branch_type_t;
+
+// fetch-issue pipeline register data format
+typedef struct packed {
+    logic [31:0] pc;   
+    logic [31:0] instruction;
+    logic prediction; // was a branch predicted?
+    logic branch; // was instruction a branch?
+    logic jump; // was instruction a jal?
+    logic [3:0] ras_ptr;
+    logic [31:0] jalr_address;
+} pipe_in_t;
+
+// reservation station data format
+typedef struct packed {
+    logic [3:0] Q_j, Q_k; // ROB entry # for unready operands (0 if operand is ready)
+    logic [31:0] V_j, V_k; // Value of ready operands
+    logic [3:0] ROB_entry; // What is the ROB entry associated with this instruction
+    ALU_op_t ALU_op; // what operation must be performed
+    // 000: add, 001: sub, 100: mul, 101: mul_h, 011: div, 010: remu
+    branch_type_t branch_type; // see enum below
+    logic busy, load; // is the rs waiting for operands? is the operation a load?
+} rs_data_t;
 
 // Reorder buffer entry format
 typedef struct packed {
@@ -102,7 +101,7 @@ typedef struct packed {
     logic address_valid; // packet is ready
     logic [3:0] Q_store; // rob entry of instruction providing store data (0 if ready)
     logic [2:0] xfer_size; // 1, 2, 4
-    logic signed; // are we doing a signed load
+    logic lsq_signed; // are we doing a signed load
 } lsq_packet_t;
 
 typedef struct packed {

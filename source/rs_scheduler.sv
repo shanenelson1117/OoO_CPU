@@ -421,23 +421,23 @@ module rs_scheduler (
             // load/store transfer size and sign decode
             if ((ins[14:12] == 3'b000)) begin
                 lsq_input.xfer_size == 3'b001;
-                lsq_input.signed = 0;
+                lsq_input.lsq_signed = 1;
             end
             else if (ins[14:12] == 3'b001) begin
                 lsq_input.xfer_size == 3'b010;
-                lsq_input.signed = 0;
+                lsq_input.lsq_signed = 1;
             end
             else if (ins[14:12] == 3'b010) begin
                 lsq_input.xfer_size == 3'b100;
-                lsq_input.signed = 0;
+                lsq_input.lsq_signed = 1;
             end
             else if (ins[14:12] == 3'b100) begin
                 lsq_input.xfer_size == 3'b001;
-                lsq_input.signed = 1;
+                lsq_input.lsq_signed = 0;
             end
             else if (ins[14:12] == 3'b101) begin
                 lsq_input.xfer_size == 3'b010;
-                lsq_input.signed = 1;
+                lsq_input.lsq_signed = 0;
             end
 
             // load
@@ -479,7 +479,7 @@ module rs_scheduler (
                 lsq_input.address_valid = 0;
                 lsq_input.Q_store = Q_k;
                 lsq_input.xfer_size == 3'b000;
-                lsq_input.signed = 0;
+                lsq_input.lsq_signed = 0;
 
             end
         end
