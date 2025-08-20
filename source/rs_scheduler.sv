@@ -27,8 +27,8 @@ module rs_scheduler (
     logic [31:0] curr_branch_pc;
     logic prediction;
     logic [31:0] ins;
-    logic [2:0] alu_op;
-    logic [1:0] branch_type;
+    ALU_op_t alu_op;
+    branch_type_t branch_type;
     logic [31:0] V_k, V_j;
     logic [3:0] Q_temp_j, Q_temp_k;
     logic branch, jump, temp_load, past_rd, issue_writes_temp;
@@ -223,7 +223,7 @@ module rs_scheduler (
                 Q_temp_k = Q_k;
             end
 
-            branch_type = ins[14:12];
+            branch_type = branch_type_t'(ins[14:12]);
         end
         
         // I-type instructions
@@ -330,13 +330,14 @@ module rs_scheduler (
             // lui
             if (ins[6:0] == 7'b0110111) begin
                 V_j = 32'b0;
-                V_k = {ins[31:12] 12'b0};
+                V_k = {ins[31:12], 12'b0};
             end
             // auipc
             else begin
                 V_j = curr_branch_pc;
-                V_k = {ins[31:12] 12'b0};
+                V_k = {ins[31:12], 12'b0};
             end
+        end
 
         // store
         else begin
@@ -420,23 +421,23 @@ module rs_scheduler (
 
             // load/store transfer size and sign decode
             if ((ins[14:12] == 3'b000)) begin
-                lsq_input.xfer_size == 3'b001;
+                lsq_input.xfer_size = 3'b001;
                 lsq_input.lsq_signed = 1;
             end
             else if (ins[14:12] == 3'b001) begin
-                lsq_input.xfer_size == 3'b010;
+                lsq_input.xfer_size = 3'b010;
                 lsq_input.lsq_signed = 1;
             end
             else if (ins[14:12] == 3'b010) begin
-                lsq_input.xfer_size == 3'b100;
+                lsq_input.xfer_size = 3'b100;
                 lsq_input.lsq_signed = 1;
             end
             else if (ins[14:12] == 3'b100) begin
-                lsq_input.xfer_size == 3'b001;
+                lsq_input.xfer_size = 3'b001;
                 lsq_input.lsq_signed = 0;
             end
             else if (ins[14:12] == 3'b101) begin
-                lsq_input.xfer_size == 3'b010;
+                lsq_input.xfer_size = 3'b010;
                 lsq_input.lsq_signed = 0;
             end
 
@@ -478,7 +479,7 @@ module rs_scheduler (
                 lsq_input.ROB_entry = ROB_entry;
                 lsq_input.address_valid = 0;
                 lsq_input.Q_store = Q_k;
-                lsq_input.xfer_size == 3'b000;
+                lsq_input.xfer_size = 3'b000;
                 lsq_input.lsq_signed = 0;
 
             end
@@ -499,19 +500,19 @@ module rs_scheduler (
     always_comb begin
         jalrq_input.valid = (ins[6:0] == 7'b1100111) && ~stall;
         jalrq_input.jalr_taken_address = (ps == S_HOLD) ? instr_hold.jalr_address : pipe_out.jalr_address;
-        jalrq_imm = ins[31:20];
+        jalrq_input.imm = ins[31:20];
 
         if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
             jalrq_input.jalr_actual_address = new_CDB.result;
-            Q_address = '0;
+            jalrq_input.Q_address = '0;
         end
         else if (~rs1reg_busy) begin
             jalrq_input.jalr_actual_address = rs1_data;
-            Q_address = '0;
+            jalrq_input.Q_address = '0;
         end
         else begin
             jalrq_input.jalr_actual_address = 32'b0;
-            Q_address = Q_j;
+            jalrq_input.Q_address = Q_j;
         end
     end
         

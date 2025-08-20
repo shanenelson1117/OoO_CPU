@@ -32,6 +32,7 @@ module cdb_scheduler (
             new_CDB = shift_out;
             yummi_in_bus = 6'b100000;
         // div packet
+        end
         else if (valid_out_bus[3]) begin
             new_CDB = div_out;
             yummi_in_bus = 6'b001000;

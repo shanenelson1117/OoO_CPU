@@ -19,8 +19,9 @@ module jalrq #(parameter DEPTH = 4) (
 );
 
     logic [1:0] wptr, rptr;
+    logic empty;
 
-    assign wr_en == din.valid;
+    assign wr_en = din.valid;
     jalrq_packet_t jalrq_data [DEPTH];
 
     // Write logic
@@ -31,7 +32,7 @@ module jalrq #(parameter DEPTH = 4) (
                 jalrq_data[i].valid <= 0;
             end
         end else if (wr_en && !full) begin
-            ljalrq_data[wptr] <= din;
+            jalrq_data[wptr] <= din;
             wptr <= (wptr == DEPTH - 1) ? 0 : wptr + 1;
         end
     end
@@ -43,7 +44,7 @@ module jalrq #(parameter DEPTH = 4) (
                 // Forward store result
                 if ((jalrq_data[i].Q_address == CDB_in.dest_ROB_entry) && (jalrq_data[i].Q_address != 4'b0000) && ~(CDB_in.load_step1)) begin
                     jalrq_data[i].Q_address <= 4'b0000;
-                    jalrq_data[i].result <= CDB_in.result;
+                    jalrq_data[i].jalr_actual_address <= CDB_in.result;
                 end
             end
         end

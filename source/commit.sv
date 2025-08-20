@@ -24,7 +24,7 @@ module commit (
     always_comb begin
         if (rob_head_ready & ~empty) begin
             if (head.jalr) begin
-                    rd_en_jalrq = jalrq_ready;
+                rd_en_jalrq = jalrq_ready;
             end
             else begin
                 rd_en_jalrq = 0;
@@ -71,21 +71,22 @@ module commit (
                     rd_en = 1;
                 end
             end
+        end
             // Invalid (non-committing cycle)
-            else begin
-                commit_is_branch = 0;
-                commit_prediction =0;
-                commit_result = '0;
-                RegWrite = 0;
-                committed_pc = '0;
-                commit_imm_se = '0;
-                WriteData = '0;
-                rd_en = 0;
-                valid_commit = 0;
-                rd_en_jalrq = 0;
-            end
+        else begin
+            commit_is_branch = 0;
+            commit_prediction =0;
+            commit_result = '0;
+            RegWrite = 0;
+            committed_pc = '0;
+            commit_imm_se = '0;
+            WriteData = '0;
+            rd_en = 0;
+            valid_commit = 0;
+            rd_en_jalrq = 0;
         end
     end
+
 
     assign commit_ROB = rd_en ? head.ROB_number : '0;
     assign rd = rd_en ? head.destination[4:0] : '0;

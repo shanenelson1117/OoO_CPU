@@ -4,7 +4,7 @@
 
 `include "source/structs.svh"
 
-module out_of_order (
+module core (
     input clk, reset
 );
  
@@ -115,8 +115,8 @@ module out_of_order (
     logic valid_commit, stall_reg, lsq_empty, pc_pipe_stall;
     logic [31:0] WriteData_reg;
     CDB_packet_t commit_packet, shift_out;
-    // from commit to jalrq/newpc
-    logic rd_en_jalrq, commit_jalr;
+    // from commit to jalrq
+    logic rd_en_jalrq;
     // from jalrq to commit
     logic jalrq_ready;
     // from jalrq to new pc
@@ -178,7 +178,7 @@ module out_of_order (
 
     // queue of jalr instructions
     jalrq indirect_jump_queue (.clk, .reset, .rd_en(rd_en_jalrq), .CDB_in(CDB_out), .din(jalrq_input), .full(jalrq_full), .head_ready(jalrq_ready),
-                                .jalr_actual_address, .jalr_taken_address)
+                                .jalr_actual_address, .jalr_taken_address);
     
     
     //--------------------------------------

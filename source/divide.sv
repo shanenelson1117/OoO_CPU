@@ -13,7 +13,7 @@ module divide (
   input logic [31:0] dividend, divisor, 
   output CDB_packet_t out
 );
-  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div, a_lt_b_reg, div;
+  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div, a_lt_b_reg;
   logic [31:0] P, quotient, remainder, result;
   logic [3:0] curr_rob;
   // register operand msb's

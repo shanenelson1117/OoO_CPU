@@ -27,6 +27,12 @@ module fetch (
     pc program_counter (.instruction, .pc, .reset, .clk, .stall, .mispredicted, .pc_update(newpc));
 
     logic [6:0] opcode;
+    logic push, pop;
+    logic [31:0] ras_new_pc, ras_update;
+    logic [3:0] ptr;
+    logic [4:0] rd, rs1;
+    assign rd = instruction[11:7];
+    assign rs1 = instruction[19:15];
 
     assign opcode = instruction[6:0];
     assign newpc = pop ? ras_new_pc : pc_update;
@@ -44,17 +50,10 @@ module fetch (
     bpb pred_buffer (.clk, .reset, .update_value(update), .update_valid(valid_in),
                     .index_read, .index_write, .prediction);
 
-    // ras logic
-    logic push, pop, push;
-    logic [31:0] ras_new_pc, ras_update;
-    logic [3:0] ptr;
-    logic [4:0] rd, rs1;
-    assign rd = ins[11:7];
-    assign rs1 = ins[19:15];
 
     // ras pop/push procedure as described by risc-v spec
     always_comb begin
-        if (jal) begin
+        if (jump) begin
             push = ((rd == 5'd1) || (rd == 5'd5)) ? 1 : 0;
             pop = 0;
         end
@@ -63,7 +62,7 @@ module fetch (
             if ((rd != 5'd1) && (rd != 5'd5) && ((rs1 == 5'd1) || (rs1 == 5'd5))) begin
                 pop = 1;
             end
-            else if ((((rd == 5'd1) || (rd == 5'd5)) && ((rs1 == 5'd1) || (rs1 == 5'd5))) && (rs != rs1)) begin
+            else if ((((rd == 5'd1) || (rd == 5'd5)) && ((rs1 == 5'd1) || (rs1 == 5'd5))) && (rd != rs1)) begin
                 pop = 1;
             end
             else begin
@@ -76,7 +75,7 @@ module fetch (
         end
     end
 
-    ras ret_addr_s (.clk, .reset, .push, .pop, .ras_update, .mispredicted, .flush_ptr, .ras_new_pc, .ptr)
+    ras ret_addr_s (.clk, .reset, .push, .pop, .ras_update, .mispredicted, .flush_ptr, .ras_new_pc, .ptr);
 
 
     always_comb begin

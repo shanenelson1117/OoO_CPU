@@ -102,7 +102,6 @@ module fu_scheduler (
     
             end
         end
-        end
         else if (rs2_data.valid_operands) begin
 
             ALU_op = rs2_data.ALU_op[0];

@@ -49,7 +49,7 @@ module memory (
             // mux data output dependent on which load we are running
             if (mem_in.xfer_size == 3'b010) begin
                 if (mem_in.lsq_signed) begin
-                    mem_result_reg  <= {16{read_data[15]}, read_data[15:0]};
+                    mem_result_reg  <= {{16{read_data[15]}}, read_data[15:0]};
                 end
                 else begin
                     mem_result_reg  <= {16'b0, read_data[15:0]};
@@ -57,7 +57,7 @@ module memory (
             end
             else if (mem_in.xfer_size == 3'b001) begin
                 if (mem_in.lsq_signed) begin
-                    mem_result_reg  <= {24{read_data[7]}, read_data[7:0]};
+                    mem_result_reg  <= {{24{read_data[7]}}, read_data[7:0]};
                 end
                 else begin
                     mem_result_reg  <= {24'b0, read_data[7:0]};

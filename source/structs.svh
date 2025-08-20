@@ -17,7 +17,8 @@ typedef enum logic [3:0] {
     REMU = 4'b1010,
     SRL = 4'b1000,
     SRA = 4'b1001,
-    SLL = 4'b1111
+    SLL = 4'b1111,
+    NOP = 4'b0101
 } ALU_op_t;
 
 // branch types

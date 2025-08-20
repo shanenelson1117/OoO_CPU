@@ -13,7 +13,7 @@ module shift (
   output CDB_packet_t out
 );
   logic [31:0] shifted, shifter;
-  logic [31:0] Q, P, result;
+  logic [31:0] Q, P, result, output_inter;
   logic [63:0] product_inter;
   logic loadregs, shiftregs;
   logic [3:0] curr_rob, ALUop_reg;
@@ -68,12 +68,12 @@ module datapath (
             A <= A << 1;
         end 
         else begin
-            if (ALUop_reg == SRA) begin
-                A <= {{A[31]}, A[31:1]};
-            end else begin
-                A <= {{1'b0, A[31:1]}}
-            end 
-        P <= P - 1;      
+          if (ALUop_reg == SRA) begin
+              A <= {{A[31]}, A[31:1]};
+          end else begin
+              A <= {{1'b0, A[31:1]}};
+          end 
+          P <= P - 1;      
         end
     end
   end 
@@ -88,7 +88,7 @@ module control (
   output logic loadregs, shiftregs, valid_out, ready
 );
   
-  enum logic [1:0] {s_idle = 2'b00, s_add = 2'b01, s_shift = 2'b10, s_done = 2'b11} ps, ns;
+  enum logic [1:0] {s_idle = 2'b00, s_shift = 2'b10, s_done = 2'b11} ps, ns;
 
   // assign control signals
   assign loadregs = (ps == s_idle) & valid_in;
@@ -106,8 +106,8 @@ module control (
   // update state
   always_comb begin
     case (ps)
-      s_idle: ns = valid_in ? s_add : s_idle;
-      s_shift: ns = (P == 4'b0) ? s_done : s_shift;
+      s_idle: ns = valid_in ? s_shift : s_idle;
+      s_shift: ns = (P == 5'b0) ? s_done : s_shift;
       s_done: ns = yumi_in ? s_idle : s_done;
     endcase 
   end 

@@ -14,8 +14,7 @@ module ras #(
 
     logic [31:0] stack [15:0];
     logic [3:0] sp, np;
-
-    logic 
+    logic full;
 
     always_comb begin
         if (push & ~pop & ~full) begin
@@ -37,13 +36,13 @@ module ras #(
         end else begin
             // normal push/pop
             if (push & ~pop & ~full) begin
-                stack[sp] <= push_addr;
+                stack[sp] <= ras_update;
                 sp <= np;
             end else if (~push & pop & ~full) begin
                 sp <= np;
             end else if (push && pop) begin
                 // simultaneous push & pop: pointer unchanged, update top
-                stack[sp] <= push_addr;
+                stack[sp] <= ras_update;
             end
         end
     end

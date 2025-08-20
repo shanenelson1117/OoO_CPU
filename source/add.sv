@@ -17,7 +17,7 @@ module add (  // adder FSM
     logic [31:0] s, result;
     logic zero, negative, overflow, ALUop1, carry;
     logic b_inter, b_taken;
-	logic load_step1, bne, beq, blt, carry, wr_en, bge, bltu, bgeu;
+	logic load_step1, bne, beq, blt, wr_en, bge, bltu, bgeu;
     logic [3:0] curr_rob;
 
 	assign ALUop1 = ALUop[2]; // subtraction signal
