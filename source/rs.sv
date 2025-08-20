@@ -53,7 +53,7 @@ module rs (
             q_reg.V_k <= 32'b0;
             q_reg.load = 0;
             q_reg.ROB_entry <= 4'b0;
-            q_reg.ALU_op <= 3'b0;
+            q_reg.ALU_op <= '0;
             q_reg.branch_type <= 2'b0;
             q_reg.busy <= 1'b0;
         end

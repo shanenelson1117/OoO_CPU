@@ -16,7 +16,8 @@ also mispredicted should be used as a ROB and Issue Queue flush signal
 
 module new_pc (
     input logic [31:0] commit_pc, commit_imm_se,
-    input logic commit_taken, commit_result, 
+    input logic [31:0]  jalr_actual_address, jalr_taken_address,
+    input logic commit_taken, commit_result, commit_jalr,
     input pipe_in_t pipe_in,
     input logic committed_is_branch, clk, // comes from struct of ROB header
     output logic mispredicted,
@@ -43,6 +44,7 @@ module new_pc (
     always_comb begin
         // if we are committing a mispredicted branch
         if (committed_is_branch & (commit_taken ^ commit_result)) begin
+            mispredicted = 1;
             // incorrectly taken
             if (mis_taken) begin
                 pc_pre = commit_pc;
@@ -54,7 +56,14 @@ module new_pc (
                 to_be_added = commit_imm_se;
             end
         end
+        // mispredicted jalr
+        else if (commit_jalr && (jalr_taken_address != jalr_actual_address)) begin
+            mispredicted = 1;
+            pc_pre = 32'b0;
+            to_be_added = jalr_actual_address;
+        end
         else begin
+            mispredicted = 0;
             // if we have a branch that is predicted taken
             if (branch & pipe_taken)  begin
                 pc_pre = pipe_pc;
@@ -77,6 +86,5 @@ module new_pc (
 
     assign curr_branch_imm_se = branch ? {{19{i[31]}}, i[31], i[7], i[30:25], i[11:8], 1'b0} : to_be_added;
     assign pc_update = pc_pre + to_be_added;
-    assign mispredicted = (mis_taken | mis_passed) & (committed_is_branch);
  
 endmodule

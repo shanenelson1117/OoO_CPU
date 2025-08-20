@@ -28,6 +28,7 @@ module out_of_order (
     logic commit_prediction, commit_result;
     // from commit unit, is instruction a branch
     logic committed_is_branch;
+    logic commit_jalr;
     //from new_pc mod, what is the se imm from branch in issue stage
     logic [31:0] curr_branch_imm_se;
     // stall from rs_scheduler
@@ -76,13 +77,13 @@ module out_of_order (
     logic [3:0] ROB_entry_fu;
     logic [1:0] branch_type;
     logic [31:0] A, B;
-    logic [3:0] valid_in_bus;
+    logic [4:0] valid_in_bus;
     logic ALU_op;
     // from cdb sched to functional units
-    logic [4:0] yumi_bus;
+    logic [5:0] yumi_bus;
     // from fus to cdb scheduler
     CDB_packet_t out_0, out_1, out_2, out_3;
-    logic [4:0] valid_out_bus;
+    logic [5:0] valid_out_bus;
     // from memory to cdb_scheduler
     CDB_packet_t out_load;
     // from rs scheduler to lsq scheduler
@@ -113,7 +114,17 @@ module out_of_order (
     logic [3:0] commit_ROB;
     logic valid_commit, stall_reg, lsq_empty, pc_pipe_stall;
     logic [31:0] WriteData_reg;
-    CDB_packet_t commit_packet;
+    CDB_packet_t commit_packet, shift_out;
+    // from commit to jalrq/newpc
+    logic rd_en_jalrq, commit_jalr;
+    // from jalrq to commit
+    logic jalrq_ready;
+    // from jalrq to new pc
+    logic [31:0] jalr_actual_address, jalr_taken_address;
+    logic jalrq_full;
+    jalrq_packet_t jalrq_input;
+
+
 
 
     //--------------------------------------
@@ -122,7 +133,7 @@ module out_of_order (
 
     
     // handles pc reads and writes, as well as makes branch predictions
-    fetch fetch_stage (.clk(clk), .reset, .enable(~stall | mispredicted), .update(commit_result), 
+    fetch fetch_stage (.clk(clk), .reset, .enable(~stall | mispredicted), .update(commit_result), .flush_ptr(commit_ras_pointer),
                 .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in, .stall(pc_pipe_stall), .mispredicted);
     
     // pipeline register between fetch and issue stage
@@ -131,7 +142,8 @@ module out_of_order (
 
     // Generates the next instruction address
     new_pc generate_new_pc (.commit_pc(committed_pc), .commit_imm_se(commit_imm_se), .commit_taken(commit_prediction),
-                .commit_result, .pipe_in, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch, .clk);
+                .commit_result, .pipe_in, .mispredicted, .curr_branch_imm_se, .pc_update, .committed_is_branch, .clk,
+                .commit_jalr, .jalr_actual_address, .jalr_taken_address);
 
 
     //--------------------------------------
@@ -143,7 +155,7 @@ module out_of_order (
     rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes, .valid_commit,
                 .rs_input, .new_packet(rob_input), .stall, .issue_dest, .ROB_entry, .rs_dest, .clk, .reset(reset | mispredicted),
-                .commit_ROB, .stall_reg, .WriteData, .pc_pipe_stall);
+                .commit_ROB, .stall_reg, .WriteData, .pc_pipe_stall, .jalrq_full, .jalrq_input);
     
     // GP registers
     regfile registers (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk(clk), .reset);
@@ -163,6 +175,10 @@ module out_of_order (
 
     // generates right enable signal for lsq
     lsq_scheduler lsq_sched (.in(lsq_input), .out(lqss_out), .wr_en, .lsq_full);
+
+    // queue of jalr instructions
+    jalrq indirect_jump_queue (.clk, .reset, .rd_en(rd_en_jalrq), .CDB_in(CDB_out), .din(jalrq_input), .full(jalrq_full), .head_ready(jalrq_ready),
+                                .jalr_actual_address, .jalr_taken_address)
     
     
     //--------------------------------------
@@ -200,8 +216,10 @@ module out_of_order (
     // Data Memory FU
     memory data_memory (.clk, .ROB_head_store, .head_load, .head_ready, .mem_in(lsq_out), .mem_read_out(out_load), 
                     .rd_en, .rd_en_rob, .valid_out(valid_out_bus[4]), .reset(reset | mispredicted), 
-                    .yummy_in(yumi_bus[4]), .empty(lsq_empty));  
+                    .yummy_in(yumi_bus[4]), .empty(lsq_empty));
 
+    shift shift_fu (.A, .B, .rs_rob_entry(ROB_entry_fu), .ALUop(ALU_op), .valid_in(valid_in_bus[4]), .yumi_in(yumi_bus[5]),
+                    .reset, .clk, .valid_out(valid_out_bus[5]), .ready(ready_bus[4]), .out(shift_out));
 
     //--------------------------------------
     // Write Back
@@ -210,7 +228,7 @@ module out_of_order (
     // Schedules ready packets from functional units for broadcast on cdb to rs, rs scheduler, commit unit, and rob
     cdb_scheduler cdb (.valid_out_bus, .adder_0_out(out_0), .adder_1_out(out_1), .mult_out(out_2), 
                     .div_out(out_3), .mem_out(out_load), .new_CDB(CDB_out), 
-                    .yummi_in_bus(yumi_bus), .commit_packet);
+                    .yummi_in_bus(yumi_bus), .commit_packet, .shift_out);
     
     
     //--------------------------------------
@@ -226,6 +244,6 @@ module out_of_order (
 
     // Routes signals of committed instructions to enable architectural changes
     commit commit_unit (.head, .rob_head_ready, .rd_en_rob, .RegWrite, .commit_ROB, .rd, .commit_is_branch(committed_is_branch), 
-                    .commit_prediction, .commit_result, .empty, .valid_commit, .commit_packet,
-                    .WriteData, .committed_pc, .commit_imm_se, .rd_en(rob_read_enable));
+                    .commit_prediction, .commit_result, .empty, .valid_commit, .commit_packet, .rd_en_jalrq, .commit_jalr,
+                    .WriteData, .committed_pc, .commit_imm_se, .rd_en(rob_read_enable), .jalrq_ready, .commit_ras_pointer);
 endmodule

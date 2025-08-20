@@ -7,13 +7,14 @@
 
 module fu_scheduler (
     input rs_out_t rs0_data, rs1_data, rs2_data, rs3_data,
-    input logic [3:0] ready_bus,
+    input logic [4:0] ready_bus,
     input logic clk, reset,
     output logic [3:0] ROB_entry,
     output logic ALU_op, load,
     output logic [1:0] branch_type,
     output logic [31:0] rs1, rs2,
-    output logic [3:0] consumed_bus, valid_in_bus // both 1 hot
+    output logic [3:0] consumed_bus, 
+    output logic [4:0] valid_in_bus // both 1 hot
 );  
 
     logic [3:0] q, d;
@@ -23,73 +24,84 @@ module fu_scheduler (
     always_comb begin
         if (rs0_data.valid_operands) begin
 
-            ALU_op = rs0_data.ALU_op[0];
+            ALU_op = rs0_data.ALU_op;
             ROB_entry = rs0_data.ROB_entry;
             branch_type = rs0_data.branch_type;
             rs1 = rs0_data.rs1;
             rs2 = rs0_data.rs2;
             load = rs0_data.load;
 
-            if (((rs0_data.ALU_op == 3'b0) || (rs0_data.ALU_op == 3'b001)) && ready_bus[0]) begin
-                valid_in_bus = 4'b0001;
-                d = 4'b0001;
+            if (~(rs0_data.ALU_op[3]) && ready_bus[0]) begin
+                valid_in_bus = 5'b00001;
+                d = 4'b0010;
                  
             end
-            else if (((rs0_data.ALU_op == 3'b0) || (rs0_data.ALU_op == 3'b001)) && ready_bus[1]) begin
-                valid_in_bus = 4'b0010;
-                d = 4'b0001;
+            else if (~(rs0_data.ALU_op[3]) && ready_bus[1])  begin
+                valid_in_bus = 5'b00010;
+                d = 4'b0010;
                  
             end
-            else if (((rs0_data.ALU_op == 3'b100) || (rs0_data.ALU_op == 3'b101)) && ready_bus[2]) begin
-                valid_in_bus = 4'b0100;
-                d = 4'b0001;
+            else if (((rs0_data.ALU_op == MUL) || (rs0_data.ALU_op == MULH)) && ready_bus[2]) begin
+                valid_in_bus = 5'b00100;
+                d = 4'b0010;
                  
             end
-            else if (((rs0_data.ALU_op == 3'b011) || (rs0_data.ALU_op == 3'b010)) && ready_bus[3]) begin
-                valid_in_bus = 4'b1000;
-                d = 4'b0001;
+            else if (((rs0_data.ALU_op == DIV) || (rs0_data.ALU_op == REMU)) && ready_bus[3]) begin
+                valid_in_bus = 5'b01000;
+                d = 4'b0010;
                  
+            end
+            else if (((rs0_data.ALU_op == SRL) || (rs0_data.ALU_op == SRA) || (rs0_data.ALU_op == SLL)) 
+                && ready_bus[4]) begin
+                valid_in_bus = 5'b10000;
+                d = 4'b0010;
             end
             else begin
-                valid_in_bus = 4'b0000;
-                d = 4'b0;
-                 
+                valid_in_bus = 5'b00000;
+                d = 4'b0000;
+    
             end
         end
         else if (rs1_data.valid_operands) begin
 
-            ALU_op = rs1_data.ALU_op[0];
+            ALU_op = rs1_data.ALU_op;
             ROB_entry = rs1_data.ROB_entry;
             branch_type = rs1_data.branch_type;
             rs1 = rs1_data.rs1;
             rs2 = rs1_data.rs2;
             load = rs1_data.load;
 
-            if (((rs1_data.ALU_op == 3'b0) || (rs1_data.ALU_op == 3'b001)) && ready_bus[0]) begin
-                valid_in_bus = 4'b0001;
+            if (~(rs1_data.ALU_op[3]) && ready_bus[0]) begin
+                valid_in_bus = 5'b00001;
                 d = 4'b0010;
                  
             end
-            else if (((rs1_data.ALU_op == 3'b0) || (rs1_data.ALU_op == 3'b001)) && ready_bus[1]) begin
-                valid_in_bus = 4'b0010;
+            else if (~(rs1_data.ALU_op[3]) && ready_bus[1])  begin
+                valid_in_bus = 5'b00010;
                 d = 4'b0010;
                  
             end
-            else if (((rs1_data.ALU_op == 3'b100) || (rs1_data.ALU_op == 3'b101)) && ready_bus[2]) begin
-                valid_in_bus = 4'b0100;
+            else if (((rs1_data.ALU_op == MUL) || (rs1_data.ALU_op == MULH)) && ready_bus[2]) begin
+                valid_in_bus = 5'b00100;
                 d = 4'b0010;
                  
             end
-            else if (((rs1_data.ALU_op == 3'b011) || (rs1_data.ALU_op == 3'b010)) && ready_bus[3]) begin
-                valid_in_bus = 4'b1000;
+            else if (((rs1_data.ALU_op == DIV) || (rs1_data.ALU_op == REMU)) && ready_bus[3]) begin
+                valid_in_bus = 5'b01000;
                 d = 4'b0010;
                  
             end
+            else if (((rs1_data.ALU_op == SRL) || (rs1_data.ALU_op == SRA) || (rs1_data.ALU_op == SLL)) 
+                && ready_bus[4]) begin
+                valid_in_bus = 5'b10000;
+                d = 4'b0010;
+            end  
             else begin
-                valid_in_bus = 4'b0000;
-                d = 4'b0;
-                 
+                valid_in_bus = 5'b00000;
+                d = 4'b0000;
+    
             end
+        end
         end
         else if (rs2_data.valid_operands) begin
 
@@ -100,29 +112,34 @@ module fu_scheduler (
             rs2 = rs2_data.rs2;
             load = rs2_data.load;
 
-            if (((rs2_data.ALU_op == 3'b0) || (rs2_data.ALU_op == 3'b001)) && ready_bus[0]) begin
-                valid_in_bus = 4'b0001;
+            if (~(rs2_data.ALU_op[3]) && ready_bus[0]) begin
+                valid_in_bus = 5'b00001;
                 d = 4'b0100;
                  
             end
-            else if (((rs2_data.ALU_op == 3'b0) || (rs2_data.ALU_op == 3'b001)) && ready_bus[1]) begin
-                valid_in_bus = 4'b0010;
+            else if (~(rs2_data.ALU_op[3]) && ready_bus[1])  begin
+                valid_in_bus = 5'b00010;
                 d = 4'b0100;
                  
             end
-            else if (((rs2_data.ALU_op == 3'b100) || (rs2_data.ALU_op == 3'b101)) && ready_bus[2]) begin
-                valid_in_bus = 4'b0100;
+            else if (((rs2_data.ALU_op == MUL) || (rs2_data.ALU_op == MULH)) && ready_bus[2]) begin
+                valid_in_bus = 5'b00100;
                 d = 4'b0100;
                  
             end
-            else if (((rs2_data.ALU_op == 3'b011) || (rs2_data.ALU_op == 3'b010)) && ready_bus[3]) begin
-                valid_in_bus = 4'b1000;
+            else if (((rs2_data.ALU_op == DIV) || (rs2_data.ALU_op == REMU)) && ready_bus[3]) begin
+                valid_in_bus = 5'b01000;
                 d = 4'b0100;
                  
             end
+            else if (((rs2_data.ALU_op == SRL) || (rs2_data.ALU_op == SRA) || (rs2_data.ALU_op == SLL)) 
+                && ready_bus[4]) begin
+                valid_in_bus = 5'b10000;
+                d = 4'b0100;
+            end  
             else begin
-                valid_in_bus = 4'b0000;
-                d = 4'b0;
+                valid_in_bus = 5'b00000;
+                d = 4'b0000;
                  
             end
         end
@@ -136,29 +153,34 @@ module fu_scheduler (
             rs2 = rs3_data.rs2;
             load = rs3_data.load;
 
-            if (((rs3_data.ALU_op == 3'b0) || (rs3_data.ALU_op == 3'b001)) && ready_bus[0]) begin
-                valid_in_bus = 4'b0001;
+            if (~(rs3_data.ALU_op[3]) && ready_bus[0]) begin
+                valid_in_bus = 5'b00001;
                 d = 4'b1000;
                  
             end
-            else if (((rs3_data.ALU_op == 3'b0) || (rs3_data.ALU_op == 3'b001)) && ready_bus[1]) begin
-                valid_in_bus = 4'b0010;
+            else if (~(rs3_data.ALU_op[3]) && ready_bus[1])  begin
+                valid_in_bus = 5'b00010;
                 d = 4'b1000;
                  
             end
-            else if (((rs3_data.ALU_op == 3'b100) || (rs3_data.ALU_op == 3'b101)) && ready_bus[2]) begin
-                valid_in_bus = 4'b0100;
+            else if (((rs3_data.ALU_op == MUL) || (rs3_data.ALU_op == MULH)) && ready_bus[2]) begin
+                valid_in_bus = 5'b00100;
                 d = 4'b1000;
                  
             end
-            else if (((rs3_data.ALU_op == 3'b011) || (rs3_data.ALU_op == 3'b010)) && ready_bus[3]) begin
-                valid_in_bus = 4'b1000;
+            else if (((rs3_data.ALU_op == DIV) || (rs3_data.ALU_op == REMU)) && ready_bus[3]) begin
+                valid_in_bus = 5'b01000;
                 d = 4'b1000;
                  
             end
+            else if (((rs3_data.ALU_op == SRL) || (rs3_data.ALU_op == SRA) || (rs3_data.ALU_op == SLL)) 
+                && ready_bus[4]) begin
+                valid_in_bus = 5'b10000;
+                d = 4'b1000;
+            end  
             else begin
-                valid_in_bus = 4'b0000;
-                d = 4'b0;
+                valid_in_bus = 5'b00000;
+                d = 4'b0000;
                  
             end
         end

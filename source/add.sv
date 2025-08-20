@@ -6,26 +6,37 @@
 `include "structs.svh"
 
 module add (  // adder FSM
-    input logic clk, reset, valid_in, yumi_in, ALUop, load,
+    input logic clk, reset, valid_in, yumi_in, load,
+	input logic [4:0] ALUop, // want all sub instructions to have msb == 1
     input logic [3:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
-    input logic [1:0] branch_type, // branch controls, need sub to be high for any branch
+    input logic [2:0] branch_type, // branch controls, need sub to be high for any branch
     output logic valid_out, ready,
     output CDB_packet_t out
 );
     logic [31:0] s, result;
-    logic zero, negative, overflow, sub;
+    logic zero, negative, overflow, ALUop1, carry;
     logic b_inter, b_taken;
-	logic load_step1, bne, beq, blt, carry, wr_en;
+	logic load_step1, bne, beq, blt, carry, wr_en, bge, bltu, bgeu;
     logic [3:0] curr_rob;
+
+	assign ALUop1 = ALUop[2]; // subtraction signal
 
     adder_32bit adder (.*);
 
-    assign bne = (branch_type == 2'b01);
-    assign beq = (branch_type == 2'b10);
-    assign blt = (branch_type == 2'b11);
+	assign bge = (branch_type == BGE);
+    assign bne = (branch_type == BNE);
+    assign beq = (branch_type == BEQ);
+    assign blt = (branch_type == BLT);
+	assign bltu = (branch_type == BLTU);
+	assign bgeu = (branch_type == BGEU);
 
-    assign b_inter = (bne & ~zero) | (beq & zero) | (blt & (negative ^ overflow));
+    assign b_inter = (bne & ~zero) | 
+					(beq & zero) | 
+					(blt & (negative ^ overflow)) | 
+					(bge & ~(negative ^ overflow)) |
+					(bltu & ~(carry)) |
+					(bgeu & carry);
 
 	// Register rs signals
     always_ff @(posedge clk) begin
@@ -33,43 +44,64 @@ module add (  // adder FSM
             valid_out <= 0;
             b_taken <= 0;
             curr_rob <= 4'b0;
-            sub <= 0;
             ready <= 1;
 			load_step1 <= 0;
         end else if (valid_in) begin
-			if (valid_in) begin
-				assert(^rs1 !== 1'bx && ^rs2 !== 1'bx) else $error("Adder inputs X when valid_in high");
-			end
             result <= s;
             valid_out <= 1;
             b_taken <= b_inter;
-            curr_rob <= rs_rob_entry;
-            sub <= ALUop; 
+            curr_rob <= rs_rob_entry; 
             ready <= 0;
 			load_step1 <= load;
         end
     end
 
+	always_comb begin
+		// SLT
+		if (ALUop == SLT) begin
+			out.result = (negative ^ overflow) ? 32'd1 : 32'b0;
+		end
+		// SLTU
+		else if (ALUop == SLTU) begin
+			out.result = (~carry) ? 32'd1 : 32'b0;
+		end
+		// XOR
+		else if (ALUop == XOR) begin
+			out.result = rs1 ^ rs2;
+		end
+		// OR
+		else if (ALUop == OR) begin
+			out.result = rs1 | rs2;
+		end
+		// AND
+		else if (ALUop == AND) begin
+			out.result = rs1 & rs2;
+		end
+		// ALUops 100 = sub, 000 = add
+		else begin
+			out.result = result;
+		end
+	end
+
 	assign out.load_step1 = load_step1;
     assign out.dest_ROB_entry = curr_rob;
-    assign out.result = result;
     assign out.branch_result = b_taken;
     assign out.from_commit = 1'b0;
 endmodule
 
 module adder_32bit ( // full adder
 	input logic [31:0] rs1, rs2,
-	input logic sub, ALUop,
+	input logic sub, ALUop1,
 	output logic [31:0] s,
-	output logic zero, overflow, negative
+	output logic zero, overflow, negative, carry
 	);
 	
 	logic [32:0] c_bus;
 	logic [31:0] b;
 	
-	assign c_bus[0] = ALUop;
+	assign c_bus[0] = ALUop1;
 
-    assign b = ~ALUop ? rs2 : ~rs2;
+    assign b = ~ALUop1 ? rs2 : ~rs2;
 	
 	genvar i;
 	
