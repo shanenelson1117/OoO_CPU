@@ -1,9 +1,8 @@
 # OoO_CPU
-This project is an Out of Order Execution processor implemented using Tomasulo's algorithm and speculative execution. The processor is based on a subset of the RISC-V architecture, implementing sections of the RV32I and M instruction sets. I implement speculative execution with a (10,2) correlating branch predictor and a FIFO reorder buffer (ROB). The use of reservation stations and a register-status register along with Tomasulo's algorithm allows the processor to execute long running multiplication and division instructions while progressing on other (shorter running) instructions. Before allowing instructions after a branch to change architectural state (register/memory values) the processor ensures that the branch was correctly predicted, this process is facilitated by the ROB which is implemented as a synchronous circular FIFO queue which holds instructions to be committed in program order. 
+This project is an Out of Order Execution processor implemented using Tomasulo's algorithm and speculative execution. The processor is based on a subset of the RISC-V architecture, implementing the entire base RV32I instruction set as well as a subset of the M extension. I implement speculative execution with a (10,2) correlating branch predictor, return address stack, and FIFO reorder buffer (ROB). The use of reservation stations and a register-status register along with Tomasulo's algorithm allows the processor to execute long running multiplication and division instructions while progressing on other (shorter running) instructions. Before allowing instructions after a branch to change architectural state (register/memory values) the processor ensures that the branch was correctly predicted, this process is facilitated by the ROB which is implemented as a synchronous circular FIFO queue which holds instructions to be committed in program order. 
 
 ## Instructions
-The processor is capable of executing: `ADD, ADDI, SUB, SW, LW, MUL, MULH, DIV, REMU, BNE,
-BEQ, BLT,` and  `JAL`.
+The processor is capable of executing: `MUL, MULH, DIV, REMU`
 
 ## Files
 `out_of_order.sv` is the top level module. All modules used by the top level are included in the "source" folder, including the testbench, `tl_test.sv`.
