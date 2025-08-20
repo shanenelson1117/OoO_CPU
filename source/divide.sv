@@ -8,20 +8,21 @@
 module divide (
   input logic clk, reset, valid_in, yumi_in,
   input logic [3:0] rs_rob_entry,
-  input logic ALUop, // are we doing div or remu (remainder unsigned)
+  input ALU_op_t ALUop, // are we doing div or remu (remainder unsigned)
   output logic valid_out, ready,
   input logic [31:0] dividend, divisor, 
   output CDB_packet_t out
 );
-  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div, a_lt_b_reg;
+  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div, a_lt_b_reg, div;
   logic [31:0] P, quotient, remainder, result;
   logic [3:0] curr_rob;
   // register operand msb's
   logic sor_msb, end_msb;
 
+
   logic [31:0] abs_sor, abs_end;
-  assign abs_sor = (ALUop && divisor[31])  ? (~divisor + 1)  : divisor;
-  assign abs_end = (ALUop && dividend[31]) ? (~dividend + 1) : dividend;
+  assign abs_sor = (ALUop[0] && divisor[31])  ? (~divisor + 1)  : divisor;
+  assign abs_end = (ALUop[0] && dividend[31]) ? (~dividend + 1) : dividend;
 
   assign a_lt_b = abs_sor > abs_end;
 
@@ -48,7 +49,7 @@ module divide (
           a_lt_b_reg <= 0;
       end else if (valid_in) begin
           curr_rob <= rs_rob_entry;
-          div <= ALUop;
+          div <= ALUop[0];
           sor_msb <= divisor[31];
           end_msb <= dividend[31];
           a_lt_b_reg <= a_lt_b;

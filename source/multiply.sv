@@ -8,7 +8,8 @@
 module multiply (
   input logic [31:0] A, B,      // register operands
   input logic [3:0] rs_rob_entry,
-  input logic valid_in, yumi_in, reset, clk, ALUop,  // inputs are valid, system ready, rst, clk, high order bits?
+  input logic valid_in, yumi_in, reset, clk,  // inputs are valid, system ready, rst, clk, high order bits?
+  input ALU_op_t ALUop,
   output logic valid_out, ready,     // output is valid, FU ready for input, 
   output CDB_packet_t out
 );
@@ -39,7 +40,7 @@ module multiply (
             mul_h <= 0;
         end else if (valid_in) begin
             curr_rob <= rs_rob_entry;
-            mul_h <= ALUop;
+            mul_h <= ALUop[0];
         end else if (yumi_in) begin
             curr_rob <= 4'b0;
             mul_h <= 0;

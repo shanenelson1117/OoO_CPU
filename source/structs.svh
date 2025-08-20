@@ -19,9 +19,9 @@ typedef struct packed {
     logic [3:0] Q_j, Q_k; // ROB entry # for unready operands (0 if operand is ready)
     logic [31:0] V_j, V_k; // Value of ready operands
     logic [3:0] ROB_entry; // What is the ROB entry associated with this instruction
-    ALU_op_t [3:0] ALU_op; // what operation must be performed
+    ALU_op_t ALU_op; // what operation must be performed
     // 000: add, 001: sub, 100: mul, 101: mul_h, 011: div, 010: remu
-    branch_type_t [2:0] branch_type; // see enum below
+    branch_type_t branch_type; // see enum below
     logic busy, load; // is the rs waiting for operands? is the operation a load?
 } rs_data_t;
 
@@ -84,8 +84,8 @@ typedef struct packed {
 
 // data needed by fu's from rs 
 typedef struct packed {
-    branch_type_t [2:0] branch_type; // branch type
-    ALU_op_t [3:0] ALU_op; // alu operation to perform
+    branch_type_t branch_type; // branch type
+    ALU_op_t ALU_op; // alu operation to perform
     logic [3:0] ROB_entry; // rob entry associated with rs
     logic [31:0] rs1; // operand 1
     logic [31:0] rs2; // operand 2

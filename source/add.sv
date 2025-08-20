@@ -7,10 +7,10 @@
 
 module add (  // adder FSM
     input logic clk, reset, valid_in, yumi_in, load,
-	input logic [4:0] ALUop, // want all sub instructions to have msb == 1
+	input ALU_op_t ALUop, // want all sub instructions to have msb == 1
     input logic [3:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
-    input logic [2:0] branch_type, // branch controls, need sub to be high for any branch
+    input branch_type_t branch_type, // branch controls, need sub to be high for any branch
     output logic valid_out, ready,
     output CDB_packet_t out
 );
@@ -77,7 +77,7 @@ module add (  // adder FSM
 		else if (ALUop == AND) begin
 			out.result = rs1 & rs2;
 		end
-		// ALUops 100 = sub, 000 = add
+		// sub, add
 		else begin
 			out.result = result;
 		end
