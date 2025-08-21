@@ -75,7 +75,7 @@ module fetch (
         end
     end
 
-    ras ret_addr_s (.clk, .reset, .push, .pop, .ras_update, .mispredicted, .flush_ptr, .ras_new_pc, .ptr);
+    ras ret_addr_s (.clk, .reset, .push, .pop, .ras_update(newpc), .mispredicted, .flush_ptr, .ras_new_pc, .ptr);
 
 
     always_comb begin

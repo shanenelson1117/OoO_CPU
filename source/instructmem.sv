@@ -10,7 +10,8 @@
 // `define BENCHMARK "source/benchmarks/benchmark2.riscv"
 // `define BENCHMARK "source/benchmarks/benchmark3.riscv"
 // `define BENCHMARK "source/benchmarks/benchmark4.riscv"
- `define BENCHMARK "source/benchmarks/benchmark5.riscv"
+// `define BENCHMARK "source/benchmarks/benchmark5.riscv"
+ `define BENCHMARK "source/benchmarks/benchmark6.riscv"
 
 
 // How many bytes are in our memory?  Must be a power of two.

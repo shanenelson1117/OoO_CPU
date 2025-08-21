@@ -56,7 +56,6 @@ module core (
     logic [4:0] issue_dest;
     // from rs scheduler, what rs is the packet going to
     logic [2:0] rs_dest;
-    logic load; // is ins a load?
     // from commit unit which register are we writing to, need this to 
     logic [4:0] rd;
     // from commit unit, are we writing the registers
@@ -74,11 +73,12 @@ module core (
     // from fu's to fu scheduler
     logic [4:0] ready_bus;
     // from fu sched to fu
-    logic [3:0] ROB_entry_fu;
-    logic [2:0] branch_type;
-    logic [31:0] A, B;
+    logic [4:0] [3:0] ROB_entry_bus;
+    logic [1:0] [2:0] branch_type_bus;
+    logic [1:0] load;
     logic [4:0] valid_in_bus;
-    logic [3:0] ALU_op;
+    logic [4:0] [3:0] ALU_op;
+    logic [9:0] [31:0] fu_bus;
     // from cdb sched to functional units
     logic [5:0] yumi_bus;
     // from fus to cdb scheduler
@@ -178,7 +178,7 @@ module core (
     lsq_scheduler lsq_sched (.in(lsq_input), .out(lqss_out), .wr_en, .lsq_full);
 
     // queue of jalr instructions
-    jalrq indirect_jump_queue (.clk, .reset, .rd_en(rd_en_jalrq), .CDB_in(CDB_out), .din(jalrq_input), .full(jalrq_full), .head_ready(jalrq_ready),
+    jalrq indirect_jump_queue (.clk, .reset(reset | mispredicted), .rd_en(rd_en_jalrq), .CDB_in(CDB_out), .din(jalrq_input), .full(jalrq_full), .head_ready(jalrq_ready),
                                 .jalr_actual_address, .jalr_taken_address);
     
     
@@ -188,39 +188,40 @@ module core (
 
 
     // schedules operations into functional units, waiting for open fu's and ready operands
-    fu_scheduler fu_sched (.rs0_data, .rs1_data, .rs2_data, .rs3_data, .ready_bus, .clk, .reset(reset | mispredicted),
-                    .ROB_entry(ROB_entry_fu), .ALU_op, .branch_type, .rs1(A), .rs2(B), .consumed_bus, .valid_in_bus, .load);
+    fu_scheduler fu_sched (.rs0_data, .rs1_data, .rs2_data, .rs3_data, .ready_bus, .clk, 
+                    .ROB_entry_bus, .ALU_op, .branch_type_bus, .fu_bus, .consumed_bus, 
+                    .valid_in_bus, .load);
 
     // Adder FU
-    add adder_fu_0 (.clk, .reset(reset | mispredicted), .load,
+    add adder_fu_0 (.clk, .reset(reset | mispredicted), .load(load[0]),
                     .valid_in(valid_in_bus[0]), .yumi_in(yumi_bus[0]), 
-                    .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
-                    .branch_type, .valid_out(valid_out_bus[0]), 
-                    .out(out_0), .ALUop(ALU_op), .ready(ready_bus[0]));
+                    .rs1(fu_bus[0]), .rs2(fu_bus[1]), .rs_rob_entry(ROB_entry_bus[0]),
+                    .branch_type(branch_type_bus[0]), .valid_out(valid_out_bus[0]), 
+                    .out(out_0), .ALUop(ALU_op[0]), .ready(ready_bus[0]));
 
     // Adder FU 
-    add adder_fu_1 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[1]), .load,
-                    .yumi_in(yumi_bus[1]), .rs1(A), .rs2(B), .rs_rob_entry(ROB_entry_fu),
-                    .branch_type, .valid_out(valid_out_bus[1]), .out(out_1), 
-                    .ALUop(ALU_op), .ready(ready_bus[1]));
+    add adder_fu_1 (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[1]), .load(load[1]),
+                    .yumi_in(yumi_bus[1]), .rs1(fu_bus[2]), .rs2(fu_bus[3]), .rs_rob_entry(ROB_entry_bus[1]),
+                    .branch_type(branch_type_bus[1]), .valid_out(valid_out_bus[1]), .out(out_1), 
+                    .ALUop(ALU_op[1]), .ready(ready_bus[1]));
 
     // Multiply FU (booth's algorithm) 
-    multiply mult_fu (.clk, .reset(reset | mispredicted), .A, .B, .rs_rob_entry(ROB_entry_fu), 
-                    .yumi_in(yumi_bus[2]), .valid_in(valid_in_bus[2]), .ALUop(ALU_op),
+    multiply mult_fu (.clk, .reset(reset | mispredicted), .A(fu_bus[4]), .B(fu_bus[5]), .rs_rob_entry(ROB_entry_bus[2]), 
+                    .yumi_in(yumi_bus[2]), .valid_in(valid_in_bus[2]), .ALUop(ALU_op[2]),
                     .valid_out(valid_out_bus[2]), .ready(ready_bus[2]), .out(out_2));  
     
     // Divide FU (non-restoring division algorithm)
     divide div_fu (.clk, .reset(reset | mispredicted), .valid_in(valid_in_bus[3]), .yumi_in(yumi_bus[3]), 
-                    .rs_rob_entry(ROB_entry_fu), .ALUop(ALU_op), .valid_out(valid_out_bus[3]), .ready(ready_bus[3]), 
-                    .dividend(A), .divisor(B), .out(out_3));
+                    .rs_rob_entry(ROB_entry_bus[3]), .ALUop(ALU_op[3]), .valid_out(valid_out_bus[3]), .ready(ready_bus[3]), 
+                    .dividend(fu_bus[6]), .divisor(fu_bus[7]), .out(out_3));
 
     // Data Memory FU
     memory data_memory (.clk, .ROB_head_store, .head_load, .head_ready, .mem_in(lsq_out), .mem_read_out(out_load), 
                     .rd_en, .rd_en_rob, .valid_out(valid_out_bus[4]), .reset(reset | mispredicted), 
                     .yummy_in(yumi_bus[4]), .empty(lsq_empty));
 
-    shift shift_fu (.A, .B, .rs_rob_entry(ROB_entry_fu), .ALUop(ALU_op), .valid_in(valid_in_bus[4]), .yumi_in(yumi_bus[5]),
-                    .reset, .clk, .valid_out(valid_out_bus[5]), .ready(ready_bus[4]), .out(shift_out));
+    shift shift_fu (.A(fu_bus[8]), .B(fu_bus[9]), .rs_rob_entry(ROB_entry_bus[4]), .ALUop(ALU_op[4]), .valid_in(valid_in_bus[4]), .yumi_in(yumi_bus[5]),
+                    .reset(reset | mispredicted), .clk, .valid_out(valid_out_bus[5]), .ready(ready_bus[4]), .out(shift_out));
 
     //--------------------------------------
     // Write Back

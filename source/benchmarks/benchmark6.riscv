@@ -1,0 +1,37 @@
+// Main program
+00000000000000000000000010010011 // 0 addi x1, x0, 0         // x1 = 0, initialize return address holder
+00000000100000000000000011101111 // 4 jal  x1, 8      // call test_func, save return address in x1
+
+//Continue main program here (infinite loop for testbench)
+00000000000000000000111111101111 // 8 jal x31, 0               // infinite loop, x31 = 8
+
+
+//test_func:
+ 00000000000000000001000110110111 //  12 lui   x3, 0x1          // x3 = 0x00001000
+00000000000000000010001000110111 //   16 lui   x4, 0x2          // x4 = 0x00002000 
+    // AUIPC example
+00000000000000000000001010010111 //   20 auipc x5, 0x0          // x5 = PC + (0x0 << 12)  = 20
+00000000010100000000010100010011 //   24 addi x10, x0, 5         // x10 = 5
+00000000001000000000000100010011 //   28 addi x2, x0, 2
+
+    // Conditional branch example
+00000000101000101101010001100011 //   32 bge   x5, x10, 8 // branch should be taken 20 >= 5
+00000000000100000000111100010011 //   36 addi  x30, x0, 1         // should not execute
+//skip_beq:
+
+    // Jump example using JAL
+00000000100000000000001101101111 //   40 jal   x6, 8    // x6 = PC+4, jump to target
+00000000000100000000111010010011 //   44 addi  x29, x0, 1        // should not execute
+
+//jal_target:
+00000000000101111000011110010011 //   48 addi  x15, x15, 0x1          // x1 = 1, 2
+
+
+    // Branch test: BNE
+00000000111100010000010001100011 //   52  beq   x2, x15, 8  // branch not taken if x2 == x1
+00000000010000110000000001100111 //   56  jalr  x0, x6, 4         // return to address in x6 + 4, skip writing x29
+
+//skip_bne:
+
+    // Function return
+00000000000000001000000001100111 //   60 jalr  x0, x1, 0         // return to caller

@@ -33,7 +33,7 @@ module tl_test;
     reset <= 0; @(posedge clk);
 
     // Change how many cycles the test bench runs for
-    repeat (10000) @(posedge clk);
+    repeat (1000) @(posedge clk);
 
     // Uncomment for benchmark 1
 

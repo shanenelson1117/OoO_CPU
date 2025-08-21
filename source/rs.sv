@@ -87,7 +87,6 @@ module rs (
     end
 
 
-    logic valid_operands_reg;
 
     assign out.valid_operands = ((q_reg.Q_j == 4'b0) && (q_reg.Q_k == 4'b0) && (q_reg.ROB_entry != 4'b0));
 
