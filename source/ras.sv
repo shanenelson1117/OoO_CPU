@@ -21,7 +21,7 @@ module ras #(
             np = sp + 1;
         end else if (~push & pop & ~full) begin
             np = sp - 1;
-        end else if (push && pop) begin
+        end else  begin
             // simultaneous push & pop: pointer unchanged, update top
             np = sp;
         end
@@ -43,6 +43,8 @@ module ras #(
             end else if (push && pop) begin
                 // simultaneous push & pop: pointer unchanged, update top
                 stack[sp] <= ras_update;
+            end else begin
+                sp <= np;
             end
         end
     end

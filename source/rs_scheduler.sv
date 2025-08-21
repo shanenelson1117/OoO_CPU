@@ -27,11 +27,12 @@ module rs_scheduler (
     logic [31:0] curr_branch_pc;
     logic prediction;
     logic [31:0] ins;
-    ALU_op_t alu_op;
-    branch_type_t branch_type;
+    logic [3:0] alu_op;
+    logic [2:0] branch_type;
     logic [31:0] V_k, V_j;
     logic [3:0] Q_temp_j, Q_temp_k;
     logic branch, jump, temp_load, past_rd, issue_writes_temp;
+    logic stall_lsq;
 
     ROB_entry_t rob_input;
 
@@ -85,24 +86,20 @@ module rs_scheduler (
     assign jump = (ps == S_HOLD) ? instr_hold.jump : pipe_out.jump;
 
     always_comb begin
-        if ((~rob_full && ~lsq_full)) begin
-            if (ins[6:0] == 7'b0000000)
-                rs_dest = 3'b100;
-            else if (~busy_bus[0])
-                rs_dest = 3'b000;
-            else if (~busy_bus[1])
-                rs_dest = 3'b001;
-            else if (~busy_bus[2])
-                rs_dest = 3'b010;
-            else if (~busy_bus[3])
-                rs_dest = 3'b011;
-            else 
-                rs_dest = 3'b101;
-        end
-        else rs_dest = 3'b111; // invalid rs_signal
+        if (ins[6:0] == 7'b0000000)
+            rs_dest = 3'b100;
+        else if (~busy_bus[0])
+            rs_dest = 3'b000;
+        else if (~busy_bus[1])
+            rs_dest = 3'b001;
+        else if (~busy_bus[2])
+            rs_dest = 3'b010;
+        else if (~busy_bus[3])
+            rs_dest = 3'b011;
+        else 
+            rs_dest = 3'b101;
     end
     
-
     assign stall = (rs_dest[2] & rs_dest[0]) | rob_full | lsq_full | jalrq_full;
     // decode instruction
     always_comb begin
@@ -223,7 +220,7 @@ module rs_scheduler (
                 Q_temp_k = Q_k;
             end
 
-            branch_type = branch_type_t'(ins[14:12]);
+            branch_type = (ins[14:12]);
         end
         
         // I-type instructions
@@ -244,23 +241,23 @@ module rs_scheduler (
             end
 
             // ALU operation decode
-            if (ins[14:12] == 3'b0 && ins[31:25] == 7'b0000000) begin
+            if (ins[14:12] == 3'b0) begin
                 alu_op = ADD;
                 V_k = {{20{ins[31]}}, ins[31:20]};
             end
-            else if (ins[14:12] == 3'b100 && ins[31:25] == 7'b0000000) begin
+            else if (ins[14:12] == 3'b100) begin
                 alu_op = XOR;
                 V_k = {{20{ins[31]}}, ins[31:20]};
             end
-            else if (ins[14:12] == 3'b110 && ins[31:25] == 7'b0000000) begin
+            else if (ins[14:12] == 3'b110) begin
                 alu_op = OR;
                 V_k = {{20{ins[31]}}, ins[31:20]};
             end
-            else if (ins[14:12] == 3'b111 && ins[31:25] == 7'b0000000) begin
+            else if (ins[14:12] == 3'b111) begin
                 alu_op = AND;
                 V_k = {{20{ins[31]}}, ins[31:20]};
             end
-            else if (ins[14:12] == 3'b001 && ins[31:25] == 7'b0000000) begin
+            else if (ins[14:12] == 3'b001) begin
                 alu_op = SLL;
                 V_k = {27'b0 , ins[24:20]};
             end
@@ -272,7 +269,7 @@ module rs_scheduler (
                 alu_op = SRA;
                 V_k = {27'b0 , ins[24:20]};
             end
-            else if (ins[14:12] == 3'b010 && ins[31:25] == 7'b0000000) begin
+            else if (ins[14:12] == 3'b010) begin
                 alu_op = SLT;
                 V_k = {{20{ins[31]}}, ins[31:20]};
             end
@@ -340,7 +337,7 @@ module rs_scheduler (
         end
 
         // store
-        else begin
+        else if (ins[6:0] == 7'b0100011) begin
             // Need ROB to have access to operand buses in case rs2 is not available
             issue_writes_temp = 1'b0;
             alu_op = ADD;
@@ -361,6 +358,17 @@ module rs_scheduler (
             V_k =  {{20{ins[31]}}, ins[31:25], ins[11:7]};
             Q_temp_k = 4'b0;
             branch_type = NB;
+        end
+        //nop
+        else begin
+            issue_writes_temp = 1'b0;
+            alu_op = ADD; // in the future make this a nop designation and have mech to clear rs
+            V_j = '0;
+            V_k = '0;
+            Q_temp_j = '0;
+            Q_temp_k = '0;
+            branch_type = NB;
+            temp_load = 0;
         end
     end
     // assemble rs input packet

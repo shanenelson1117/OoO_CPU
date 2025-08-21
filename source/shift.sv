@@ -13,10 +13,11 @@ module shift (
   output CDB_packet_t out
 );
   logic [31:0] shifted, shifter;
-  logic [31:0] Q, P, result, output_inter;
+  logic [31:0] Q, result, output_inter;
   logic [63:0] product_inter;
   logic loadregs, shiftregs;
   logic [3:0] curr_rob, ALUop_reg;
+  logic [4:0] P;
 
   assign shifted = A;
   assign shifter = B;

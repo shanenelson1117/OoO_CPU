@@ -9,7 +9,7 @@ module multiply (
   input logic [31:0] A, B,      // register operands
   input logic [3:0] rs_rob_entry,
   input logic valid_in, yumi_in, reset, clk,  // inputs are valid, system ready, rst, clk, high order bits?
-  input ALU_op_t ALUop,
+  input logic [3:0] ALUop,
   output logic valid_out, ready,     // output is valid, FU ready for input, 
   output CDB_packet_t out
 );
@@ -23,8 +23,8 @@ module multiply (
   assign multiplicand = B;
 
 
-  datapath multiply_dp(.*);
-  control multiply_cu(.*);
+  mult_datapath multiply_dp(.*);
+  mult_control multiply_cu(.*);
 
   assign result = mul_h ? product_inter[63:32] : product_inter[31:0];
   
@@ -50,7 +50,7 @@ module multiply (
 endmodule
 
 // implement booth's algorithm
-module datapath (
+module mult_datapath (
   output logic [63:0] product_inter,
   output logic [31:0] Q, P,
   input logic [31:0] multiplier, multiplicand,
@@ -81,7 +81,7 @@ module datapath (
   assign product_inter = {A, Q};
 endmodule
 
-module control (
+module mult_control (
   input logic valid_in, clk, reset, yumi_in,
   input logic [31:0] Q, P,
   output logic loadregs, shiftregs, addregs, decr_P, valid_out, ready

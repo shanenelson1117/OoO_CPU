@@ -13,7 +13,7 @@ module tl_test;
   parameter ClockDelay = 5000;
 
   // Instantiate the DUT (Device Under Test)
-  out_of_order dut (
+  core dut (
     .clk(clk),
     .reset(reset)
   );

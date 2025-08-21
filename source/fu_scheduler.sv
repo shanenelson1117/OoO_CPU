@@ -10,8 +10,9 @@ module fu_scheduler (
     input logic [4:0] ready_bus,
     input logic clk, reset,
     output logic [3:0] ROB_entry,
-    output logic ALU_op, load,
-    output logic [1:0] branch_type,
+    output logic load,
+    output logic [2:0] branch_type,
+    output logic [3:0] ALU_op,
     output logic [31:0] rs1, rs2,
     output logic [3:0] consumed_bus, 
     output logic [4:0] valid_in_bus // both 1 hot
@@ -104,7 +105,7 @@ module fu_scheduler (
         end
         else if (rs2_data.valid_operands) begin
 
-            ALU_op = rs2_data.ALU_op[0];
+            ALU_op = rs2_data.ALU_op;
             ROB_entry = rs2_data.ROB_entry;
             branch_type = rs2_data.branch_type;
             rs1 = rs2_data.rs1;
@@ -145,7 +146,7 @@ module fu_scheduler (
 
         else if (rs3_data.valid_operands) begin
 
-            ALU_op = rs3_data.ALU_op[0];
+            ALU_op = rs3_data.ALU_op;
             ROB_entry = rs3_data.ROB_entry;
             branch_type = rs3_data.branch_type;
             rs1 = rs3_data.rs1;
@@ -184,9 +185,9 @@ module fu_scheduler (
             end
         end
         else begin
-            ALU_op = 1'b0;
+            ALU_op = NOP;
             ROB_entry = 3'b0;
-            branch_type = 2'b0;
+            branch_type = NB;
             rs1 = 32'b0;
             rs2 = 32'b0;
             valid_in_bus = 4'b0000;

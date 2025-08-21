@@ -8,7 +8,7 @@
 module divide (
   input logic clk, reset, valid_in, yumi_in,
   input logic [3:0] rs_rob_entry,
-  input ALU_op_t ALUop, // are we doing div or remu (remainder unsigned)
+  input logic [3:0] ALUop, // are we doing div or remu (remainder unsigned)
   output logic valid_out, ready,
   input logic [31:0] dividend, divisor, 
   output CDB_packet_t out
@@ -67,7 +67,7 @@ endmodule
 module datapath_dv (
   input logic [31:0] abs_sor, abs_end,
   output logic [31:0] quotient, P, remainder,
-  input logic clk, loadregs, pass1, pass2, signadj, ALUop, a_lt_b,
+  input logic clk, loadregs, pass1, pass2, signadj, a_lt_b,
   input logic sor_msb, end_msb
 );
   logic [31:0] A, M, Q, A_temp, Q_temp, A_temp2, Q_temp2;
