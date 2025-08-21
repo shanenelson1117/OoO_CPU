@@ -7,9 +7,9 @@
 // To change the file that is loaded, edit the filename here:
 
 // `define BENCHMARK "source/benchmarks/benchmark1.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark2.riscv"
+`define BENCHMARK "source/benchmarks/benchmark2.riscv"
 // `define BENCHMARK "source/benchmarks/benchmark3.riscv"
-`define BENCHMARK "source/benchmarks/benchmark4.riscv"
+// `define BENCHMARK "source/benchmarks/benchmark4.riscv"
 
 
 // How many bytes are in our memory?  Must be a power of two.

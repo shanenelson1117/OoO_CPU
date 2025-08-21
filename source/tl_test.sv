@@ -51,7 +51,7 @@ module tl_test;
 */
 
   // uncomment for benchmark 2
-/*
+
     // Register assertions
     assert(dut.registers.RegData[1]  == 10);          // x1
     assert(dut.registers.RegData[2]  == 3);           // x2
@@ -80,8 +80,8 @@ module tl_test;
 
     // Optional: verify that x0 is still 0
     assert(dut.registers.RegData[0] == 0);
-*/
 
+/*
     //uncomment for benchmark 4
 
     assert(dut.registers.RegData[0]  == 0);            // x0 (hardwired)
@@ -132,7 +132,7 @@ module tl_test;
     assert(dut.registers.RegData[29] == 40);           // x29 = end pointer
     assert(dut.registers.RegData[30] == 40);           // x30 = loop bound
     assert(dut.registers.RegData[31] == 1);            // x31 = last store value
-
+*/
     $display("All tests passed!");
     $finish;
   end

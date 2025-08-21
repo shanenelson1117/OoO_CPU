@@ -34,28 +34,28 @@ module fu_scheduler (
 
             if (~(rs0_data.ALU_op[3]) && ready_bus[0]) begin
                 valid_in_bus = 5'b00001;
-                d = 4'b0010;
+                d = 4'b0001;
                  
             end
             else if (~(rs0_data.ALU_op[3]) && ready_bus[1])  begin
                 valid_in_bus = 5'b00010;
-                d = 4'b0010;
+                d = 4'b0001;
                  
             end
             else if (((rs0_data.ALU_op == MUL) || (rs0_data.ALU_op == MULH)) && ready_bus[2]) begin
                 valid_in_bus = 5'b00100;
-                d = 4'b0010;
+                d = 4'b0001;
                  
             end
             else if (((rs0_data.ALU_op == DIV) || (rs0_data.ALU_op == REMU)) && ready_bus[3]) begin
                 valid_in_bus = 5'b01000;
-                d = 4'b0010;
+                d = 4'b0001;
                  
             end
             else if (((rs0_data.ALU_op == SRL) || (rs0_data.ALU_op == SRA) || (rs0_data.ALU_op == SLL)) 
                 && ready_bus[4]) begin
                 valid_in_bus = 5'b10000;
-                d = 4'b0010;
+                d = 4'b0001;
             end
             else begin
                 valid_in_bus = 5'b00000;
