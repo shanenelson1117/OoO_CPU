@@ -85,8 +85,11 @@ module rs_scheduler (
     assign branch =  (ps == S_HOLD) ? instr_hold.branch : pipe_out.branch;
     assign jump = (ps == S_HOLD) ? instr_hold.jump : pipe_out.jump;
 
+    logic [6:0] op;
+    assign op = ins[6:0];
+
     always_comb begin
-        if (ins[6:0] == 7'b0000000)
+        if (op == 7'b0000000)
             rs_dest = 3'b100;
         else if (~busy_bus[0])
             rs_dest = 3'b000;
@@ -99,8 +102,14 @@ module rs_scheduler (
         else 
             rs_dest = 3'b101;
     end
-    
-    assign stall = (rs_dest[2] & rs_dest[0]) | rob_full | lsq_full | jalrq_full;
+
+    logic lsq_stall, jalrq_stall;
+
+
+    assign lsq_stall = lsq_full & ((op == 7'b0000011) | (op == 7'b0100011));
+    assign jalrq_stall = jalrq_full & (op == 7'b1100111);
+
+    assign stall = (rs_dest[2] & rs_dest[0]) | rob_full | lsq_stall | jalrq_stall;
     // decode instruction
     always_comb begin
         rs1 = ins[19:15];
@@ -108,7 +117,7 @@ module rs_scheduler (
         issue_dest = ins[11:7];
 
         // R-type
-        if (ins[6:0] == 7'b0110011) begin
+        if (op == 7'b0110011) begin
             branch_type = NB;
             issue_writes_temp = 1;
             temp_load = 0;
@@ -224,7 +233,7 @@ module rs_scheduler (
         end
         
         // I-type instructions
-        else if (ins[6:0] == 7'b0010011) begin
+        else if (op == 7'b0010011) begin
             issue_writes_temp = 1;
             if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_j = new_CDB.result;
@@ -293,7 +302,7 @@ module rs_scheduler (
         end
 
         // load
-        else if (ins[6:0] == 7'b0000011) begin
+        else if (op == 7'b0000011) begin
             alu_op = ADD;
             issue_writes_temp = 1;
             temp_load = 1;
@@ -316,7 +325,7 @@ module rs_scheduler (
         end
 
         // U type instructions
-        else if (ins[6:0] == 7'b0110111 || ins[6:0] == 7'b0010111) begin
+        else if (op == 7'b0110111 || op == 7'b0010111) begin
             issue_writes_temp = 1;
             temp_load = 0;
             Q_temp_k = 4'b0;
@@ -325,7 +334,7 @@ module rs_scheduler (
             alu_op = ADD;
 
             // lui
-            if (ins[6:0] == 7'b0110111) begin
+            if (op == 7'b0110111) begin
                 V_j = 32'b0;
                 V_k = {ins[31:12], 12'b0};
             end
@@ -337,7 +346,7 @@ module rs_scheduler (
         end
 
         // store
-        else if (ins[6:0] == 7'b0100011) begin
+        else if (op == 7'b0100011) begin
             // Need ROB to have access to operand buses in case rs2 is not available
             issue_writes_temp = 1'b0;
             alu_op = ADD;
@@ -386,13 +395,13 @@ module rs_scheduler (
 
     // assemble ROB input packet
     always_comb begin
-        rob_input.ROB_number = (stall | (ins[6:0] == 7'b0000000)) ? 4'b0000 : ROB_entry; // send invalid packet if stall
+        rob_input.ROB_number = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry; // send invalid packet if stall
         rob_input.branch_pred = prediction;
         rob_input.branch_result = 1'b0; // to be updated later
-        rob_input.jalr = (ins[6:0] == 7'b1100111) ? 1 : 0;
+        rob_input.jalr = (op == 7'b1100111) ? 1 : 0;
         rob_input.ras_pointer = (ps == S_HOLD) ? instr_hold.ras_ptr : pipe_out.ras_ptr;
         // store
-        if (ins[6:0] == 7'b0100011) begin
+        if (op == 7'b0100011) begin
             // unknown for now
             rob_input.destination = 32'b0;
             rob_input.itype = 2'b01;
@@ -407,7 +416,7 @@ module rs_scheduler (
             rob_input.ready = 1'b0;
         end
         // load
-        else if (ins[6:0] == 7'b0000011) begin
+        else if (op == 7'b0000011) begin
             rob_input.itype = 2'b11;
             rob_input.value = 32'b0; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
@@ -450,7 +459,7 @@ module rs_scheduler (
             end
 
             // load
-            if (ins[6:0] == 7'b0000011) begin
+            if (op == 7'b0000011) begin
                 lsq_input.load = ~stall;
                 lsq_input.store = 0;
                 lsq_input.address = '0;
@@ -460,7 +469,7 @@ module rs_scheduler (
                 lsq_input.Q_store = '0;
             end
             // store
-            else if (ins[6:0] == 7'b0100011) begin
+            else if (op == 7'b0100011) begin
                 lsq_input.load = 0;
                 lsq_input.store = ~stall;
                 lsq_input.address = '0;
@@ -506,7 +515,7 @@ module rs_scheduler (
 
     // Assemble jalr queue packet
     always_comb begin
-        jalrq_input.valid = (ins[6:0] == 7'b1100111) && ~stall;
+        jalrq_input.valid = (op == 7'b1100111) && ~stall;
         jalrq_input.jalr_taken_address = (ps == S_HOLD) ? instr_hold.jalr_address : pipe_out.jalr_address;
         jalrq_input.imm = ins[31:20];
 
