@@ -17,7 +17,7 @@ module shift (
   logic [63:0] product_inter;
   logic loadregs, shiftregs;
   logic [3:0] curr_rob, ALUop_reg;
-  logic [4:0] P;
+  logic [31:0] P;
 
   assign shifted = A;
   assign shifter = B;
@@ -51,7 +51,7 @@ endmodule
 
 module datapath (
   output logic [31:0] output_inter,
-  output logic [4:0] P,
+  output logic [31:0] P,
   input logic [31:0] shifter, shifted,
   input logic clk, loadregs, shiftregs,
   input logic [3:0] ALUop_reg
@@ -62,7 +62,7 @@ module datapath (
   always_ff @(posedge clk) begin
     if (loadregs) begin
       A <= shifted;
-      P <= shifter[4:0];
+      P <= {27'b0, shifter[4:0]};
     end
     if (shiftregs) begin
         if (ALUop_reg == SLL) begin
@@ -73,9 +73,9 @@ module datapath (
               A <= {{A[31]}, A[31:1]};
           end else begin
               A <= {{1'b0, A[31:1]}};
-          end 
-          P <= P - 1;      
+          end       
         end
+        P <= P - 1;
     end
   end 
 
@@ -85,7 +85,7 @@ endmodule
 
 module control (
   input logic valid_in, clk, reset, yumi_in,
-  input logic [4:0] P,
+  input logic [31:0] P,
   output logic loadregs, shiftregs, valid_out, ready
 );
   
@@ -108,7 +108,7 @@ module control (
   always_comb begin
     case (ps)
       s_idle: ns = valid_in ? s_shift : s_idle;
-      s_shift: ns = (P == 5'b0) ? s_done : s_shift;
+      s_shift: ns = (P == 32'd1) ? s_done : s_shift;
       s_done: ns = yumi_in ? s_idle : s_done;
     endcase 
   end 

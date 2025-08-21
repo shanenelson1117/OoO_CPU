@@ -47,7 +47,7 @@ module add (  // adder FSM
             ready <= 1;
 			load_step1 <= 0;
         end else if (valid_in) begin
-            result <= s;
+            out.result <= result;
             valid_out <= 1;
             b_taken <= b_inter;
             curr_rob <= rs_rob_entry; 
@@ -59,27 +59,27 @@ module add (  // adder FSM
 	always_comb begin
 		// SLT
 		if (ALUop == SLT) begin
-			out.result = (negative ^ overflow) ? 32'd1 : 32'b0;
+			result = (negative ^ overflow) ? 32'd1 : 32'b0;
 		end
 		// SLTU
 		else if (ALUop == SLTU) begin
-			out.result = (~carry) ? 32'd1 : 32'b0;
+			result = (~carry) ? 32'd1 : 32'b0;
 		end
 		// XOR
 		else if (ALUop == XOR) begin
-			out.result = rs1 ^ rs2;
+			result = rs1 ^ rs2;
 		end
 		// OR
 		else if (ALUop == OR) begin
-			out.result = rs1 | rs2;
+			result = rs1 | rs2;
 		end
 		// AND
 		else if (ALUop == AND) begin
-			out.result = rs1 & rs2;
+			result = rs1 & rs2;
 		end
 		// sub, add
 		else begin
-			out.result = result;
+			result = s;
 		end
 	end
 
