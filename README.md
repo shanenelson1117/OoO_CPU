@@ -12,7 +12,7 @@ The benchmark riscv machine code files can be found in "source/benchmarks".
 Included are a set of benchmarks, which when run by the testbench, validate the processors correctness. To change which testbench is run, edit `instructmem.sv` to change the included file to be the chosen benchmark. Also change the testbench to include the correct register assertions and necessary amount of cycles. Included is a modelsim `runlab.do` file and necessary wave files.
 
 ## Future Work:
-Currently in progress are the instructions: `ecall` and `ebreak` which require the RISC-V "Zicsr" extension, and the implementation of the priviledged ISA. Along with these improvements, I also look to add the A extension and the S/M priviledge modes, as well as a memory system with caches and VM.
+Currently in progress are the instructions: `ecall` and `ebreak` which require the RISC-V "Zicsr" extension, and the implementation of the priviledged ISA. Along with these improvements, I also look to add the A extension and the S/M priviledge modes, as well as a memory system with caches and VM. (Yes, this is quite a few additions)
 
 ## Notes:
 1. `FENCE` was not implemented due to the lack of caches and io devives in my implementation. Although this is an area for future extension.
