@@ -290,7 +290,7 @@ module rs_scheduler (
             branch_type = NB;
             temp_load = 0;
         end
-        else if (jump) begin
+        else if (jump || op == 7'b1100111) begin
             alu_op = ADD;
             issue_writes_temp = 1;
             temp_load = 0;
@@ -464,7 +464,7 @@ module rs_scheduler (
                 lsq_input.store = 0;
                 lsq_input.address = '0;
                 lsq_input.result = '0;
-                lsq_input.ROB_entry = ROB_entry;
+                lsq_input.ROB_entry = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry;
                 lsq_input.address_valid = 0;
                 lsq_input.Q_store = '0;
             end
@@ -473,18 +473,22 @@ module rs_scheduler (
                 lsq_input.load = 0;
                 lsq_input.store = ~stall;
                 lsq_input.address = '0;
-                if ((new_CDB.dest_ROB_entry == Q_k) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1))
+                if ((new_CDB.dest_ROB_entry == Q_k) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                     lsq_input.result = new_CDB.result;
-                else
+                    lsq_input.Q_store = '0;
+                end
+                else if (~rs2reg_busy) begin
                     lsq_input.result = rs2_data;
+                    lsq_input.Q_store = '0;
+                end
+                else begin
+                    lsq_input.result = 0;
+                    lsq_input.Q_store = Q_k;
+                end
 
-                lsq_input.ROB_entry = ROB_entry;
+                lsq_input.ROB_entry = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry;
                 lsq_input.address_valid = 0;
 
-                if ((new_CDB.dest_ROB_entry == Q_k) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1))
-                    lsq_input.Q_store = '0;
-                else
-                    lsq_input.Q_store = Q_k;
     
             end
             // not valid if not load or store
@@ -493,7 +497,7 @@ module rs_scheduler (
                 lsq_input.store = 0;
                 lsq_input.address = '0;
                 lsq_input.result = rs2;
-                lsq_input.ROB_entry = ROB_entry;
+                lsq_input.ROB_entry = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry;
                 lsq_input.address_valid = 0;
                 lsq_input.Q_store = Q_k;
                 lsq_input.xfer_size = 3'b000;
@@ -507,7 +511,7 @@ module rs_scheduler (
                 lsq_input.store = 0;
                 lsq_input.address = '0;
                 lsq_input.result = rs2;
-                lsq_input.ROB_entry = ROB_entry;
+                lsq_input.ROB_entry = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry;
                 lsq_input.address_valid = 0;
                 lsq_input.Q_store = Q_k;
         end

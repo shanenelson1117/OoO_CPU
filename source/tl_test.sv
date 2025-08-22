@@ -33,7 +33,7 @@ module tl_test;
     reset <= 0; @(posedge clk);
 
     // Change how many cycles the test bench runs for
-    repeat (1000) @(posedge clk);
+    repeat (8000) @(posedge clk);
 
     // Uncomment for benchmark 1
 
@@ -83,7 +83,7 @@ module tl_test;
 */
 
     //uncomment for benchmark 4
-
+/*
     assert(dut.registers.RegData[0]  == 0);            // x0 (hardwired)
     assert(dut.registers.RegData[1]  == 2047);         // x1 = 0x7FF
     assert(dut.registers.RegData[2]  == -1);           // x2 = 0xFFFFFFFF
@@ -132,6 +132,17 @@ module tl_test;
     assert(dut.registers.RegData[29] == 40);           // x29 = end pointer
     assert(dut.registers.RegData[30] == 40);           // x30 = loop bound
     assert(dut.registers.RegData[31] == 1);            // x31 = last store value
+*/
+
+
+
+    assert(dut.registers.RegData[31]  == 6);        // N
+    assert(dut.registers.RegData[6]  == 8);         // Result
+    assert(dut.registers.RegData[2]  == 4);         // Sp
+    assert(dut.registers.RegData[1]  == 196);       // Ret Adr
+    
+
+
 
     $display("All tests passed!");
     $finish;

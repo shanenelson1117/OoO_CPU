@@ -40,7 +40,7 @@ module fetch (
     // predecode
     assign branch = opcode == 7'b1100011;
     assign jump = opcode == 7'b1101111;
-    assign jlar = opcode == 7'b1100111;
+    assign jalr = opcode == 7'b1100111;
 
     gbhsr history_reg (.*);
 
@@ -75,7 +75,7 @@ module fetch (
         end
     end
 
-    ras ret_addr_s (.clk, .reset, .push, .pop, .ras_update(newpc), .mispredicted, .flush_ptr, .ras_new_pc, .ptr);
+    ras ret_addr_s (.clk, .reset, .push, .pop, .ras_update(pc + 4), .mispredicted, .flush_ptr, .ras_new_pc, .ptr);
 
 
     always_comb begin
@@ -83,7 +83,7 @@ module fetch (
         pipe_in.instruction = instruction;
         pipe_in.prediction = (prediction & branch) | jump;  // always jump if jal
         pipe_in.branch = branch; // might as well not compute these again later
-        pipe_in.jump = jump | jalr;
+        pipe_in.jump = jump;
         pipe_in.ras_ptr = ptr;
         pipe_in.jalr_address = newpc;
     end

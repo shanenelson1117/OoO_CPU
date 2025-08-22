@@ -14,44 +14,37 @@ module ras #(
 
     logic [31:0] stack [15:0];
     logic [3:0] sp, np;
-    logic full;
+    logic full, empty;
 
-    always_comb begin
-        if (push & ~pop & ~full) begin
-            np = sp + 1;
-        end else if (~push & pop & ~full) begin
-            np = sp - 1;
-        end else  begin
-            // simultaneous push & pop: pointer unchanged, update top
-            np = sp;
-        end
-    end
-
-    // push / pop logic
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
-            sp <= 0;
+            sp <= 0; // empty stack
         end else if (mispredicted) begin
             sp <= flush_ptr;
         end else begin
-            // normal push/pop
-            if (push & ~pop & ~full) begin
-                stack[sp] <= ras_update;
-                sp <= np;
-            end else if (~push & pop & ~full) begin
-                sp <= np;
+            if (push && !pop && !full) begin
+                sp <= sp + 1;
+                stack[sp + 1] <= ras_update;
+            end else if (!push && pop && !empty) begin
+                sp <= sp - 1;
             end else if (push && pop) begin
-                // simultaneous push & pop: pointer unchanged, update top
-                stack[sp] <= ras_update;
-            end else begin
-                sp <= np;
+                stack[sp] <= ras_update; // overwrite top
             end
         end
     end
 
-    // output top of stack
-    assign ras_new_pc = stack[sp];
-    assign ptr = np;
+    always_comb begin
+        if (reset)
+            ras_new_pc = 32'h0;
+        else if (mispredicted)
+            ras_new_pc = stack[flush_ptr-1];
+        else
+            ras_new_pc = stack[sp];
+    end
+    
+
+    assign ptr = sp;
+    assign empty = sp == 4'b0;
     assign full = sp == 4'b1111;
 
 endmodule

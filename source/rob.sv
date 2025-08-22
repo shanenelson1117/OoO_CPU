@@ -41,18 +41,20 @@ module rob #(parameter DEPTH = 16) (
 		  
 
             for (int i = 1; i < DEPTH; i++) begin
+                if (wptr != i) begin
                 // branch
-                if (rob_data[i].itype == 2'b00) begin
-                    if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
-                        rob_data[i].branch_result <= CDB_in.branch_result;
-                        rob_data[i].ready <= 1;
+                    if (rob_data[i].itype == 2'b00) begin
+                        if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
+                            rob_data[i].branch_result <= CDB_in.branch_result;
+                            rob_data[i].ready <= 1;
+                        end
                     end
-                end
-                // load, reg_dest
-                else if (rob_data[i].itype[1]) begin
-                    if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
-                        rob_data[i].value <= CDB_in.result;
-                        rob_data[i].ready <= 1;
+                    // load, reg_dest
+                    else if (rob_data[i].itype[1]) begin
+                        if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
+                            rob_data[i].value <= CDB_in.result;
+                            rob_data[i].ready <= 1;
+                        end
                     end
                 end
 

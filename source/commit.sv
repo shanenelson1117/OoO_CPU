@@ -90,7 +90,7 @@ module commit (
 
     assign commit_ROB = rd_en ? head.ROB_number : '0;
     assign rd = rd_en ? head.destination[4:0] : '0;
-    assign commit_jalr = (rd_en && jalrq_ready) ? head.jalr : 0;
+    assign commit_jalr = (rob_head_ready && jalrq_ready) ? head.jalr : 0;
     assign commit_ras_pointer = rd_en ? head.ras_pointer : '0;
 
 

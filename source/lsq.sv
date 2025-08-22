@@ -41,15 +41,17 @@ module lsq #(parameter DEPTH = 4) (
     always_ff @(posedge clk) begin
         if (~reset) begin
             for (int i = 0; i < DEPTH; i++) begin
+                if (wptr != i) begin
                 // Forward store result
-                if ((lsq_data[i].Q_store == CDB_in.dest_ROB_entry) && (lsq_data[i].Q_store != 4'b0000) && ~(CDB_in.load_step1)) begin
-                    lsq_data[i].Q_store <= 4'b0000;
-                    lsq_data[i].result <= CDB_in.result;
-                end
-                // Fill in computed load/store address
-                if ((lsq_data[i].ROB_entry == CDB_in.dest_ROB_entry) && ~lsq_data[i].address_valid && (CDB_in.load_step1)) begin
-                    lsq_data[i].address <= CDB_in.result;
-                    lsq_data[i].address_valid  <= 1'b1;
+                    if ((lsq_data[i].Q_store == CDB_in.dest_ROB_entry) && (lsq_data[i].Q_store != 4'b0000) && ~(CDB_in.load_step1)) begin
+                        lsq_data[i].Q_store <= 4'b0000;
+                        lsq_data[i].result <= CDB_in.result;
+                    end
+                    // Fill in computed load/store address
+                    if ((lsq_data[i].ROB_entry == CDB_in.dest_ROB_entry) && ~lsq_data[i].address_valid && (CDB_in.load_step1)) begin
+                        lsq_data[i].address <= CDB_in.result;
+                        lsq_data[i].address_valid  <= 1'b1;
+                    end
                 end
             end
         end
