@@ -112,4 +112,31 @@ typedef struct packed {
     logic [3:0] Q_address; // ROB entry of the ins writing the address
 } jalrq_packet_t;
 
+/* READ ONLY INSTRUCTION CACHE STRUCTURES */
+parameter int TAGMSB = 31, TAGLSB = 11;
 
+typedef logic [511:0] icache_line_t;
+
+typedef struct packed {
+    logic valid;
+    logic [TAGMSB:TAGLSB] tag;
+} i_cache_tag_t;
+
+// Fetch unit request to i cache, also i cache to mem
+typedef struct packed {
+    logic [31:0] addr;
+    logic valid;
+} CPU_i_cache_req_t;
+
+// i cache response to fetch unit
+typedef struct packed {
+    logic [31:0] data;
+    logic ready;
+} i_cache_CPU_res_t;
+
+
+// memory repsonse to i cache
+typedef struct packed {
+    icache_line_t data;
+    logic ready;
+} mem_i_cache_res_t;
