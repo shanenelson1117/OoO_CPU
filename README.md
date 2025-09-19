@@ -11,8 +11,8 @@ The benchmark riscv machine code files can be found in "source/benchmarks".
 ## Benchmarks
 Included are a set of benchmarks, which when run by the testbench, validate the processor's correctness. To change which testbench is run, edit `instructmem.sv` to change the included file to be the chosen benchmark. Also change the testbench to include the correct register assertions and necessary amount of cycles. Included is a modelsim `runlab.do` file and necessary wave files.
 
-### Benchmark format
-Importantly, in order for programs to run correctly, the instruction at imem[0] must be a jump to the start of thread 0's code and the instruction at imem[4] must be a jump to the start of thread 1's code. Because of the lack of virtual memory and paging in my design, the programmer must ensure that memory accesses do not contain any inter-thread aliasing, as each thread does not have a virtual memory space.
+  #### Benchmark Format
+  Importantly, in order for programs to run correctly, the instruction at imem[0] must be a jump to the start of thread 0's code and the instruction at imem[4] must be a jump to the start of thread 1's code. Because of the     lack of virtual memory and paging in my design, the programmer must ensure that memory accesses do not contain any inter-thread aliasing, as each thread does not have a virtual memory space.
 
 ## Future Work:
 Currently in progress are the instructions: `ecall` and `ebreak` which require the RISC-V "Zicsr" extension, and the implementation of the priviledged ISA. Along with these improvements, I also look to add the A extension and the S/M priviledge modes, as well as a memory system with caches and VM. (Yes, this is quite a few additions)
