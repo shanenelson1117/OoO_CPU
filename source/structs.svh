@@ -33,13 +33,13 @@ parameter logic [2:0]
 
 // fetch-issue pipeline register data format
 typedef struct packed {
-    logic [31:0] pc;   
-    logic [31:0] instruction;
-    logic prediction; // was a branch predicted?
-    logic branch; // was instruction a branch?
-    logic jump; // was instruction a jal?
-    logic [3:0] ras_ptr;
-    logic [31:0] jalr_address;
+    logic [1:0] [31:0] pc;   
+    logic [1:0] [31:0] instruction;
+    logic [1:0] prediction; // was a branch predicted?
+    logic [1:0] branch; // was instruction a branch?
+    logic [1:0] jump; // was instruction a jal?
+    logic [1:0] [3:0] ras_ptr;
+    logic [1:0] [31:0] jalr_address;
 } pipe_in_t;
 
 // reservation station data format
@@ -51,6 +51,7 @@ typedef struct packed {
     // 000: add, 001: sub, 100: mul, 101: mul_h, 011: div, 010: remu
     logic [2:0] branch_type; // see enum below
     logic busy, load; // is the rs waiting for operands? is the operation a load?
+    logic TID;
 } rs_data_t;
 
 // Reorder buffer entry format
@@ -64,6 +65,7 @@ typedef struct packed {
     logic [1:0] itype; // instruction type, branch (00), store (01), register dest (10), load (11)
     logic ready; // is the entry raedy to be committed?
     logic jalr;
+    logic TID;
 } ROB_entry_t; 
 
 // CDB data format
@@ -73,6 +75,7 @@ typedef struct packed {
     logic branch_result; // the adder generated branch result
     logic load_step1; // high if packet is a load address (need monitorers to not treat this as a valid packet)
     logic from_commit; // high if packet is a load value
+    logic TID;
 } CDB_packet_t;
 
 // register status register entry format
@@ -89,6 +92,7 @@ typedef struct packed {
     logic [31:0] rs1; // operand 1
     logic [31:0] rs2; // operand 2
     logic valid_operands, load; // operands are valid, instruction is a load
+    logic TID;
 } rs_out_t;
 
 // load-store queue data format
@@ -102,6 +106,7 @@ typedef struct packed {
     logic [3:0] Q_store; // rob entry of instruction providing store data (0 if ready)
     logic [2:0] xfer_size; // 1, 2, 4
     logic lsq_signed; // are we doing a signed load
+    logic TID; // thread ID
 } lsq_packet_t;
 
 typedef struct packed {
@@ -110,6 +115,7 @@ typedef struct packed {
     logic [31:0] jalr_actual_address; // actual register address
     logic [11:0] imm;
     logic [3:0] Q_address; // ROB entry of the ins writing the address
+    logic TID; // thread ID
 } jalrq_packet_t;
 
 /* READ ONLY INSTRUCTION CACHE STRUCTURES */

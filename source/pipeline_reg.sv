@@ -11,7 +11,7 @@
 // also flush when incorrect branch is committed.
 module pipeline_reg (
     input  pipe_in_t d,
-    input  logic reset, clk, queue_full, stall,
+    input  logic reset, clk, stall,
     output pipe_in_t q
 );
 

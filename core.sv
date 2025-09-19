@@ -17,18 +17,17 @@ module core (
     // fetch-issue pipeline register packets
     pipe_in_t pipe_in, pipe_out;
     // come from commit unit (branch result and wether or not we commit a branch)
-    logic update, valid_in; 
+    logic [1:0] update, valid_in; 
     // from new pc unit
-    logic [31:0] pc_update;
+    logic [1:0] [31:0] pc_update;
     // from commit unit used to update fsms (should be destination field of a committed branch)
     logic [31:0] committed_pc, commit_imm_se;
     // mispredicted, output from new_pc mod
-    logic mispredicted;
+    logic [1:0] mispredicted;
     // output from commit module (branch status signals)
-    logic commit_prediction, commit_result;
-    // from commit unit, is instruction a branch
-    logic committed_is_branch;
-    logic commit_jalr;
+    logic [1:0] commit_prediction, commit_result;
+    // Is committed instruction a branch or jump to register
+    logic [1:0] committed_is_branch, commit_jalr;
     //from new_pc mod, what is the se imm from branch in issue stage
     logic [31:0] curr_branch_imm_se;
     // stall from rs_scheduler
@@ -49,7 +48,7 @@ module core (
     ROB_entry_t rob_input;
     logic rob_full, empty;
     // regfile read selects from rs scheduler
-    logic [4:0] rs1, rs2;
+    logic [1:0] [4:0] rs1, rs2;
     // does the issued instruction write to regfile
     logic issue_writes;
     // from rs scheduler, which register does issuing instruction write
@@ -112,8 +111,12 @@ module core (
     logic rob_head_ready;
     // from commit to regstat
     logic [3:0] commit_ROB;
-    logic valid_commit, stall_reg, lsq_empty, pc_pipe_stall;
-    logic [31:0] WriteData_reg;
+    // Is either commit valid
+    logic [1:0] valid_commit; 
+    // Is load store queue emptu
+    logic lsq_empty;
+    // Should we stall the advancement of the PC (pipeline start stall)
+    logic [1:0] pc_pipe_stall;
     CDB_packet_t commit_packet, shift_out;
     // from commit to jalrq
     logic rd_en_jalrq;
@@ -138,7 +141,7 @@ module core (
                 .valid_in(committed_is_branch), .pc_update, .committed_pc, .pipe_in, .stall(pc_pipe_stall), .mispredicted);
     
     // pipeline register between fetch and issue stage
-    pipeline_reg fetch_issue_reg (.clk(clk), .d(pipe_in), .queue_full(stall), 
+    pipeline_reg fetch_issue_reg (.clk(clk), .d(pipe_in), 
                 .reset(reset | mispredicted), .q(pipe_out), .stall(pc_pipe_stall));
 
     // Generates the next instruction address
@@ -153,13 +156,16 @@ module core (
 
     
     // Sends packets to reorder buffer, reservation stations, and load-store queue
-    rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
+    issue issue_unit (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes, .valid_commit,
                 .rs_input, .new_packet(rob_input), .stall, .issue_dest, .ROB_entry, .rs_dest, .clk, .reset(reset | mispredicted),
-                .commit_ROB, .stall_reg, .WriteData, .pc_pipe_stall, .jalrq_full, .jalrq_input);
+                .commit_ROB, .WriteData, .pc_pipe_stall, .jalrq_full, .jalrq_input);
     
-    // GP registers
-    regfile registers (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk(clk), .reset);
+    // GP registers for TID = 0
+    regfile registers_0 (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk(clk), .reset);
+
+    // GP registers for TID = 1
+    regfile registers_0 (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk(clk), .reset);
 
     // Register status registers, keep track of who is writing where, enables register renaming
     regstat reg_status_register (.rs1, .rs2, .clk(clk), .stall(pc_pipe_stall), .reset(reset | mispredicted), .issue_writes, .commit_dest(rd), .rs1reg_busy, .rs2reg_busy,

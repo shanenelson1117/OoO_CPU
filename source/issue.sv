@@ -5,7 +5,7 @@
 
 `include "structs.svh"
 
-module rs_scheduler (
+module issue (
     input pipe_in_t pipe_out,
     input logic [3:0] busy_bus, // busy signals from each rs
     input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, WriteData,// use for jal
@@ -20,7 +20,7 @@ module rs_scheduler (
     output logic [2:0] rs_dest,
     output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
     output logic issue_writes, // ...
-    output logic stall, stall_reg, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
+    output logic stall, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
     output lsq_packet_t lsq_input,
     output jalrq_packet_t jalrq_input
 );
