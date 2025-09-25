@@ -66,6 +66,7 @@ typedef struct packed {
     logic ready; // is the entry raedy to be committed?
     logic jalr;
     logic TID;
+    logic valid;
 } ROB_entry_t; 
 
 // CDB data format

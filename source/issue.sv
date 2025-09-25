@@ -3,26 +3,32 @@
 // File: Reservation Station Scheduler
 // Stage: Issue
 
+// This module has been partially changed to allow SMT. Mainly just the port definitions however.
 `include "structs.svh"
 
 module issue (
     input pipe_in_t pipe_out,
     input logic [3:0] busy_bus, // busy signals from each rs
     input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, WriteData,// use for jal
-    input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
-    input logic rob_full, clk, reset,
-    input logic lsq_full, valid_commit, jalrq_full,
+    input logic [1:0] [4:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
+    input logic rob_full, rob_full_1, // can rob accept 0, 1, or 2 issues
+    input logic clk, reset,
+    input logic lsq_full, lsq_full_1 // can lsq accept 0, 1, or 2 issues
+    input logic jalrq_full, jalrq_full_1 // can jalrq accept 0, 1, or 2 issues
     input CDB_packet_t new_CDB,
-    input logic [3:0] Q_j, Q_k, commit_ROB,
-    input logic rs1reg_busy, rs2reg_busy,
-    output rs_data_t rs_input, // create RS packet
-    output ROB_entry_t new_packet, // create ROB packet
+    input logic [1:0] [3:0] Q_j, Q_k,
+    input logic [1:0] rs1reg_busy, rs2reg_busy,
+    output rs_data_t [1:0] rs_input, // create RS packet
+    output ROB_entry_t [1:0] new_packet, // create ROB packet
     output logic [2:0] rs_dest,
-    output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
-    output logic issue_writes, // ...
-    output logic stall, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
-    output lsq_packet_t lsq_input,
-    output jalrq_packet_t jalrq_input
+    output logic [1:0] [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
+    output logic [1:0] issue_writes, // ...
+    output logic stall,
+    output logic [1:0] pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
+    output lsq_packet_t [1:0] lsq_input,
+    output jalrq_packet_t [1:0] jalrq_input,
+    output logic [3:0] [4:0] ROB_probe,  // See if operands are ready in ROB
+    input logic [3:0] [31:0] ROB_probe_response // Data from ROB operands
 );
     logic [31:0] curr_branch_pc;
     logic prediction;
@@ -39,7 +45,7 @@ module issue (
 
     // Handshake with pipeline reg to not advance instruction on stall
     typedef enum logic [0:0] { S_EMPTY=1'b0, S_HOLD=1'b1 } state_t;
-    state_t ps, ns;
+    state_t ps0, ns0, ps1, ns1;
 
     // Latched instruction and metadata
     pipe_in_t instr_hold;

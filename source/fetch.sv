@@ -3,10 +3,10 @@
 // File: Instruction Fetch Stage
 // Stage: Fetch
 
-// notes: in issue module we need to pass immediate along with branch pc as well as branch pc with 4 
-// to be able to feed new pc in the event of a mispredicted branch
-// probably need muxes to decide between branch pc and pipeline pc, as well as branch immediate and pipeline immediate
-// then for jump we need to use adder rs with dest = rd, rs1= pc, rs2 = 4
+// This module is written but untested for SMT and produces an output that conforms to the struct provided
+// in structs.svh
+
+// Changes need to be made to the gbhsr module, but the bpb module has been updated.
 
  `include "structs.svh"
 
@@ -41,6 +41,8 @@ module fetch (
     assign jump = opcode == 7'b1101111;
     assign jalr = opcode == 7'b1100111;
 
+
+    // Need to change to be able to accept two commits
     gbhsr history_reg (.*);
 
     bpb pred_buffer (.clk, .reset, .update_value(update), .update_valid(valid_in),

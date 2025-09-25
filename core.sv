@@ -3,6 +3,8 @@
 // File: Top Level
 
 `include "source/structs.svh"
+// SOME logic definitions / module calls have been changed to allow SMT.
+// Highly unfinished.
 
 module core (
     input clk, reset
@@ -88,7 +90,7 @@ module core (
     // from rs scheduler to lsq scheduler
     lsq_packet_t lsq_input;
     //from lsq scheduler to lsq
-    lsq_packet_t lqss_out;
+    lsq_packet_t lsq_in;
     logic wr_en, lsq_full;
     // from dmem to lsq
     logic rd_en;
@@ -177,11 +179,11 @@ module core (
 
     // Keeps track of the ordering of loads and stores, removes ambiguous memory RAW hazards   
     lsq load_store_queue (.clk, .reset(reset | mispredicted), .wr_en, .rd_en, .CDB_in(CDB_out), 
-                    .din(lqss_out), .dout(lsq_out), .empty(lsq_empty),
+                    .din(lsq_in), .dout(lsq_out), .empty(lsq_empty),
                     .full(lsq_full), .head_ready, .head_load);
 
     // generates right enable signal for lsq
-    lsq_scheduler lsq_sched (.in(lsq_input), .out(lqss_out), .wr_en, .lsq_full);
+    lsq_scheduler lsq_sched (.in(lsq_input), .out(lsq_in), .wr_en, .lsq_full);
 
     // queue of jalr instructions
     jalrq indirect_jump_queue (.clk, .reset(reset | mispredicted), .rd_en(rd_en_jalrq), .CDB_in(CDB_out), .din(jalrq_input), .full(jalrq_full), .head_ready(jalrq_ready),

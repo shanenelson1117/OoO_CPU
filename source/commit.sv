@@ -5,8 +5,8 @@
 `include "structs.svh"
 
 module commit (
-    input ROB_entry_t head,
-    input logic rob_head_ready, empty, 
+    input ROB_entry_t [1:0] head,
+    input logic [1:0] rob_head_ready, empty, 
     input logic jalrq_ready, // is jalr at head ready?
     input logic rd_en_rob, // from memory unit, is store at head of queue done?
     output logic RegWrite, // register file write enable
