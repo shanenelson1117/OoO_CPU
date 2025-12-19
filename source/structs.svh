@@ -72,7 +72,6 @@ typedef struct packed {
     logic [31:0] result; // the data
     logic branch_result; // the adder generated branch result
     logic load_step1; // high if packet is a load address (need monitorers to not treat this as a valid packet)
-    logic from_commit; // high if packet is a load value
 } CDB_packet_t;
 
 // register status register entry format

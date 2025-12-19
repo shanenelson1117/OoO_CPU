@@ -77,7 +77,6 @@ module memory (
     assign mem_read_out.dest_ROB_entry = mem_rob_entry_reg;
     assign mem_read_out.result = mem_result_reg;
     assign mem_read_out.branch_result  = 1'b0;
-    assign mem_read_out.from_commit = 0;
     assign mem_read_out.load_step1 = 0;
 
 endmodule

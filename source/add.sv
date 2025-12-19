@@ -7,7 +7,7 @@
 
 module add (  // adder FSM
     input logic clk, reset, valid_in, yumi_in, load,
-	input logic [3:0] ALUop, // want all sub instructions to have msb == 1
+		input logic [3:0] ALUop, // want all sub instructions to have msb == 1
     input logic [3:0] rs_rob_entry, 
     input logic [31:0] rs1, rs2,
     input logic [2:0] branch_type, // branch controls, need sub to be high for any branch
@@ -17,19 +17,19 @@ module add (  // adder FSM
     logic [31:0] s, result;
     logic zero, negative, overflow, ALUop1, carry;
     logic b_inter, b_taken;
-	logic load_step1, bne, beq, blt, wr_en, bge, bltu, bgeu;
+		logic load_step1, bne, beq, blt, wr_en, bge, bltu, bgeu;
     logic [3:0] curr_rob;
 
-	assign ALUop1 = ALUop[2]; // subtraction signal
+		assign ALUop1 = ALUop[2]; // subtraction signal
 
     adder_32bit adder (.*);
 
-	assign bge = (branch_type == BGE);
+		assign bge = (branch_type == BGE);
     assign bne = (branch_type == BNE);
     assign beq = (branch_type == BEQ);
     assign blt = (branch_type == BLT);
-	assign bltu = (branch_type == BLTU);
-	assign bgeu = (branch_type == BGEU);
+		assign bltu = (branch_type == BLTU);
+		assign bgeu = (branch_type == BGEU);
 
     assign b_inter = (bne & ~zero) | 
 					(beq & zero) | 
@@ -45,14 +45,14 @@ module add (  // adder FSM
             b_taken <= 0;
             curr_rob <= 4'b0;
             ready <= 1;
-			load_step1 <= 0;
+						load_step1 <= 0;
         end else if (valid_in) begin
             out.result <= result;
             valid_out <= 1;
             b_taken <= b_inter;
             curr_rob <= rs_rob_entry; 
             ready <= 0;
-			load_step1 <= load;
+						load_step1 <= load;
         end
     end
 
@@ -83,10 +83,9 @@ module add (  // adder FSM
 		end
 	end
 
-	assign out.load_step1 = load_step1;
+		assign out.load_step1 = load_step1;
     assign out.dest_ROB_entry = curr_rob;
     assign out.branch_result = b_taken;
-    assign out.from_commit = 1'b0;
 endmodule
 
 module adder_32bit ( // full adder

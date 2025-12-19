@@ -31,7 +31,6 @@ module shift (
   assign out.dest_ROB_entry = curr_rob;
   assign out.result = result;
   assign out.branch_result = 1'b0;
-  assign out.from_commit = 1'b0;
   assign out.load_step1 = 0;
 
   always_ff @(posedge clk) begin

@@ -16,7 +16,7 @@ module pc (
 
 	// Do not stall on a mispredicted branch or the correct pc will be lost
 	assign new_pc = stall & ~mispredicted ? pc : pc_update;
-
+ 
 	// set up PC register
 	always_ff @(posedge clk) begin
         if (reset) begin

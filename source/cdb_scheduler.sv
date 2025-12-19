@@ -12,22 +12,16 @@ module cdb_scheduler (
     input CDB_packet_t div_out,
     input CDB_packet_t mem_out,
     input CDB_packet_t shift_out,
-    input CDB_packet_t commit_packet,
     output CDB_packet_t new_CDB,
     output logic [5:0] yummi_in_bus
 );
     always_comb begin
-        // Always send commit packet first
-        if (commit_packet.dest_ROB_entry != 4'b0) begin
-            new_CDB = commit_packet;
-            yummi_in_bus = 6'b0;
-        end
-        else begin
         // load packet
         if (valid_out_bus[4]) begin
             new_CDB = mem_out;
             yummi_in_bus = 6'b010000;
         end
+        // shift packet
         else if (valid_out_bus[5]) begin
             new_CDB = shift_out;
             yummi_in_bus = 6'b100000;
@@ -56,7 +50,6 @@ module cdb_scheduler (
             new_CDB.dest_ROB_entry = '0;
             new_CDB.result = '0;
             new_CDB.branch_result = '0;
-            new_CDB.from_commit = '0;
             yummi_in_bus = '0;
         end
         end

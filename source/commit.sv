@@ -16,7 +16,6 @@ module commit (
     output logic [31:0] WriteData, committed_pc, commit_imm_se,
     output logic rd_en, valid_commit, // dequeue head
     output logic rd_en_jalrq, // dequeue head of jalrq
-    output CDB_packet_t commit_packet,
     output logic [3:0] commit_ras_pointer
 );  
     // Generate signals that are used to write to the reg file or correct a misprediction
@@ -75,7 +74,7 @@ module commit (
             // Invalid (non-committing cycle)
         else begin
             commit_is_branch = 0;
-            commit_prediction =0;
+            commit_prediction = 0;
             commit_result = '0;
             RegWrite = 0;
             committed_pc = '0;
@@ -92,15 +91,4 @@ module commit (
     assign rd = rd_en ? head.destination[4:0] : '0;
     assign commit_jalr = (rob_head_ready && jalrq_ready) ? head.jalr : 0;
     assign commit_ras_pointer = rd_en ? head.ras_pointer : '0;
-
-
-    // Set up CDB packet
-    assign commit_packet.dest_ROB_entry = (rd_en && head.itype[1]) ? head.ROB_number : '0;
-    assign commit_packet.result = WriteData;
-    assign commit_packet.branch_result = 0;
-    assign commit_packet.load_step1 = 0;
-    assign commit_packet.from_commit = 1;
-
-
-
 endmodule
