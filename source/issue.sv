@@ -8,7 +8,7 @@
 module issue (
     input pipe_in_t pipe_out,
     input logic [3:0] busy_bus, // busy signals from each rs
-    input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, WriteData,// use for jal
+    input logic [31:0] rs1_data, rs2_data,
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
     input logic rob_full, clk, reset,
     input logic lsq_full, valid_commit, jalrq_full,
@@ -436,6 +436,10 @@ module issue (
 
     // assemble ROB input packet
     always_comb begin
+        `ifdef VERILATOR
+            rob_input.pc = curr_branch_pc;
+        `endif
+
         rob_input.ROB_number = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry; // send invalid packet if stall
         rob_input.branch_pred = prediction;
         rob_input.branch_result = 1'b0; // to be updated later
@@ -575,6 +579,10 @@ module issue (
         end
         else if (~rs1reg_busy) begin
             jalrq_input.jalr_actual_address = rs1_data;
+            jalrq_input.Q_address = '0;
+        end
+        else if (rs1rob_ready) begin
+            jalrq_input.jalr_actual_address = rs1rob_data;
             jalrq_input.Q_address = '0;
         end
         else begin
