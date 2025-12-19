@@ -5,13 +5,22 @@
 `include "source/structs.svh"
 
 module core (
+    `ifdef VERILATOR
+        input logic [31:0] mem_wr_addr,
+        input logic [31:0] mem_wr_data,
+        input logic        mem_wr_en,
+        output logic       valid_commit_out,
+        output logic       RegWrite_out,
+        output logic [4:0] rd_out,
+        output logic [31:0] head_pc,
+        output logic [31:0] WriteData_out,
+    `endif
     input clk, reset
 );
  
     //-------------------------------------- 
     // All signals passed between modules
     //--------------------------------------
-
 
 
     // fetch-issue pipeline register packets
@@ -27,8 +36,6 @@ module core (
     // from commit unit, is instruction a branch
     logic committed_is_branch;
     logic commit_jalr;
-    //from new_pc mod, what is the se imm from branch in issue stage
-    logic [31:0] curr_branch_imm_se;
     // stall from rs_scheduler
     logic stall;
     // read data from regfile
@@ -131,7 +138,6 @@ module core (
     fetch fetch_stage (
                     .clk(clk),
                     .reset,
-                    .enable(~stall | mispredicted),
                     .update(commit_result),
                     .flush_ptr(commit_ras_pointer),
                     .valid_in(committed_is_branch),
@@ -141,12 +147,21 @@ module core (
                     .stall(pc_pipe_stall),
                     .mispredicted
                 );
+
+    // If using verilator we need to manually expose these to fill
+    // instruction memory with binary
+    `ifdef VERILATOR
+        always_comb begin
+            fetch_stage.program_counter.inst.mem_wr_addr = mem_wr_addr;
+            fetch_stage.program_counter.inst.mem_wr_data = mem_wr_data;
+            fetch_stage.program_counter.inst.mem_wr_en   = mem_wr_en;
+        end
+    `endif
     
     // pipeline register between fetch and issue stage
     pipeline_reg fetch_issue_reg (
                     .clk(clk),
                     .d(pipe_in),
-                    .queue_full(stall), 
                     .reset(reset | mispredicted),
                     .q(pipe_out),
                     .stall(pc_pipe_stall)
@@ -160,10 +175,8 @@ module core (
                     .commit_result,
                     .pipe_in,
                     .mispredicted,
-                    .curr_branch_imm_se,
                     .pc_update,
                     .committed_is_branch,
-                    .clk,
                     .commit_jalr,
                     .jalr_actual_address,
                     .jalr_taken_address
@@ -192,7 +205,6 @@ module core (
                     .rs1(rs1),
                     .rs2(rs2),
                     .issue_writes(issue_writes),
-                    .valid_commit(valid_commit),
                     .rs_input(rs_input),
                     .new_packet(rob_input),
                     .stall(stall),
@@ -201,7 +213,6 @@ module core (
                     .rs_dest(rs_dest),
                     .clk(clk),
                     .reset(reset | mispredicted),
-                    .commit_ROB(commit_ROB),
                     .pc_pipe_stall(pc_pipe_stall),
                     .jalrq_full(jalrq_full),
                     .jalrq_input(jalrq_input),
@@ -229,7 +240,6 @@ module core (
                     .rs1,
                     .rs2,
                     .clk(clk),
-                    .stall(pc_pipe_stall),
                     .reset(reset | mispredicted),
                     .issue_writes,
                     .commit_dest(rd),
@@ -279,8 +289,7 @@ module core (
     lsq_scheduler lsq_sched (
                     .in(lsq_input),
                     .out(lqss_out),
-                    .wr_en,
-                    .lsq_full
+                    .wr_en
                             );
 
     // queue of jalr instructions
@@ -309,7 +318,6 @@ module core (
                     .rs2_data,
                     .rs3_data,
                     .ready_bus,
-                    .clk, 
                     .ROB_entry_bus,
                     .ALU_op,
                     .branch_type_bus,
@@ -480,4 +488,14 @@ module core (
                     .jalrq_ready,
                     .commit_ras_pointer
                         );
+    
+    `ifdef VERILATOR
+        always_comb begin
+            valid_commit_out = valid_commit;
+            RegWrite_out = RegWrite;
+            rd_out = rd;
+            head_pc = head.pc;
+            WriteData_out = WriteData;
+        end
+    `endif
 endmodule

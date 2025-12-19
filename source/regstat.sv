@@ -20,7 +20,7 @@ module regstat (
     input logic clk, reset, // reset should go high when a mispredicted branch is committed
     input logic issue_writes, // does the issued instruction write to a register, also should be 
     // low if no instruction is issued due to no open reserv stats
-    input logic RegWrite, stall, // are we actually writing to register
+    input logic RegWrite, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
     input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
     output logic [3:0] Q_j, Q_k, // ROB numbers for unready instructions
@@ -28,7 +28,7 @@ module regstat (
 );
 
     reg_stat_t reg_status_table [31:0]; // data
-    reg_stat_t d, d_reg, d_temp; // new data
+    reg_stat_t d; // new data
     logic [31:0] reset_bus, enable_bus; // one-hot enable and reset buses
     logic reset_enable;
 
@@ -59,7 +59,7 @@ module regstat (
     generate
         for (j = 1; j < 32; j++) begin:reg_stat_entries
             reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j] & RegWrite),
-                .write_en(enable_bus[j]), .d(d), .q(reg_status_table[j]), .stall);
+                .write_en(enable_bus[j]), .d(d), .q(reg_status_table[j]));
         end
     endgenerate
 
@@ -80,7 +80,7 @@ endmodule
 module reg_status_entry (
     input logic clk, reset,
     input logic write_en,
-    input logic clear, stall,
+    input logic clear,
     input reg_stat_t d,
     output reg_stat_t q
 );

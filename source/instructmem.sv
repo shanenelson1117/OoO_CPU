@@ -5,7 +5,7 @@
 `ifndef INSTRUCTMEM_SV
 `define INSTRUCTMEM_SV
 
-`define INSTRUCT_MEM_SIZE 32768  // bytes
+`define INSTRUCT_MEM_SIZE 262144  // bytes
 
 module instructmem (
     input  logic [31:0] address,
@@ -35,24 +35,23 @@ module instructmem (
             instruction = 'x;
     end
 
-    // ===== Verilator-only simulation interface =====
-`ifdef VERILATOR
-    // Write from testbench
-    logic [31:0] mem_wr_addr;
-    logic [31:0] mem_wr_data;
-    logic        mem_wr_en;
+		`ifdef VERILATOR
+				// Testbench writes memory on clock edge
+				logic [31:0] mem_wr_addr;
+				logic [31:0] mem_wr_data;
+				logic        mem_wr_en;
 
-    always_ff @(posedge clk) begin
-        if (mem_wr_en)
-            mem[mem_wr_addr] <= mem_wr_data;
-    end
-`else
-    // Default: optional $readmemb for Verilog simulation
-    initial begin
-        $readmemb("benchmarks/default_bench.riscv", mem);
-        $display("Loaded default benchmark");
-    end
-`endif
+				always_ff @(posedge clk) begin
+						if (mem_wr_en)
+								mem[mem_wr_addr] <= mem_wr_data;
+				end
+		`else
+				// Default: optional $readmemb for Verilog simulation
+				initial begin
+						$readmemb("benchmarks/default_bench.riscv", mem);
+						$display("Loaded default benchmark");
+				end
+		`endif
 `endif
 
 endmodule

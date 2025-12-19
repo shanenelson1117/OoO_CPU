@@ -19,7 +19,7 @@ module bpb (
     // generate array of branch predictors
     generate 
         for (i = 0; i < 1024; i++) begin : bpb_fsms
-            two_bit_predictor fsm (.clk, .reset, .update(update_valid), .valid(update_bus[i]), .prediction(pred_bus[i]));
+            two_bit_predictor fsm (.clk, .reset, .update(update_value), .valid(update_bus[i]), .prediction(pred_bus[i]));
         end
     endgenerate
 

@@ -8,7 +8,6 @@
 module fu_scheduler (
     input rs_out_t rs0_data, rs1_data, rs2_data, rs3_data,
     input logic [4:0] ready_bus,
-    input logic clk,
     output logic [4:0] [3:0] ROB_entry_bus,
     output logic [1:0] load,
     output logic [1:0] [2:0] branch_type_bus,
@@ -26,6 +25,7 @@ module fu_scheduler (
         ROB_entry_bus   = '0;
         valid_in_bus    = '0;
         consumed_bus    = '0;
+        ALU_op          = '0;
 
         if (ready_bus[0]) begin
             if (rs0_data.valid_operands && ~rs0_data.ALU_op[3]) begin

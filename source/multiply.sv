@@ -14,7 +14,7 @@ module multiply (
   output CDB_packet_t out
 );
   logic [31:0] multiplier, multiplicand;
-  logic [31:0] Q, P, result;
+  logic [31:0] P, result;
   logic [63:0] product_inter;
   logic loadregs, shiftregs, addregs, decr_P, mul_h;
   logic [3:0] curr_rob;
@@ -51,13 +51,12 @@ endmodule
 // implement booth's algorithm
 module mult_datapath (
   output logic [63:0] product_inter,
-  output logic [31:0] Q, P,
+  output logic [31:0] P,
   input logic [31:0] multiplier, multiplicand,
   input logic clk, loadregs, shiftregs, addregs, decr_P
 );
   logic Q1;
-  logic [31:0] A, B;
-  logic temp_C;
+  logic [31:0] A, B, Q;
 
   // compute arithmetic
   always_ff @(posedge clk) begin
@@ -82,7 +81,7 @@ endmodule
 
 module mult_control (
   input logic valid_in, clk, reset, yumi_in,
-  input logic [31:0] Q, P,
+  input logic [31:0] P,
   output logic loadregs, shiftregs, addregs, decr_P, valid_out, ready
 );
   

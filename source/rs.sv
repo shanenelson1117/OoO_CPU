@@ -17,13 +17,13 @@ module rs_module (
     logic wr_en0, wr_en1, wr_en2, wr_en3;
 
     // Instantiate reservation stations
-    rs rs0 (.CDB_in, .d, .rs_number(3'b000), .wr_en(wr_en0), .clk, .reset(mispredicted | reset |
+    rs rs0 (.CDB_in, .d, .wr_en(wr_en0), .clk, .reset(mispredicted | reset |
             consumed_bus[0]), .busy(busy_bus[0]), .out(rs0_data));
-    rs rs1 (.CDB_in, .d, .rs_number(3'b001), .wr_en(wr_en1), .clk, .reset(mispredicted | reset |
+    rs rs1 (.CDB_in, .d, .wr_en(wr_en1), .clk, .reset(mispredicted | reset |
             consumed_bus[1]), .busy(busy_bus[1]), .out(rs1_data));
-    rs rs2 (.CDB_in, .d, .rs_number(3'b010), .wr_en(wr_en2), .clk, .reset(mispredicted | reset |
+    rs rs2 (.CDB_in, .d, .wr_en(wr_en2), .clk, .reset(mispredicted | reset |
             consumed_bus[2]), .busy(busy_bus[2]), .out(rs2_data));
-    rs rs3 (.CDB_in, .d, .rs_number(3'b011), .wr_en(wr_en3), .clk, .reset(mispredicted | reset |
+    rs rs3 (.CDB_in, .d, .wr_en(wr_en3), .clk, .reset(mispredicted | reset |
             consumed_bus[3]),.busy(busy_bus[3]), .out(rs3_data));
     assign wr_en0 = (rs_dest == 3'b000) & ~stall;
     assign wr_en1 = (rs_dest == 3'b001) & ~stall;
@@ -36,7 +36,6 @@ endmodule
 module rs (
     input CDB_packet_t CDB_in,
     input rs_data_t d,
-    input logic [2:0] rs_number,
     input logic clk, reset, wr_en, // reset should be reset | mispredicted | FU_consumed
     output logic busy, // ready for FU, in progress
 

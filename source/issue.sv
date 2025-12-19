@@ -11,9 +11,9 @@ module issue (
     input logic [31:0] rs1_data, rs2_data,
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
     input logic rob_full, clk, reset,
-    input logic lsq_full, valid_commit, jalrq_full,
+    input logic lsq_full, jalrq_full,
     input CDB_packet_t new_CDB,
-    input logic [3:0] Q_j, Q_k, commit_ROB,
+    input logic [3:0] Q_j, Q_k,
     input logic rs1reg_busy, rs2reg_busy,
     // Necessary if an operand is not at the head of the ROB but is ready (previously broadcast)
     input logic [31:0] rs1rob_data, rs2rob_data,    // Ask ROB for operand data
@@ -34,8 +34,7 @@ module issue (
     logic [2:0] branch_type;
     logic [31:0] V_k, V_j;
     logic [3:0] Q_temp_j, Q_temp_k;
-    logic branch, jump, temp_load, past_rd, issue_writes_temp;
-    logic stall_lsq;
+    logic branch, jump, temp_load, issue_writes_temp;
 
     ROB_entry_t rob_input;
 
@@ -546,10 +545,10 @@ module issue (
                 lsq_input.load = 0;
                 lsq_input.store = 0;
                 lsq_input.address = '0;
-                lsq_input.result = rs2;
-                lsq_input.ROB_entry = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry;
+                lsq_input.result = '0;
+                lsq_input.ROB_entry = '0;
                 lsq_input.address_valid = 0;
-                lsq_input.Q_store = Q_k;
+                lsq_input.Q_store = '0;
                 lsq_input.xfer_size = 3'b000;
                 lsq_input.lsq_signed = 0;
 
@@ -560,8 +559,8 @@ module issue (
                 lsq_input.load = 0;
                 lsq_input.store = 0;
                 lsq_input.address = '0;
-                lsq_input.result = rs2;
-                lsq_input.ROB_entry = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry;
+                lsq_input.result = '0;
+                lsq_input.ROB_entry = '0;
                 lsq_input.address_valid = 0;
                 lsq_input.Q_store = Q_k;
         end

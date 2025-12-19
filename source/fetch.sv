@@ -12,7 +12,6 @@
 
 module fetch (
     input logic clk, reset, 
-    input logic enable, // if instruction queue is full we may need to stall
     input logic update, valid_in,   // are we updating gbshr or have we just committed a branch
     input logic [31:0] pc_update,  // new pc, 
     input logic [31:0] committed_pc, // used to update prediction fsm
@@ -28,7 +27,7 @@ module fetch (
 
     logic [6:0] opcode;
     logic push, pop;
-    logic [31:0] ras_new_pc, ras_update;
+    logic [31:0] ras_new_pc;
     logic [3:0] ptr;
     logic [4:0] rd, rs1;
     assign rd = instruction[11:7];

@@ -6,7 +6,6 @@
 
 module lsq_scheduler (
     input lsq_packet_t in,
-    input logic lsq_full,
     output lsq_packet_t out,
     output logic wr_en
 );

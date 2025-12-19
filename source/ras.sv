@@ -1,6 +1,4 @@
-module ras #(
-    parameter DEPTH = 16         
-)(
+module ras (
     input  logic clk,
     input  logic reset,
     input  logic  push,          // push a return address
@@ -13,7 +11,7 @@ module ras #(
 );
 
     logic [31:0] stack [15:0];
-    logic [3:0] sp, np;
+    logic [3:0] sp;
     logic full, empty;
 
     always_ff @(posedge clk) begin

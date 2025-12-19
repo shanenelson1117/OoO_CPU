@@ -19,15 +19,14 @@ module new_pc (
     input logic [31:0]  jalr_actual_address, jalr_taken_address,
     input logic commit_taken, commit_result, commit_jalr,
     input pipe_in_t pipe_in,
-    input logic committed_is_branch, clk, // comes from struct of ROB header
+    input logic committed_is_branch, // comes from struct of ROB header
     output logic mispredicted,
-    output logic [31:0] curr_branch_imm_se, // still needed in case of mispredicted branch
     output logic [31:0] pc_update
 );  
 
     logic [31:0] pipe_pc, instruction;
     logic pipe_taken, jump, branch;
-    logic mis_taken, mis_passed, mis_temp;
+    logic mis_taken;
     logic [31:0] pc_pre, to_be_added, i;
 
     assign pipe_pc = pipe_in.pc;
@@ -35,11 +34,9 @@ module new_pc (
     assign jump = pipe_in.jump;
     assign branch = pipe_in.branch;
     assign pipe_taken = pipe_in.prediction;
-    logic mis_reg;
 
     assign i = instruction;
     assign mis_taken = commit_taken & ~commit_result;
-    assign mis_passed = ~commit_taken & commit_result;
 
     always_comb begin
         // if we are committing a mispredicted branch
@@ -84,7 +81,6 @@ module new_pc (
         end
     end
 
-    assign curr_branch_imm_se = branch ? {{19{i[31]}}, i[31], i[7], i[30:25], i[11:8], 1'b0} : to_be_added;
     assign pc_update = pc_pre + to_be_added;
  
 endmodule

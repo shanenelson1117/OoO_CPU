@@ -11,22 +11,18 @@
 // also flush when incorrect branch is committed.
 module pipeline_reg (
     input  pipe_in_t d,
-    input  logic reset, clk, queue_full, stall,
+    input  logic reset, clk, stall,
     output pipe_in_t q
 );
 
-    pipe_in_t q_reg;
-    
-
-    assign q_reg = stall ? q_reg: d; 
 
 
     always_ff @(posedge clk) begin
         if (reset) begin  // flush reg on reset or flush
             q <= '0;
         end
-        else begin  // if issue queue can accept new data, update
-            q <= q_reg;
+        else if (!stall) begin  // if issue queue can accept new data, update
+            q <= d;
         end
     end
 

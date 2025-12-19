@@ -13,8 +13,7 @@ module shift (
   output CDB_packet_t out
 );
   logic [31:0] shifted, shifter;
-  logic [31:0] Q, result, output_inter;
-  logic [63:0] product_inter;
+  logic [31:0] result, output_inter;
   logic loadregs, shiftregs;
   logic [3:0] curr_rob, ALUop_reg;
   logic [31:0] P;
@@ -109,6 +108,7 @@ module control (
       s_idle: ns = valid_in ? s_shift : s_idle;
       s_shift: ns = (P == 32'd1) ? s_done : s_shift;
       s_done: ns = yumi_in ? s_idle : s_done;
+      default: ns = s_idle;
     endcase 
   end 
 endmodule

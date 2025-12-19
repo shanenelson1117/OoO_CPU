@@ -13,7 +13,7 @@ module divide (
   input logic [31:0] dividend, divisor, 
   output CDB_packet_t out
 );
-  logic a_lt_b, loadregs, pass1, pass2, pass3, pass4, signadj, div, a_lt_b_reg;
+  logic a_lt_b, loadregs, pass1, pass2, signadj, div, a_lt_b_reg;
   logic [31:0] P, quotient, remainder, result;
   logic [3:0] curr_rob;
   // register operand msb's
@@ -66,10 +66,10 @@ endmodule
 module datapath_dv (
   input logic [31:0] abs_sor, abs_end,
   output logic [31:0] quotient, P, remainder,
-  input logic clk, loadregs, pass1, pass2, signadj, a_lt_b,
+  input logic clk, loadregs, pass1, pass2, signadj,
   input logic sor_msb, end_msb
 );
-  logic [31:0] A, M, Q, A_temp, Q_temp, A_temp2, Q_temp2;
+  logic [31:0] A, M, Q, A_temp, Q_temp;
   logic [63:0] temp;
 
 always_ff @(posedge clk) begin
