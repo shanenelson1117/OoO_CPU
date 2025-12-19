@@ -1,18 +1,66 @@
-# OoO_CPU
-This project is an Out of Order Execution processor designed for academic purposes. It is implemented using Tomasulo's algorithm and speculative execution. The processor is based on the RISC-V architecture, implementing the entire base RV32I instruction set as well as a subset of the M extension. I implement speculative execution with a (10,2) correlating branch predictor, return address stack, and FIFO reorder buffer (ROB). The use of reservation stations and a register-status register along with Tomasulo's algorithm allows the processor to execute long running multiplication and division instructions while progressing on other (shorter running) instructions. Before allowing instructions after a branch to change architectural state (register/memory values) the processor ensures that the branch was correctly predicted, this process is facilitated by the ROB which is implemented as a synchronous circular FIFO queue which holds instructions to be committed in program order. 
+# Out-of-Order RISC-V CPU
 
-## Instructions
-The processor is capable of executing: The [RV32I Base Integer Instruction Set](https://riscv-software-src.github.io/riscv-unified-db/manual/html/isa/isa_20240411/chapters/rv32.html) as well as the M extension instructions `MUL, MULH, DIV, REMU`. The processor cannot run the `FENCE` instruction and will treat it as a NOP<sup>1</sup>. 
+This project implements a superscalar-style out-of-order execution CPU for academic and learning purposes. The processor is written in SystemVerilog and targets the RISC-V RV32I ISA with partial support for the M extension. The design follows Tomasulo’s algorithm with speculative execution and in-order commit via a reorder buffer (ROB), enabling high instruction-level parallelism while maintaining precise architectural state.
 
-## Files
-`core.sv` is the top level module. All modules used by the top level are included in the "source" folder, including the testbench, `tl_test.sv`.
-The benchmark riscv machine code files can be found in "source/benchmarks".
+## Key Features
 
-## Benchmarks
-Included are a set of benchmarks, which when run by the testbench, validate the processors correctness. To change which testbench is run, edit `instructmem.sv` to change the included file to be the chosen benchmark. Also change the testbench to include the correct register assertions and necessary amount of cycles. Included is a modelsim `runlab.do` file and necessary wave files.
+- **Out-of-Order Execution**
+  - Reservation stations and register-status table
+  - Dynamic scheduling via Tomasulo’s algorithm
+  - Overlapping long-latency operations (e.g., MUL/DIV) with independent instructions
 
-## Future Work:
-Currently in progress are the instructions: `ecall` and `ebreak` which require the RISC-V "Zicsr" extension, and the implementation of the priviledged ISA. Along with these improvements, I also look to add the A extension and the S/M priviledge modes, as well as a memory system with caches and VM. (Yes, this is quite a few additions)
+- **Speculative Execution**
+  - (10,2) correlating branch predictor
+  - Return address stack (RAS)
+  - Speculative instruction issue with precise recovery on misprediction
 
-## Notes:
-1. `FENCE` was not implemented due to the lack of caches and io devives in my implementation. Although this is an area for future extension.
+- **In-Order Commit**
+  - FIFO reorder buffer (ROB) implemented as a synchronous circular queue
+  - Ensures correct architectural state updates
+  - Prevents speculative instructions from committing on branch misprediction
+
+- **RISC-V ISA Support**
+  - Full RV32I base integer instruction set
+  - Partial M extension: `MUL`, `MULH`, `DIV`, `REMU`
+  - Unsupported instructions (e.g., `FENCE`) are treated as NOPs due to the absence of caches and I/O devices
+
+## Architecture Overview
+
+The processor decouples instruction issue, execution, and commit:
+- Instructions are issued speculatively into reservation stations
+- Execution proceeds out of program order when operands become ready
+- Results are written back to the ROB
+- Instructions commit in program order once they reach the head of the ROB and all speculative conditions are resolved
+
+This structure allows the processor to exploit instruction-level parallelism while preserving precise architectural semantics.
+
+## Repository Structure
+
+- `core.sv` – Top-level processor module
+- `source/` – All supporting modules, including:
+  - Reservation stations
+  - ROB
+  - Branch predictor
+  - Register file and execution units
+- `source/tl_test.sv` – Testbench
+- `source/benchmarks/` – RISC-V machine code benchmarks
+- `runlab.do` – ModelSim automation script
+- Waveform files for debugging and verification
+
+## Verification
+
+The CPU is verified incrementally using diff-testing against Spike. A simulation-only trace buffer tracks architectural state per ROB entry, storing instruction metadata at issue and updating results via the CDB. Only instructions that commit are logged to a file, ensuring OoO execution does not affect trace order. This is facilitated using Spike, verilator, and a python testing scaffolding script.
+
+## Future Work
+
+Planned extensions include:
+- RISC-V privileged ISA support (`ecall`, `ebreak`, `Zicsr`)
+- A extension (atomics)
+- Supervisor and machine privilege modes
+- Memory hierarchy (caches and virtual memory)
+
+`FENCE` is currently unimplemented due to the absence of a cache and I/O subsystem but is a natural extension once a memory system is added.
+
+## Notes
+
+This project was designed to explore realistic microarchitectural tradeoffs, including speculation, recovery, and precise state management, rather than serving as a minimal teaching CPU.
