@@ -7,10 +7,10 @@ OoO_CPU is an Out-of-Order processor implementing the RISCVIM ISA. The design le
 * Return Address Prediction: Jumps are predicted using a return address stack and validated via the ROB.
 * Commit Logic: Ensures architectural state updates (registers/memory) occur in program order.
 ## Repository Structure:
-```source/core.sv```: Top-level module representing one RISCV hart(core).
-```source/```: All modules used by the top level module.
-```design-docs/```: Documents laying out choices made and tradeoffs faced for recent additions to OoO_CPU.
-```test/```: All resources used for testing the CPU, including testbenches and various tests and benchmarks. SEE ```test/README.md``` for more info on testing structure.
+* ```source/core.sv```: Top-level module representing one RISCV hart(core).
+* ```source/```: All modules used by the top level module.
+* ```design-docs/```: Documents laying out choices made and tradeoffs faced for recent additions to OoO_CPU.
+* ```test/```: All resources used for testing the CPU, including testbenches and various tests and benchmarks. SEE ```test/README.md``` for more info on testing structure.
 ## Building OoO_CPU
 To build the cpu run ```make build-no-warn``` this builds the verilator files and strips unnecessary warnings that prevent the build from succeeding. The output files will be in ```obj_dir/``` .
 ### Diff Testing vs. Spike
