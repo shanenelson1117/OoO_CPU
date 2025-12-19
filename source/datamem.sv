@@ -7,7 +7,7 @@
 
 
 // How many bytes are in our memory?  Must be a power of two.
-`define DATA_MEM_SIZE		1024
+`define DATA_MEM_SIZE	32768
 	
 module datamem (
 	input logic		[31:0]	address,
@@ -119,4 +119,4 @@ module datamem_testbench ();
 		end
 		$stop;
 	end
-endmodule 
+endmodule

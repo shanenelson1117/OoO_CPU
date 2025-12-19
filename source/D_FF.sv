@@ -9,4 +9,4 @@ module D_FF (q, d, reset, clk);
 			else 
 				q <= d;
 		end
-endmodule 
+endmodule

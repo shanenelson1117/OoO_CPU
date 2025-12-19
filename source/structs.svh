@@ -2,6 +2,9 @@
 // Project: OoO CPU
 // Contains structs for various storage and transfer applications
 
+`ifndef STRUCTS_SVH
+`define STRUCTS_SVH
+
 // alu operation types
 parameter logic [3:0] 
     ADD   = 4'b0000,
@@ -64,6 +67,9 @@ typedef struct packed {
     logic [1:0] itype; // instruction type, branch (00), store (01), register dest (10), load (11)
     logic ready; // is the entry raedy to be committed?
     logic jalr;
+    `ifdef VERILATOR
+        logic [31:0] pc;
+    `endif
 } ROB_entry_t; 
 
 // CDB data format
@@ -111,4 +117,4 @@ typedef struct packed {
     logic [3:0] Q_address; // ROB entry of the ins writing the address
 } jalrq_packet_t;
 
-
+`endif // STRUCTS_SVH

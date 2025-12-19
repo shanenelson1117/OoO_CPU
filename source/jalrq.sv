@@ -19,7 +19,7 @@ module jalrq #(parameter DEPTH = 4) (
 );
 
     logic [1:0] wptr, rptr;
-    logic empty;
+    logic empty, wr_en;
 
     assign wr_en = din.valid;
     jalrq_packet_t jalrq_data [DEPTH];
@@ -49,9 +49,6 @@ module jalrq #(parameter DEPTH = 4) (
             end
         end
     end
-
-    // read logic 
-    assign dout = jalrq_data[rptr];
 
     always_ff @(posedge clk) begin
         if (reset) begin

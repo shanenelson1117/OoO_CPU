@@ -52,7 +52,6 @@ module cdb_scheduler (
             new_CDB.branch_result = '0;
             yummi_in_bus = '0;
         end
-        end
     end
 
 endmodule

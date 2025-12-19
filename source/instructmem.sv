@@ -1,88 +1,58 @@
-// Author: CSE 469 Teaching Staff
+// instructmem.sv
+// Simulation-only instruction memory for Verilator
+// Not synthesizable. Supports loading memory from C++ testbench.
 
-//Instruction ROM.  Supports reads only, but is initialized based upon the file specified.
-// All accesses are 32-bit.  Addresses are byte-addresses, and must be word-aligned (bottom
-// two words of the address must be 0).
-//
-// To change the file that is loaded, edit the filename here:
+`ifndef INSTRUCTMEM_SV
+`define INSTRUCTMEM_SV
 
-// `define BENCHMARK "source/benchmarks/benchmark1.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark2.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark3.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark4.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark5.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark6.riscv"
-// `define BENCHMARK "source/benchmarks/benchmark7.riscv"
- `define BENCHMARK "source/benchmarks/benchmark8.riscv"
+`define INSTRUCT_MEM_SIZE 32768  // bytes
 
-
-// How many bytes are in our memory?  Must be a power of two.
-`define INSTRUCT_MEM_SIZE		1024
-	
 module instructmem (
-	input		logic		[31:0]	address,
-	output	logic		[31:0]	instruction,
-	input		logic					clk	// Memory is combinational, but used for error-checking
-	);
+    input  logic [31:0] address,
+    output logic [31:0] instruction,
+    input  logic        clk
+);
 
-	// Force %t's to print in a nice format.
-	initial $timeformat(-9, 2, " ns", 10);
+    // Memory array
+    logic [31:0] mem[`INSTRUCT_MEM_SIZE/4-1:0];
 
-	// Make sure size is a power of two and reasonable.
-	initial assert((`INSTRUCT_MEM_SIZE & (`INSTRUCT_MEM_SIZE-1)) == 0 && `INSTRUCT_MEM_SIZE > 4);
-	
-	// Make sure accesses are reasonable.
-	always_ff @(posedge clk) begin
-		if (address !== 'x) begin // address or size could be all X's at startup, so ignore this case.
-			assert(address[1:0] == 0);	// Makes sure address is aligned.
-			$display("%d address requested", address);
-			assert(address + 3 < `INSTRUCT_MEM_SIZE);	// Make sure address in bounds.
-		end
-	end
-	
-	// The data storage itself.
-	logic [31:0] mem [`INSTRUCT_MEM_SIZE/4-1:0];
-	
-	// Load the program - change the filename to pick a different program.
-	initial begin
-		$readmemb(`BENCHMARK, mem);
-		$display("Running benchmark: ", `BENCHMARK);
-	end
-	
-	// Handle the reads.
-	integer i;
-	always_comb begin
-		if (address + 3 >= `INSTRUCT_MEM_SIZE)
-			instruction = 'x;
-		else
-			instruction = mem[address/4];
-	end
-		
+    // Optional: display time nicely
+    initial $timeformat(-9, 2, " ns", 10);
+
+    // Address assertions
+    always_ff @(posedge clk) begin
+        if (address !== 'x) begin
+            assert(address[1:0] == 0) else $fatal("Unaligned address: %0h", address);
+            assert(address/4 < `INSTRUCT_MEM_SIZE/4) else $fatal("Address out of bounds: %0h", address);
+        end
+    end
+
+    // Combinational read
+    always_comb begin
+        if (address/4 < `INSTRUCT_MEM_SIZE/4)
+            instruction = mem[address/4];
+        else
+            instruction = 'x;
+    end
+
+    // ===== Verilator-only simulation interface =====
+`ifdef VERILATOR
+    // Write from testbench
+    logic [31:0] mem_wr_addr;
+    logic [31:0] mem_wr_data;
+    logic        mem_wr_en;
+
+    always_ff @(posedge clk) begin
+        if (mem_wr_en)
+            mem[mem_wr_addr] <= mem_wr_data;
+    end
+`else
+    // Default: optional $readmemb for Verilog simulation
+    initial begin
+        $readmemb("benchmarks/default_bench.riscv", mem);
+        $display("Loaded default benchmark");
+    end
+`endif
+`endif
+
 endmodule
-
-module instructmem_testbench ();
-
-	parameter ClockDelay = 5000;
-
-	logic		[63:0]	address;
-	logic					clk;
-	logic		[31:0]	instruction;
-	
-	instructmem dut (.address, .instruction, .clk);
-	
-	initial begin // Set up the clock
-		clk <= 0;
-		forever #(ClockDelay/2) clk <= ~clk;
-	end
-	
-	integer i;
-	initial begin
-		// Read every location, including just past the end of the memory.
-		for (i=0; i <= `INSTRUCT_MEM_SIZE; i = i + 4) begin
-			address <= i;
-			@(posedge clk); 
-		end
-		$stop;
-		
-	end
-endmodule 

@@ -17,13 +17,13 @@ module issue (
     input logic rs1reg_busy, rs2reg_busy,
     // Necessary if an operand is not at the head of the ROB but is ready (previously broadcast)
     input logic [31:0] rs1rob_data, rs2rob_data,    // Ask ROB for operand data
-    input logic [1:0] rs1rob_ready, rs2rob_ready,   // Ask ROB if operand data is ready
+    input logic rs1rob_ready, rs2rob_ready,   // Ask ROB if operand data is ready
     output rs_data_t rs_input, // create RS packet
     output ROB_entry_t new_packet, // create ROB packet
     output logic [2:0] rs_dest,
     output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
     output logic issue_writes, // ...
-    output logic stall, stall_reg, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
+    output logic stall, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
     output lsq_packet_t lsq_input,
     output jalrq_packet_t jalrq_input
 );

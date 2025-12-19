@@ -14,11 +14,12 @@ module rob #(parameter DEPTH = 16) (
     output logic head_ready,        // Are we ready to commit head?
     output logic full, empty,      
     output logic ROB_head_store,    // Is the head a store instruction
-    output logic [3:0] ROB_entry    // Available rob entry to issue unit
+    output logic [3:0] ROB_entry,    // Available rob entry to issue unit
     output logic [31:0] rs1rob_data, rs2rob_data,   // Response to issue query(ies)
     output logic rs1rob_ready, rs2rob_ready
 );
     logic [3:0] wptr, rptr;
+    logic wr_en;
   
 
     ROB_entry_t rob_data [DEPTH];
@@ -26,10 +27,10 @@ module rob #(parameter DEPTH = 16) (
     assign wr_en = new_entry.ROB_number == wptr;
     
     // Forwarding to issue stage logic
-    assign rs1rob_data = rob_data[Q_j];
-    assign rs2rob_data = rob_data[Q_k];
+    assign rs1rob_data = rob_data[Q_j].value;
+    assign rs2rob_data = rob_data[Q_k].value;
     assign rs1rob_ready = rob_data[Q_j].ready;
-    assign rs2rob_read = rob_data[Q_k].ready;
+    assign rs2rob_ready = rob_data[Q_k].ready;
 
     // Write logic
     always_ff @(posedge clk) begin
@@ -53,14 +54,14 @@ module rob #(parameter DEPTH = 16) (
                 if (wptr != i) begin
                 // branch
                     if (rob_data[i].itype == 2'b00) begin
-                        if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
+                        if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1)) begin
                             rob_data[i].branch_result <= CDB_in.branch_result;
                             rob_data[i].ready <= 1;
                         end
                     end
                     // load, reg_dest
                     else if (rob_data[i].itype[1]) begin
-                        if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1) && ~CDB_in.from_commit) begin
+                        if ((rob_data[i].ROB_number == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1)) begin
                             rob_data[i].value <= CDB_in.result;
                             rob_data[i].ready <= 1;
                         end
