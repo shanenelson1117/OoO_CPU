@@ -2,8 +2,8 @@
 ## Overview
 OoO_CPU is an Out-of-Order processor implementing the RISCVIM ISA. The design leverages Tomasulo’s algorithm and speculative execution to maximize instruction-level parallelism. Built on the RISC-V RV32I architecture, it supports the full base integer instruction set plus a subset of the M extension (MUL, MULH, DIV, REMU).
 ## Key Feautures:
-* Out-of-Order Execution: Instructions can execute as soon as their operands are ready, improving pipeline utilization.
-* Branch Prediction: Branch instructions are speculatively executed and validated via the ROB.
+* Out-of-Order Execution: Instructions can execute as soon as their operands are ready, improving pipeline utilization. This is facilitated with a common data bus, reg status table, and reservation stations.
+* Branch Prediction: Branch instructions are predicted with a (10,2) correlating branch predictor, executed speculatively and validated via the ROB.
 * Return Address Prediction: Jumps are predicted using a return address stack and validated via the ROB.
 * Commit Logic: Ensures architectural state updates (registers/memory) occur in program order.
 ## Repository Structure:
