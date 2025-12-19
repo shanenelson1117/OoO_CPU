@@ -5,15 +5,18 @@
 `include "structs.svh"
 
 module rob #(parameter DEPTH = 16) (
-    input ROB_entry_t new_entry, // from rs scheduler
-    input CDB_packet_t CDB_in,
+    input ROB_entry_t new_entry,    // from rs scheduler
+    input CDB_packet_t CDB_in,      // Read CDB
     input logic clk, reset, 
-    input logic rd_en,      // dequeue from commit unit
-    output ROB_entry_t head, // combinational read of the head
-    output logic head_ready,
-    output logic full, empty,
-    output logic ROB_head_store,
-    output logic [3:0] ROB_entry // available rob entry to rs scheduler
+    input logic rd_en,              // dequeue from commit unit
+    input logic [3:0] Q_j, Q_k,     // Query(ies) from issue unit
+    output ROB_entry_t head,        // Combinational read of head
+    output logic head_ready,        // Are we ready to commit head?
+    output logic full, empty,      
+    output logic ROB_head_store,    // Is the head a store instruction
+    output logic [3:0] ROB_entry    // Available rob entry to issue unit
+    output logic [31:0] rs1rob_data, rs2rob_data,   // Response to issue query(ies)
+    output logic rs1rob_ready, rs2rob_ready
 );
     logic [3:0] wptr, rptr;
   
@@ -21,6 +24,12 @@ module rob #(parameter DEPTH = 16) (
     ROB_entry_t rob_data [DEPTH];
 
     assign wr_en = new_entry.ROB_number == wptr;
+    
+    // Forwarding to issue stage logic
+    assign rs1rob_data = rob_data[Q_j];
+    assign rs2rob_data = rob_data[Q_k];
+    assign rs1rob_ready = rob_data[Q_j].ready;
+    assign rs2rob_read = rob_data[Q_k].ready;
 
     // Write logic
     always_ff @(posedge clk) begin

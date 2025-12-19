@@ -125,6 +125,10 @@ module core (
     jalrq_packet_t jalrq_input;
     logic [3:0] commit_ras_pointer;
 
+    // Signals for issue to query rob for available entries
+    logic [31:0] rs1rob_data, rs2rob_data;
+    logic rs1rob_ready, rs2rob_ready;
+
 
 
 
@@ -156,9 +160,10 @@ module core (
     issue res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes, .valid_commit,
                 .rs_input, .new_packet(rob_input), .stall, .issue_dest, .ROB_entry, .rs_dest, .clk, .reset(reset | mispredicted),
-                .commit_ROB, .stall_reg, .WriteData, .pc_pipe_stall, .jalrq_full, .jalrq_input);
+                .commit_ROB, .stall_reg, .WriteData, .pc_pipe_stall, .jalrq_full, .jalrq_input, .rs1rob_data, .rs2rob_data,
+                .rs1rob_ready, .rs2rob_ready);
     
-    // GP registers
+    // Register file
     regfile registers (.rs1, .rs2, .rd, .RegWrite, .WriteData, .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .clk(clk), .reset);
 
     // Register status registers, keep track of who is writing where, enables register renaming
@@ -240,7 +245,7 @@ module core (
 
     // Queue of instructions. Allows us to only make architectural changes when execution becomes non-speculative
     rob reorder_buffer (.new_entry(rob_input), .CDB_in(CDB_out), .clk, .reset(reset | mispredicted), 
-                     .rd_en(rob_read_enable), .empty,
+                     .rd_en(rob_read_enable), .empty, .rs1rob_data, .rs2rob_data, .rs1rob_ready, .rs2rob_ready, .Q_j, .Q_k,
                     .head, .head_ready(rob_head_ready), .full(rob_full), .ROB_head_store, .ROB_entry);
 
 
