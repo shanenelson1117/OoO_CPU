@@ -20,9 +20,10 @@ module pc (
 	// set up PC register
 	always_ff @(posedge clk) begin
         if (reset) begin
-            pc <= 32'b0;
+            pc <= 32'h8000_0000;
         end
         else begin
+						$display("PC = %08x", pc);
             pc <= new_pc;
         end
         

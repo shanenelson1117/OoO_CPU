@@ -6,6 +6,7 @@
 `define INSTRUCTMEM_SV
 
 `define INSTRUCT_MEM_SIZE 262144  // bytes
+`define BASE 32'h8000_0000
 
 module instructmem (
     input  logic [31:0] address,
@@ -19,20 +20,19 @@ module instructmem (
     // Optional: display time nicely
     initial $timeformat(-9, 2, " ns", 10);
 
+    always_comb begin
+        if (address < `BASE)
+            instruction = 32'h00000013; // NOP
+        else
+            instruction = mem[(address - `BASE) >> 2];
+    end
+
     // Address assertions
     always_ff @(posedge clk) begin
         if (address !== 'x) begin
             assert(address[1:0] == 0) else $fatal("Unaligned address: %0h", address);
-            assert(address/4 < `INSTRUCT_MEM_SIZE/4) else $fatal("Address out of bounds: %0h", address);
+            //assert((address - `BASE )/4 < `INSTRUCT_MEM_SIZE/4) else $fatal("Address out of bounds: %0h", address);
         end
-    end
-
-    // Combinational read
-    always_comb begin
-        if (address/4 < `INSTRUCT_MEM_SIZE/4)
-            instruction = mem[address/4];
-        else
-            instruction = 'x;
     end
 
 		`ifdef VERILATOR

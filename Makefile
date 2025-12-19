@@ -47,6 +47,6 @@ run: build
 	./$(BUILD_DIR)/V$(TOP)
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(SIM_DIR)/*.txt $(SIM_DIR)/*.res
 
 .PHONY: all build run clean
