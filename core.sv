@@ -153,7 +153,7 @@ module core (
 
     
     // Sends packets to reorder buffer, reservation stations, and load-store queue
-    rs_scheduler res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
+    issue res_sched (.pipe_out, .busy_bus, .lsq_full, .lsq_input, .rob_full, .rs1reg_busy, .rs2reg_busy, .new_CDB(CDB_out),
                 .rs1_data(rs1reg_data), .rs2_data(rs2reg_data), .curr_branch_imm_se, .Q_j, .Q_k, .rs1, .rs2, .issue_writes, .valid_commit,
                 .rs_input, .new_packet(rob_input), .stall, .issue_dest, .ROB_entry, .rs_dest, .clk, .reset(reset | mispredicted),
                 .commit_ROB, .stall_reg, .WriteData, .pc_pipe_stall, .jalrq_full, .jalrq_input);

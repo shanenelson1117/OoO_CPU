@@ -5,7 +5,7 @@
 
 `include "structs.svh"
 
-module rs_scheduler (
+module issue (
     input pipe_in_t pipe_out,
     input logic [3:0] busy_bus, // busy signals from each rs
     input logic [31:0] rs1_data, rs2_data, curr_branch_imm_se, WriteData,// use for jal
@@ -15,6 +15,9 @@ module rs_scheduler (
     input CDB_packet_t new_CDB,
     input logic [3:0] Q_j, Q_k, commit_ROB,
     input logic rs1reg_busy, rs2reg_busy,
+    // Necessary if an operand is not at the head of the ROB but is ready (previously broadcast)
+    input logic [31:0] rs1rob_data, rs2rob_data,    // Ask ROB for operand data
+    input logic [1:0] rs1rob_ready, rs2rob_ready,   // Ask ROB if operand data is ready
     output rs_data_t rs_input, // create RS packet
     output ROB_entry_t new_packet, // create ROB packet
     output logic [2:0] rs_dest,
@@ -126,15 +129,22 @@ module rs_scheduler (
                 V_j = new_CDB.result;
                 Q_temp_j = '0;
             end
-        
+            // Data available in reg file
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
                 Q_temp_j = '0;
             end
+            // Query ROB
+            else if (rs1rob_ready) begin
+                V_j = rs1rob_data;
+                Q_temp_j = '0;
+            end
+            // Data not ready anywhere, have to wait for CDB
             else begin
                 V_j = 32'b0;
                 Q_temp_j = Q_j;
             end
+
 
             if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
                 V_k = new_CDB.result;
@@ -145,6 +155,12 @@ module rs_scheduler (
                 V_k = rs2_data;
                 Q_temp_k = '0;
             end
+            // Query ROB
+            else if (rs2rob_ready) begin
+                V_k = rs2rob_data;
+                Q_temp_k = '0;
+            end
+
             else begin
                 V_k = 32'b0;
                 Q_temp_k = Q_k;
@@ -210,6 +226,11 @@ module rs_scheduler (
                 V_j = rs1_data;
                 Q_temp_j = '0;
             end
+            // Query ROB
+            else if (rs1rob_ready) begin
+                V_j = rs1rob_data;
+                Q_temp_j = '0;
+            end
             else begin
                 V_j = 32'b0;
                 Q_temp_j = Q_j;
@@ -222,6 +243,11 @@ module rs_scheduler (
             
             else if (~rs2reg_busy) begin
                 V_k = rs2_data;
+                Q_temp_k = '0;
+            end
+            // Query ROB
+            else if (rs2rob_ready) begin
+                V_k = rs2rob_data;
                 Q_temp_k = '0;
             end
             else begin
@@ -242,6 +268,11 @@ module rs_scheduler (
     
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
+                Q_temp_j = '0;
+            end
+            // Query ROB
+            else if (rs1rob_ready) begin
+                V_j = rs1rob_data;
                 Q_temp_j = '0;
             end
             else begin
@@ -314,6 +345,11 @@ module rs_scheduler (
                 V_j = rs1_data;
                 Q_temp_j = '0;
             end
+            // Query ROB
+            else if (rs1rob_ready) begin
+                V_j = rs1rob_data;
+                Q_temp_j = '0;
+            end
             else begin
                 V_j = 32'b0;
                 Q_temp_j = Q_j;
@@ -357,6 +393,11 @@ module rs_scheduler (
             end
             else if (~rs1reg_busy) begin
                 V_j = rs1_data;
+                Q_temp_j = '0;
+            end
+            // Query ROB
+            else if (rs1rob_ready) begin
+                V_j = rs1rob_data;
                 Q_temp_j = '0;
             end
             else begin
@@ -479,6 +520,11 @@ module rs_scheduler (
                 end
                 else if (~rs2reg_busy) begin
                     lsq_input.result = rs2_data;
+                    lsq_input.Q_store = '0;
+                end
+                // Query ROB
+                else if (rs2rob_ready) begin
+                    lsq_input.result = rs2rob_data;
                     lsq_input.Q_store = '0;
                 end
                 else begin
