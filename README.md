@@ -2,10 +2,10 @@
 ## Overview
 OoO_CPU is an Out-of-Order processor implementing the RISCVIM ISA. The design leverages Tomasulo’s algorithm and speculative execution to maximize instruction-level parallelism. Built on the RISC-V RV32I architecture, it supports the full base integer instruction set plus a subset of the M extension (MUL, MULH, DIV, REMU).
 ## Key Feautures:
--Out-of-Order Execution: Instructions can execute as soon as their operands are ready, improving pipeline utilization.
--Branch Prediction: Branch instructions are speculatively executed and validated via the ROB.
--Return Address Prediction: Jumps are predicted using a return address stack and validated via the ROB.
--Commit Logic: Ensures architectural state updates (registers/memory) occur in program order.
+* Out-of-Order Execution: Instructions can execute as soon as their operands are ready, improving pipeline utilization.
+* Branch Prediction: Branch instructions are speculatively executed and validated via the ROB.
+* Return Address Prediction: Jumps are predicted using a return address stack and validated via the ROB.
+* Commit Logic: Ensures architectural state updates (registers/memory) occur in program order.
 ## Repository Structure:
 ```source/core.sv```: Top-level module representing one RISCV hart(core).
 ```source/```: All modules used by the top level module.
@@ -17,7 +17,7 @@ To build the cpu run ```make build-no-warn``` this builds the verilator files an
 Script to be created later...
 
 ## Future Work
--Support for `ecall` and `ebreak` via the `zicsr` extension.
--Support for Supervisor (S) and Machine (M) mode privilege levels.
--Support for precise exceptions.
--Support for the A memory atomics instructions.
+* Support for `ecall` and `ebreak` via the `zicsr` extension.
+* Support for Supervisor (S) and Machine (M) mode privilege levels.
+* Support for precise exceptions.
+* Support for the A memory atomics instructions.
