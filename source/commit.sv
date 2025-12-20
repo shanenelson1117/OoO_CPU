@@ -9,6 +9,7 @@ module commit (
     input logic rob_head_ready, empty, 
     input logic jalrq_ready, // is jalr at head ready?
     input logic rd_en_rob, // from memory unit, is store at head of queue done?
+    input logic illegal_access_e,
     output logic RegWrite, // register file write enable
     output logic [3:0] commit_ROB, 
     output logic [4:0] rd,
@@ -16,12 +17,33 @@ module commit (
     output logic [31:0] WriteData, committed_pc, commit_imm_se,
     output logic rd_en, valid_commit, // dequeue head
     output logic rd_en_jalrq, // dequeue head of jalrq
-    output logic [3:0] commit_ras_pointer
+    output logic [3:0] commit_ras_pointer,
+    output logic csr_valid_write,   // Are we writing to csrs
+    output logic [1:0] special,     // Are we committing an mret, ecall
+    output logic [31:0] mepc_WriteData, // Current pc for exceptions
+    output logic [31:0] csr_WriteData,   // What are we writing to CSRs?
+    output logic [11:0] csr_write_sel,   // Which csr are we writing
+    output logic exception
 );  
     // Generate signals that are used to write to the reg file or correct a misprediction
     // and also send dequeue signal to the ROB if head is committed
     always_comb begin
+        special = NONE;
+        commit_is_branch = 0;
+        commit_prediction = 0;
+        commit_result = 0;
+        RegWrite = 0;
+        committed_pc = '0;
+        commit_imm_se = '0;
+        rd_en = 0;
+        valid_commit = 0;
+        WriteData = 32'b0;
+        csr_WriteData = '0;
+        csr_write_sel = '0;
         if (rob_head_ready & ~empty) begin
+            rd_en = 1;
+            valid_commit = 1;
+
             if (head.jalr) begin
                 rd_en_jalrq = jalrq_ready;
             end
@@ -33,36 +55,28 @@ module commit (
                 commit_is_branch = 1;
                 commit_prediction = head.branch_pred;
                 commit_result = head.branch_result;
-                RegWrite = 0;
                 committed_pc = head.destination;
                 commit_imm_se = head.value;
-                WriteData = 32'b0;
-                rd_en = 1;
-                valid_commit = 1;
             end
             // STORE
             else if (head.itype == 2'b01) begin
-                commit_is_branch = 0;
-                commit_prediction = 0;
-                commit_result = 0;
-                RegWrite = 0;
-                committed_pc = '0;
-                commit_imm_se = '0;
-                WriteData = 32'b0;
                 rd_en = rd_en_rob;
                 valid_commit = rd_en_rob;
             end
+            else if (head.special != NONE) begin
+                special = head.special;
+                rd_en = !illegal_access_e;
+            end
+            else if (head.csr_valid_write) begin
+                csr_valid_write = 1;
+                csr_WriteData = head.value;
+                WriteData = head.destination;
+                // NEED TO IMPLEMENT HEAD.CSR_WRITE_SELECT -> CSR_WRITE_SELECT
+            end
             // Load / Reg Dest
             else begin
-                commit_is_branch = 0;
-                commit_prediction = 0;
-                commit_result = 0;
                 RegWrite = 1;
-                committed_pc = '0;
-                commit_imm_se = '0;
                 WriteData = head.value;
-                rd_en = 1;
-                valid_commit = 1;
                 if (head.jalr) begin
                     rd_en = jalrq_ready;
                 end
@@ -71,24 +85,13 @@ module commit (
                 end
             end
         end
-            // Invalid (non-committing cycle)
-        else begin
-            commit_is_branch = 0;
-            commit_prediction = 0;
-            commit_result = '0;
-            RegWrite = 0;
-            committed_pc = '0;
-            commit_imm_se = '0;
-            WriteData = '0;
-            rd_en = 0;
-            valid_commit = 0;
-            rd_en_jalrq = 0;
-        end
     end
 
+    // TO DO:
+    // MCAUSE AND EXCEPTION AND MEPC WRITE DATA
 
     assign commit_ROB = rd_en ? head.ROB_number : '0;
-    assign rd = rd_en ? head.destination[4:0] : '0;
+    assign rd = rd_en ? head.reg_dest : '0;
     assign commit_jalr = (rob_head_ready && jalrq_ready) ? head.jalr : 0;
     assign commit_ras_pointer = rd_en ? head.ras_pointer : '0;
 endmodule

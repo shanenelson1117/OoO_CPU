@@ -5,6 +5,17 @@
 
 `include "structs.svh"
 
+// NEED TO IMPLEMENT CSR INSTRUCTIONS:
+    // SET CSR_WRITE_SELECT FOR ROB
+    // DETERMINE TYPE OF OPERATION
+        // CSRRW, etc.. or MRET/ECALL
+    // SET CSR VALID WRITE FOR ROB
+    // QUERY CSR REGSTAT AND STALL IF NOT READY
+        // ELSE LOAD ROB DESTINATION WITH CSR READ
+    // FIGURE OUT IF WE ARE ACTUALLY READING OR WRITING BASED ON RS1 AND RD
+    // SET ROB -> SPECIAL
+    // SET ALU OP FOR CSRRW/C/S
+
 module issue (
     input pipe_in_t pipe_out,
     input logic [3:0] busy_bus, // busy signals from each rs
@@ -25,7 +36,9 @@ module issue (
     output logic issue_writes, // ...
     output logic stall, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
     output lsq_packet_t lsq_input,
-    output jalrq_packet_t jalrq_input
+    output jalrq_packet_t jalrq_input,
+    output logic csr_valid_read,        // Are we actually trying to read csr
+    output logic [11:0] csr_read_select  // which csr are we trying to access
 );
     logic [31:0] curr_branch_pc;
     logic prediction;
@@ -436,9 +449,9 @@ module issue (
     // assemble ROB input packet
     always_comb begin
         `ifdef VERILATOR
-            rob_input.pc = curr_branch_pc;
+            rob_input.ins = ins;
         `endif
-
+        rob_input.pc = curr_branch_pc;
         rob_input.ROB_number = (stall | (op == 7'b0000000)) ? 4'b0000 : ROB_entry; // send invalid packet if stall
         rob_input.branch_pred = prediction;
         rob_input.branch_result = 1'b0; // to be updated later
@@ -465,6 +478,7 @@ module issue (
             rob_input.value = 32'b0; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
             rob_input.ready = 1'b0;
+            rob_input.reg_dest = ins[11:7];
         end
 
         // register output
@@ -473,6 +487,7 @@ module issue (
             rob_input.value = 32'b0; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
             rob_input.ready = 1'b0;
+            rob_input.reg_dest = ins[11:7];
         end
     end
 

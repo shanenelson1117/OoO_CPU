@@ -23,7 +23,6 @@ module pc (
             pc <= 32'h8000_0000;
         end
         else begin
-						$display("PC = %08x", pc);
             pc <= new_pc;
         end
         

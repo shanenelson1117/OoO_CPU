@@ -32,7 +32,21 @@ parameter logic [2:0]
     BLTU = 3'b110,
     BGEU = 3'b111,
     NB = 3'b010;
+    C = 3'b011;
+    S = 3'b010;
+    W = 3'b001;
+    CI = 3'b111;
+    SI = 3'b110;
+    WI = 3'b101;
 
+
+parameter logic [1:0] 
+    MRET = 2'b00;
+    ECALL = 2'b01;
+    NONE = 2'b11;
+    EBREAK = 2'b10;
+    M = 2'b11;
+    U = 2'b00;
 
 // fetch-issue pipeline register data format
 typedef struct packed {
@@ -61,14 +75,20 @@ typedef struct packed {
     logic [3:0] ROB_number; // entry number
     logic branch_pred; // branch tracking
     logic branch_result;
+    logic [4:0] reg_dest; // register destination
+    logic [1:0] special;
     logic [3:0] ras_pointer; // ras pointer at time of issue, used to roll back ras on mispredicted branch
     logic [31:0] destination; // register or address (for branches the pc of the branch)
     logic [31:0] value; // value to be written (se immediate for branches)
     logic [1:0] itype; // instruction type, branch (00), store (01), register dest (10), load (11)
-    logic ready; // is the entry raedy to be committed?
+    logic ready; // is the entry ready to be committed?
     logic jalr;
+    logic [31:0] pc;    // Need pc for precise exceptions
+    logic [7:0] mcause; // Cause of exception
+    logic [1:0] csr_write_sel; // Which CSR are we writing, for now 2 bits is fine
+    logic csr_valid_write;  // Are we writing a csr. Needs to be high for mret, ecall
     `ifdef VERILATOR
-        logic [31:0] pc;
+        logic [31:0] ins;
     `endif
 } ROB_entry_t; 
 
@@ -78,6 +98,7 @@ typedef struct packed {
     logic [31:0] result; // the data
     logic branch_result; // the adder generated branch result
     logic load_step1; // high if packet is a load address (need monitorers to not treat this as a valid packet)
+    logic 
 } CDB_packet_t;
 
 // register status register entry format

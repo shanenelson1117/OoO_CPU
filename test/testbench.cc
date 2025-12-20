@@ -70,18 +70,23 @@ int main(int argc, char **argv) {
 
         // Check if commit_valid is high
         if (top->valid_commit_out) {
-            if (top->RegWrite_out) {
-              trace_file << "core   0:"
-                        << std::hex << std::setw(8) << "0x" << top->head_pc << " "
-                        << std::dec << "x" << (int)top->rd_out<< " "
-                        << std::hex << top->WriteData_out
-                        << std::endl;
-            } else {
-              trace_file << "core   0:"
-                        << std::hex << std::setw(8) << "0x" << top->head_pc << std::endl;
-            }
-        }
-        cycles_ran++;
+          trace_file << "core   0:";
+
+          // PC
+          trace_file << std::hex << std::setfill('0') << std::setw(8) << top->head_pc << " ";
+
+          // Instruction
+          trace_file << "(0x" << std::hex << std::setw(8) << (top->ins_out & 0xFFFFFFFF) << ") ";
+
+          if (top->RegWrite_out) {
+              trace_file << "x" << std::dec << (int)top->rd_out << " "
+                        << "0x" << std::hex << std::setw(8) << (top->WriteData_out & 0xFFFFFFFF);
+          }
+
+          trace_file << std::endl;
+      }
+
+      cycles_ran++;
     }
 
     trace_file.close();

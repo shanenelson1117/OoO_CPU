@@ -14,6 +14,7 @@ module core (
         output logic [4:0] rd_out,
         output logic [31:0] head_pc,
         output logic [31:0] WriteData_out,
+        output logic [31:0] ins_out,
     `endif
     input clk, reset
 );
@@ -496,6 +497,7 @@ module core (
             rd_out = rd;
             head_pc = head.pc;
             WriteData_out = WriteData;
+            ins_out = head.ins;
         end
     `endif
 endmodule
