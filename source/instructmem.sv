@@ -11,6 +11,8 @@
 module instructmem (
     input  logic [31:0] address,
     output logic [31:0] instruction,
+    output logic exception,
+    output logic [7:0] mcause,
     input  logic        clk
 );
 
@@ -28,9 +30,19 @@ module instructmem (
     end
 
     // Address assertions
-    always_ff @(posedge clk) begin
+    always_comb begin
+        exception = 0;
+        mcause = '0;
         if (address !== 'x) begin
-            assert(address[1:0] == 0) else $fatal("Unaligned address: %0h", address);
+            if (((address - `BASE )/4 < `INSTRUCT_MEM_SIZE/4)) begin
+                exception = 1;
+                mcause = 8'd1;
+            end
+            else if (address[1:0] == 0) begin
+                exception = 1;
+            end
+
+            //assert(address[1:0] == 0) else $fatal("Unaligned address: %0h", address);
             //assert((address - `BASE )/4 < `INSTRUCT_MEM_SIZE/4) else $fatal("Address out of bounds: %0h", address);
         end
     end

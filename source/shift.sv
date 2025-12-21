@@ -3,7 +3,7 @@
 // File: Shift Functional Unit
 // Stage: Execute
 
-`include "structs.svh"
+`include "structs.sv"
 
 module shift (
   input logic [31:0] A, B,      // register operands

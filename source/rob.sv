@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Reorder Buffer
 
-`include "structs.svh"
+`include "structs.sv"
 
 module rob #(parameter DEPTH = 16) (
     input ROB_entry_t new_entry,    // from rs scheduler
@@ -10,6 +10,7 @@ module rob #(parameter DEPTH = 16) (
     input logic clk, reset, 
     input logic rd_en,              // dequeue from commit unit
     input logic [3:0] Q_j, Q_k,     // Query(ies) from issue unit
+    input logic illegal_access_e,   // Need to set head.exception if action is illegal
     output ROB_entry_t head,        // Combinational read of head
     output logic head_ready,        // Are we ready to commit head?
     output logic full, empty,      
@@ -48,8 +49,6 @@ module rob #(parameter DEPTH = 16) (
     // CDB forwarding logic
     always_ff @(posedge clk) begin
         if (~reset) begin
-		  
-
             for (int i = 1; i < DEPTH; i++) begin
                 if (wptr != i) begin
                 // branch
@@ -69,6 +68,14 @@ module rob #(parameter DEPTH = 16) (
                 end
 
             end
+        end
+    end
+
+    // Handle illegal exceptions
+    always_ff @(posedge clk) begin
+        if (illegal_access_e) begin
+            rob_data[rptr].exception <= 1;
+            rob_data[rptr].mcause <= 8'd2;
         end
     end
 

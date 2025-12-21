@@ -3,7 +3,7 @@
 // File: Register File
 // Stage: Issue/Commit
 
-`include "structs.svh"
+`include "structs.sv"
 
 module regfile (
     input logic [4:0] rs1, rs2, // registers to read, from issue stage rs scheduler

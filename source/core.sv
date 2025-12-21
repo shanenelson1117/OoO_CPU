@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Top Level
 
-`include "source/structs.svh"
+`include "source/structs.sv"
 
 module core (
     `ifdef VERILATOR
@@ -129,6 +129,30 @@ module core (
     logic [31:0] rs1rob_data, rs2rob_data;
     logic rs1rob_ready, rs2rob_ready;
 
+    // Logic needed to facilitate csrs
+    // Are we commiting an instruction that encountered an instruction
+    logic exception;
+    // What is the cause of said instruction
+    logic [7:0] mcause;
+    // Which CSR is commiting instruction writing
+    logic [CSR_BITS:0] commit_csr_write_select;
+    // Which CSR is issuing instruction writing
+    logic [CSR_BITS:0] issue_csr_write_select;
+    // Where are we returning to if we are commiting an exception
+    logic [31:0] mepc_WriteData;
+    // What data is being written to the csrs
+    logic [31:0] csr_WriteData;
+    // Are we commiting an ecall, ebreak, mret
+    logic [1:0] special;
+    // Is commiting instruction writing csrs
+    logic commit_csr_valid_write;
+    // is issuing instruction writing csrs
+    logic issue_csr_valid_write;
+    // Are we attempting to write csrs from user mode
+    logic illegal_access_e;
+    // is the issuing instruction actually reading the csrs
+    logic issue_csr_valid_read;
+
 
     //--------------------------------------
     // Fetch Stage                         
@@ -163,7 +187,7 @@ module core (
     pipeline_reg fetch_issue_reg (
                     .clk(clk),
                     .d(pipe_in),
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .q(pipe_out),
                     .stall(pc_pipe_stall)
                 );
@@ -213,7 +237,7 @@ module core (
                     .ROB_entry(ROB_entry),
                     .rs_dest(rs_dest),
                     .clk(clk),
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .pc_pipe_stall(pc_pipe_stall),
                     .jalrq_full(jalrq_full),
                     .jalrq_input(jalrq_input),
@@ -222,6 +246,27 @@ module core (
                     .rs1rob_ready(rs1rob_ready),
                     .rs2rob_ready(rs2rob_ready)
                 );
+    
+    // Control & Status Registers
+    csr csrs (
+                    .csr_read_select,
+                    .csr_write_select,
+                    .valid_write,
+                    .valid_read,
+                    .special,
+                    .mepc_WriteData,
+                    .clk,
+                    .reset,
+                    .csr_WriteData,
+                    .mcause,
+                    .exception,
+                    .csr_ReadData,
+                    .mepc_ReadData,
+                    .mtvec_ReadData,
+                    .curr_priv,
+                    .illegal_access_e,
+                    .mret
+    );
     
     // Register file
     regfile registers (
@@ -241,7 +286,7 @@ module core (
                     .rs1,
                     .rs2,
                     .clk(clk),
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .issue_writes,
                     .commit_dest(rd),
                     .rs1reg_busy,
@@ -258,7 +303,7 @@ module core (
     rs_module reservation_stations (
                     .stall,
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .mispredicted,
                     .rs_dest,
                     .d(rs_input),
@@ -274,7 +319,7 @@ module core (
     // Keeps track of the ordering of loads and stores, removes ambiguous memory RAW hazards   
     lsq load_store_queue (
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .wr_en,
                     .rd_en,
                     .CDB_in(CDB_out), 
@@ -296,7 +341,7 @@ module core (
     // queue of jalr instructions
     jalrq indirect_jump_queue (
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .rd_en(rd_en_jalrq),
                     .CDB_in(CDB_out),
                     .din(jalrq_input),
@@ -331,7 +376,7 @@ module core (
     // Adder FU
     add adder_fu_0 (
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .load(load[0]),
                     .valid_in(valid_in_bus[0]),
                     .yumi_in(yumi_bus[0]), 
@@ -348,7 +393,7 @@ module core (
     // Adder FU 
     add adder_fu_1 (
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .valid_in(valid_in_bus[1]),
                     .load(load[1]),
                     .yumi_in(yumi_bus[1]),
@@ -365,7 +410,7 @@ module core (
     // Multiply FU (booth's algorithm) 
     multiply mult_fu (
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .A(fu_bus[4]),
                     .B(fu_bus[5]),
                     .rs_rob_entry(ROB_entry_bus[2]), 
@@ -380,7 +425,7 @@ module core (
     // Divide FU (non-restoring division algorithm)
     divide div_fu (
                     .clk,
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .valid_in(valid_in_bus[3]),
                     .yumi_in(yumi_bus[3]), 
                     .rs_rob_entry(ROB_entry_bus[3]),
@@ -403,7 +448,7 @@ module core (
                     .rd_en,
                     .rd_en_rob,
                     .valid_out(valid_out_bus[4]),
-                    .reset(reset | mispredicted), 
+                    .reset(reset | mispredicted | exception), 
                     .yummy_in(yumi_bus[4]),
                     .empty(lsq_empty)
                         );
@@ -415,7 +460,7 @@ module core (
                     .ALUop(ALU_op[4]),
                     .valid_in(valid_in_bus[4]),
                     .yumi_in(yumi_bus[5]),
-                    .reset(reset | mispredicted),
+                    .reset(reset | mispredicted | exception),
                     .clk,
                     .valid_out(valid_out_bus[5]),
                     .ready(ready_bus[4]),
@@ -450,7 +495,7 @@ module core (
                     .new_entry(rob_input),
                     .CDB_in(CDB_out),
                     .clk,
-                    .reset(reset | mispredicted), 
+                    .reset(reset | mispredicted | exception), 
                     .rd_en(rob_read_enable),
                     .empty,
                     .rs1rob_data,
@@ -463,7 +508,8 @@ module core (
                     .head_ready(rob_head_ready),
                     .full(rob_full),
                     .ROB_head_store,
-                    .ROB_entry
+                    .ROB_entry,
+                    .illegal_access_e
                         );
 
 
@@ -487,7 +533,15 @@ module core (
                     .commit_imm_se,
                     .rd_en(rob_read_enable),
                     .jalrq_ready,
-                    .commit_ras_pointer
+                    .commit_ras_pointer,
+                    .illegal_access_e,
+                    .csr_valid_write(commit_csr_valid_write),
+                    .special,
+                    .mepc_WriteData,
+                    .csr_WriteData,
+                    .csr_write_select,
+                    .mcause,
+                    .exception
                         );
     
     `ifdef VERILATOR

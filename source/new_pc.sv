@@ -12,7 +12,7 @@ queue_full = queue full signal from issue queue controller & ~mispredicted
 also mispredicted should be used as a ROB and Issue Queue flush signal
 */
 
-`include "structs.svh"
+`include "structs.sv"
 
 module new_pc (
     input logic [31:0] commit_pc, commit_imm_se,

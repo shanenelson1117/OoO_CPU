@@ -3,7 +3,7 @@
 // File: Global Branch History Shift Register
 // Stage: Fetch
 
-`include "structs.svh"
+`include "structs.sv"
 
 module gbhsr (
     input logic clk, reset, update, valid_in,

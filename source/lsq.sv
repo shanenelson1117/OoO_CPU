@@ -1,5 +1,5 @@
 
-`include "structs.svh"
+`include "structs.sv"
 // if the ROB head is a store, and the lsq head is ready, then write to dmem
 // and flush ROB head
 // if the lsq head is a load, then read from dmem and send the packet to the 

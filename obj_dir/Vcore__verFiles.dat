@@ -54,6 +54,6 @@ S      3236 44860406  1766132318           0  1766132318           0 "hAtHPBiq98
 S       327 44853864  1766132179           0  1766132179           0 "4OZavn2A5PFAm7y9hLsVDKDSV3QowTAaSMWnHQW7" "source/rob_scheduler.sv"
 S      3386 44860407  1766134777           0  1766134777           0 "PStimS7hLjTAM7CqzukgJ5ZKCNKIAzQBE1kKJYOs" "source/rs.sv"
 S      2709 44853866  1766136105           0  1766136105           0 "yGNoSEvNgOypAWdJLljfABNPwBSBpOfoFegMTzfT" "source/shift.sv"
-S      4082 44860409  1766181031           0  1766181031           0 "9Rtxsm1t1LHoG7Ean0A64Tr3iQizkG2DKEq3OMQh" "source/structs.svh"
+S      4082 44860409  1766181031           0  1766181031           0 "9Rtxsm1t1LHoG7Ean0A64Tr3iQizkG2DKEq3OMQh" "source/structs.sv"
 S      6740 44853868  1766100144           0  1766100144           0 "Ceondg8gGjri8da89jYeqtpo4g1mJIjjVV0V90u5" "source/tl_test.sv"
 S       793 44853869  1766132210           0  1766132210           0 "rTXPLuMsvlQKfxcNjd2mJxU9aUVBblRFdKqsmF97" "source/two_bit_predictor.sv"

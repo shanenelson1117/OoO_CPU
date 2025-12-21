@@ -3,7 +3,7 @@
 // File: Functional Unit Scheduler
 // Stage: Execute
 
-`include "structs.svh"
+`include "structs.sv"
 
 module fu_scheduler (
     input rs_out_t rs0_data, rs1_data, rs2_data, rs3_data,

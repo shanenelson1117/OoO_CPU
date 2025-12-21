@@ -3,7 +3,7 @@
 // File: Integer Division Functional Unit
 // Stage: Execute
 
-`include "structs.svh"
+`include "structs.sv"
 
 module divide (
   input logic clk, reset, valid_in, yumi_in,

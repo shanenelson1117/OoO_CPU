@@ -3,11 +3,12 @@
 // File: Reservation Stations
 // Stage: Issue -> Execute
 
-`include "structs.svh"
+`include "structs.sv"
 
 module rs_module (
     input logic clk, reset, mispredicted, stall,
     input logic [2:0] rs_dest,
+    input logic valid_packet,
     input rs_data_t d,
     input CDB_packet_t CDB_in,
     input logic [3:0] consumed_bus,
@@ -25,10 +26,10 @@ module rs_module (
             consumed_bus[2]), .busy(busy_bus[2]), .out(rs2_data));
     rs rs3 (.CDB_in, .d, .wr_en(wr_en3), .clk, .reset(mispredicted | reset |
             consumed_bus[3]),.busy(busy_bus[3]), .out(rs3_data));
-    assign wr_en0 = (rs_dest == 3'b000) & ~stall;
-    assign wr_en1 = (rs_dest == 3'b001) & ~stall;
-    assign wr_en2 = (rs_dest == 3'b010) & ~stall;
-    assign wr_en3 = (rs_dest == 3'b011) & ~stall;
+    assign wr_en0 = (rs_dest == 3'b000) & ~stall & valid_packet;
+    assign wr_en1 = (rs_dest == 3'b001) & ~stall & valid_packet;
+    assign wr_en2 = (rs_dest == 3'b010) & ~stall & valid_packet;
+    assign wr_en3 = (rs_dest == 3'b011) & ~stall & valid_packet;
 
 endmodule
 

@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Memory Controller
 
-`include "structs.svh"
+`include "structs.sv"
 
 module memory (
     input  logic clk, reset,

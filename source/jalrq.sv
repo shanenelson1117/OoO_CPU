@@ -3,7 +3,7 @@
 // File: JALR queue
 // Stage: Execute
 
-`include "structs.svh"
+`include "structs.sv"
 
 
 module jalrq #(parameter DEPTH = 4) (

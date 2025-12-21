@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Commit Unit
 
-`include "structs.svh"
+`include "structs.sv"
 
 module commit (
     input ROB_entry_t head,
@@ -22,7 +22,8 @@ module commit (
     output logic [1:0] special,     // Are we committing an mret, ecall
     output logic [31:0] mepc_WriteData, // Current pc for exceptions
     output logic [31:0] csr_WriteData,   // What are we writing to CSRs?
-    output logic [11:0] csr_write_sel,   // Which csr are we writing
+    output logic [CSR_BITS:0] csr_write_select,   // Which csr are we writing
+    output logic [7:0] mcause,
     output logic exception
 );  
     // Generate signals that are used to write to the reg file or correct a misprediction
@@ -40,9 +41,13 @@ module commit (
         WriteData = 32'b0;
         csr_WriteData = '0;
         csr_write_sel = '0;
+        exception = 0;
+        mepc_WriteData = head.pc;
+        mcause = '0;
         if (rob_head_ready & ~empty) begin
             rd_en = 1;
             valid_commit = 1;
+            exception = head.exception;
 
             if (head.jalr) begin
                 rd_en_jalrq = jalrq_ready;
@@ -50,8 +55,13 @@ module commit (
             else begin
                 rd_en_jalrq = 0;
             end
+            if (head.exception) begin
+                mcause = head.mcause;
+                exception = 1;
+                valid_commit = 0;
+            end
             // BRANCH
-            if (head.itype == 2'b00) begin
+            else if (head.itype == 2'b00) begin
                 commit_is_branch = 1;
                 commit_prediction = head.branch_pred;
                 commit_result = head.branch_result;
@@ -63,15 +73,40 @@ module commit (
                 rd_en = rd_en_rob;
                 valid_commit = rd_en_rob;
             end
-            else if (head.special != NONE) begin
+            // ECALL or EBREAK
+            else if (head.special[0]) begin
                 special = head.special;
-                rd_en = !illegal_access_e;
+                rd_en = 1;
+                exception = 1;
+                mcause = head.mcause;
             end
+            // MRET
+            else if (head.special == MRET) begin
+                // if this is illegal then special = NONE
+                special = {illegal_access_e, 1'b0};
+                // We should only commit if this is legal
+                rd_en = ~illegal_access_e;
+                valid_commit = rd_en;
+            end
+            // CSR WRITE INSTRUCTION
             else if (head.csr_valid_write) begin
-                csr_valid_write = 1;
+                // important that we handle exceptions first because
+                // illegal access e will still be high if we do not dequeue
+                // Only commit if we have privilege to change csrs
+                RegWrite = ~illegal_access_e;
+                csr_valid_write = RegWrite;
                 csr_WriteData = head.value;
                 WriteData = head.destination;
                 // NEED TO IMPLEMENT HEAD.CSR_WRITE_SELECT -> CSR_WRITE_SELECT
+                csr_write_select = head.csr_write_select;
+                rd_en = RegWrite;
+                valid_commit = RegWrite;
+            end
+            // For now allow privilege escalations for reads
+            else if (head.csr_valid_read) begin
+                RegWrite = 1;
+                WriteData = head.destination;
+                valid_commit = 1;
             end
             // Load / Reg Dest
             else begin

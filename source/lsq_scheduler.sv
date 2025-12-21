@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: load-store queue scheduler
 
-`include "structs.svh"
+`include "structs.sv"
 
 module lsq_scheduler (
     input lsq_packet_t in,

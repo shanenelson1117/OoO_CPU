@@ -3,7 +3,7 @@
 // File: two-bit saturated branch prediction fsm
 // Stage: Fetch
 
-`include "structs.svh"
+`include "structs.sv"
 
 module two_bit_predictor (
     output logic prediction,                // fsm output

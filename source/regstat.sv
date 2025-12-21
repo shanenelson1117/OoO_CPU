@@ -13,7 +13,7 @@ should read register rs1 and/or rs2. Later have muxes and such that will correct
 into rs.
 */
 
-`include "structs.svh"
+`include "structs.sv"
 
 module regstat (
     input logic [4:0] rs1, rs2, // from instruction in issue stage
@@ -26,6 +26,7 @@ module regstat (
     output logic [3:0] Q_j, Q_k, // ROB numbers for unready instructions
     output logic rs1reg_busy, rs2reg_busy
 );
+    import structs_pkg::*;
 
     reg_stat_t reg_status_table [31:0]; // data
     reg_stat_t d; // new data
@@ -38,9 +39,6 @@ module regstat (
         d.busy = 1'b1;
     end
 
-    
-
- 
     five_to_thirtytwo_decoder enable_decode (
         .sel(issue_dest),
         .enable(issue_writes),

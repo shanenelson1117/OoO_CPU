@@ -3,7 +3,7 @@
 // File: IF to Issue pipeline register
 // Stage: Fetch -> Issue
 
-`include "structs.svh"
+`include "structs.sv"
 `timescale 1ps/1ps
 // register reset should be high if instruction in issue stage is a taken branch or a jump.
 // but not if the instruction queue is full. In that case we want to disable writes to the pipe

@@ -8,7 +8,7 @@
 // probably need muxes to decide between branch pc and pipeline pc, as well as branch immediate and pipeline immediate
 // then for jump we need to use adder rs with dest = rd, rs1= pc, rs2 = 4
 
- `include "structs.svh"
+ `include "structs.sv"
 
 module fetch (
     input logic clk, reset, 
@@ -16,14 +16,31 @@ module fetch (
     input logic [31:0] pc_update,  // new pc, 
     input logic [31:0] committed_pc, // used to update prediction fsm
     input logic stall, mispredicted,
+    input logic [31:0] mtvec_ReadData,
+    input logic [31:0] mepc_ReadData,
     input logic [3:0] flush_ptr, // where to return ras pointer to on a misprediction
+    input logic mret, exception,
     output pipe_in_t pipe_in   // pc, instruction, branch prediction (taken?)
 );
     logic [31:0] pc, instruction, newpc;
     logic branch, prediction, jump, jalr; // is the instruction a branch/jump
     logic [9:0] history, index_read, index_write;
+    logic read_exception;
+    logic [7:0] mcause;
 
-    pc program_counter (.instruction, .pc, .reset, .clk, .stall, .mispredicted, .pc_update(newpc));
+    pc program_counter (.instruction,
+                         .pc, 
+                         .reset, 
+                         .clk,
+                         .stall,
+                         .mispredicted,
+                         .pc_update(newpc),
+                         .mtvec_ReadData,
+                         .mepc_ReadData,
+                         .exception,
+                         .mret,
+                         .read_exception,
+                         .mcause);
 
     logic [6:0] opcode;
     logic push, pop;
@@ -85,6 +102,8 @@ module fetch (
         pipe_in.jump = jump;
         pipe_in.ras_ptr = ptr;
         pipe_in.jalr_address = newpc;
+        pipe_in.mcause = mcause;
+        pipe_in.exception = read_exception;
     end
 
 endmodule

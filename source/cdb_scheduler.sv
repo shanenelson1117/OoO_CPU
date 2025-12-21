@@ -2,7 +2,7 @@
 // Project: OoO CPU
 // File: Common Data Bus Scheduler 
 
-`include "structs.svh"
+`include "structs.sv"
 
 module cdb_scheduler (
     input logic [5:0] valid_out_bus,
