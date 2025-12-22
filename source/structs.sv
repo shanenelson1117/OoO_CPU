@@ -2,7 +2,8 @@
 // Project: OoO CPU
 // Contains structs for various storage and transfer applications
 
-package structs;
+`ifndef STRUCTS_SVH_
+`define STRUCTS_SVH_
 
     parameter int NUM_CSR = 8;
     parameter int CSR_BITS = 2;
@@ -141,7 +142,8 @@ package structs;
         logic [11:0] imm;
         logic [3:0] Q_address; // ROB entry of the ins writing the address
     } jalrq_packet_t;
-
+    
+package structs_pkg;
     function automatic logic [CSR_BITS:0] index(input logic [11:0] csr);
         case (csr)
             12'h300: index = 3'b000;
@@ -152,3 +154,5 @@ package structs;
         endcase
     endfunction
 endpackage
+
+`endif  // STRUCTS_SVH_

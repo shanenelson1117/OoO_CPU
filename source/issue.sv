@@ -59,6 +59,7 @@ module issue (
     ROB_entry_t rob_input;
 
     logic csr_valid_write_temp, csr_valid_read_temp;
+    logic issue_csr_valid_read;
     logic exception;
     logic [7:0] mcause;
 
@@ -545,19 +546,19 @@ module issue (
             end
             // CSRRW or CSRRWI
             else if (ins[14:12] == W || ins[14:12] == WI) begin
-                rob_input.csr_write_sel = issue_csr_write_sel;
+                rob_input.csr_write_sel = issue_csr_write_select;
                 rob_input.destination = csr_ReadData;
                 rob_input.value = '0;  // to be calculated
             end
             // csrrc or csrrci
             else if (ins[14:12] == C || ins[14:12] == CI) begin
-                rob_input.csr_write_sel = issue_csr_write_sel;
+                rob_input.csr_write_sel = issue_csr_write_select;
                 rob_input.destination = csr_ReadData;
                 rob_input.value = '0;  // to be calculated
             end
             // csrrs or csrrsi
             else if (ins[14:12] == S || ins[14:12] == SI) begin
-                rob_input.csr_write_sel = issue_csr_write_sel;
+                rob_input.csr_write_sel = issue_csr_write_select;
                 rob_input.destination = csr_ReadData;
                 rob_input.value = '0;  // to be calculated
             end

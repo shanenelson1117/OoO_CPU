@@ -22,7 +22,7 @@ module core (
 );
     
     import structs_pkg::*;
-    
+
     //-------------------------------------- 
     // All signals passed between modules
     //--------------------------------------
@@ -146,6 +146,8 @@ module core (
     logic [31:0] mepc_WriteData;
     // What data is being written to the csrs
     logic [31:0] csr_WriteData;
+    // Read csr data
+    logic [31:0] csr_ReadData;
     // Are we commiting an ecall, ebreak, mret
     logic [1:0] special;
     // Is commiting instruction writing csrs
@@ -275,8 +277,8 @@ module core (
     
     // Control & Status Registers
     csr csrs (
-                    .csr_read_select(issue_csr_write_sel),
-                    .csr_write_select(commit_csr_write_sel),
+                    .csr_read_select(issue_csr_write_select),
+                    .csr_write_select(commit_csr_write_select),
                     .valid_write(commit_csr_valid_write),
                     .valid_read(issue_csr_valid_read),
                     .special,
@@ -579,7 +581,7 @@ module core (
                     .special,
                     .mepc_WriteData,
                     .csr_WriteData,
-                    .csr_write_select,
+                    .csr_write_select(commit_csr_write_select),
                     .mcause,
                     .exception
                         );

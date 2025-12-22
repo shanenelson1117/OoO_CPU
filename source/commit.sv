@@ -41,7 +41,7 @@ module commit (
         valid_commit = 0;
         WriteData = 32'b0;
         csr_WriteData = '0;
-        csr_write_sel = '0;
+        csr_write_select = '0;
         exception = 0;
         mepc_WriteData = head.pc;
         mcause = '0;
@@ -99,7 +99,7 @@ module commit (
                 csr_WriteData = head.value;
                 WriteData = head.destination;
                 // NEED TO IMPLEMENT HEAD.CSR_WRITE_SELECT -> CSR_WRITE_SELECT
-                csr_write_select = head.csr_write_select;
+                csr_write_select = head.csr_write_sel;
                 rd_en = RegWrite;
                 valid_commit = RegWrite;
             end
