@@ -15,6 +15,8 @@ module cdb_scheduler (
     output CDB_packet_t new_CDB,
     output logic [5:0] yummi_in_bus
 );
+    import structs_pkg::*;
+    
     always_comb begin
         // load packet
         if (valid_out_bus[4]) begin

@@ -13,6 +13,8 @@ module multiply (
   output logic valid_out, ready,     // output is valid, FU ready for input, 
   output CDB_packet_t out
 );
+  import structs_pkg::*;
+
   logic [31:0] multiplier, multiplicand;
   logic [31:0] P, result;
   logic [63:0] product_inter;

@@ -14,6 +14,8 @@ module add (  // adder FSM
     output logic valid_out, ready,
     output CDB_packet_t out
 );
+		import structs_pkg::*;
+
     logic [31:0] s, result;
     logic zero, negative, overflow, ALUop1, carry;
     logic b_inter, b_taken;

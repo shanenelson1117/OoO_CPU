@@ -9,7 +9,8 @@ module ras (
     output logic [31:0] ras_new_pc,           // top of stack
     output logic [3:0] ptr   // current pointer
 );
-
+    import structs_pkg::*;
+    
     logic [31:0] stack [15:0];
     logic [3:0] sp;
     logic full, empty;

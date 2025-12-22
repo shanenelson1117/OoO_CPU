@@ -9,7 +9,8 @@ module two_bit_predictor (
     output logic prediction,                // fsm output
     input logic update, valid, clk, reset   // was branch taken? are we updating state?
 );
-
+    import structs_pkg::*;
+    
     enum logic [1:0] {N = 2'b00, n = 2'b01, t = 2'b10, T = 2'b11} ps, ns;
 
     always_ff @(posedge clk) begin

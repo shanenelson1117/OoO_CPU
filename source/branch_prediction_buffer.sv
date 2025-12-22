@@ -11,6 +11,8 @@ module bpb (
     input update_valid,                         // are we commiting a branch instruction
     output logic prediction                     // prediction output
 );
+    import structs_pkg::*;
+    
     logic [1023:0] update_bus, pred_bus;
     demux_10_to_1024 update_valid_demux (.en(update_valid), .sel(index_write), .out(update_bus));
 

@@ -15,6 +15,8 @@ module rs_module (
     output logic [3:0] busy_bus,
     output rs_out_t rs0_data, rs1_data, rs2_data, rs3_data
 );
+    import structs_pkg::*;
+    
     logic wr_en0, wr_en1, wr_en2, wr_en3;
 
     // Instantiate reservation stations
@@ -41,7 +43,8 @@ module rs (
     output logic busy, // ready for FU, in progress
 
     output rs_out_t out
-);
+);  
+    import structs_pkg::*;
     rs_data_t q_reg;
 
     // register rs data

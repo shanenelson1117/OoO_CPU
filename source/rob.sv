@@ -19,10 +19,10 @@ module rob #(parameter DEPTH = 16) (
     output logic [31:0] rs1rob_data, rs2rob_data,   // Response to issue query(ies)
     output logic rs1rob_ready, rs2rob_ready
 );
+    import structs_pkg::*;
+    
     logic [3:0] wptr, rptr;
     logic wr_en;
-  
-
     ROB_entry_t rob_data [DEPTH];
 
     assign wr_en = new_entry.ROB_number == wptr;

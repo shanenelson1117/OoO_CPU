@@ -16,7 +16,7 @@ module fu_scheduler (
     output logic [3:0] consumed_bus, 
     output logic [4:0] valid_in_bus // both 1 hot
 );  
-
+    import structs_pkg::*;
 
     always_comb begin
         fu_bus          = '0;

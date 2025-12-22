@@ -33,21 +33,21 @@ package structs;
         BGE = 3'b101,
         BLTU = 3'b110,
         BGEU = 3'b111,
-        NB = 3'b010;
-        C = 3'b011;
-        S = 3'b010;
-        W = 3'b001;
-        CI = 3'b111;
-        SI = 3'b110;
+        NB = 3'b010,
+        C = 3'b011,
+        S = 3'b010,
+        W = 3'b001,
+        CI = 3'b111,
+        SI = 3'b110,
         WI = 3'b101;
 
 
     parameter logic [1:0] 
-        MRET = 2'b00;
-        ECALL = 2'b01;
-        NONE = 2'b10;
-        EBREAK = 2'b11;
-        M = 2'b11;
+        MRET = 2'b00,
+        ECALL = 2'b01,
+        NONE = 2'b10,
+        EBREAK = 2'b11,
+        M = 2'b11,
         U = 2'b00;
 
     // fetch-issue pipeline register data format

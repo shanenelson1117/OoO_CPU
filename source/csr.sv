@@ -26,11 +26,13 @@ module csr (
   output logic illegal_access_e,  // did user mode try and write csrs?
   output logic mret
 );
+  import structs_pkg::*;
+  
   logic [NUM_CSR:0][31:0] csr_data;
 
   // Use index() function to get array index for csr based on csr num
-  assign mepc_ReadData = csr_data[index(12'f300)];
-  assign mtvec_ReadData = csr_data[index(12'f305)];
+  assign mepc_ReadData = csr_data[index(12'h300)];
+  assign mtvec_ReadData = csr_data[index(12'h305)];
 
   assign illegal_access_e = (valid_write | (special == MRET)) && (curr_priv == U);
   assign mret = (special == MRET);
@@ -104,7 +106,7 @@ module csr (
       curr_priv <= M;
     end
     else if (special == MRET) begin
-      curr_priv <= csr_data[0][12:11]
+      curr_priv <= csr_data[0][12:11];
     end
   end
 endmodule

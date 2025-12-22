@@ -16,7 +16,7 @@ module pc (
 	input logic exception,
 	input logic mret
 );
-
+	import structs_pkg::*;
 	logic [31:0] new_pc;
 
 	// Do not stall on a mispredicted branch or the correct pc will be lost
@@ -39,6 +39,6 @@ module pc (
    end
 	
 	// fetch next instruction
-	instructmem inst (.address(pc), .instruction, .clk, .exception(read_exception). .mcause);
+	instructmem inst (.address(pc), .instruction, .clk, .exception(read_exception), .mcause);
 	
 endmodule // PC

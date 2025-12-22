@@ -18,6 +18,8 @@ module jalrq #(parameter DEPTH = 4) (
     output logic [31:0]     jalr_actual_address, jalr_taken_address
 );
 
+    import structs_pkg::*;
+
     logic [1:0] wptr, rptr;
     logic empty, wr_en;
 

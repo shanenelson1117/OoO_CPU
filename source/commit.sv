@@ -26,6 +26,7 @@ module commit (
     output logic [7:0] mcause,
     output logic exception
 );  
+    import structs_pkg::*;
     // Generate signals that are used to write to the reg file or correct a misprediction
     // and also send dequeue signal to the ROB if head is committed
     always_comb begin

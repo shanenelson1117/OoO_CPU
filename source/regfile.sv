@@ -12,7 +12,9 @@ module regfile (
     input clk, reset,
     input logic [31:0] WriteData,
     output logic [31:0] rs1_data, rs2_data
-);
+);  
+    import structs_pkg::*;
+    
     logic [31:0] enable_bus;
     logic [31:0] RegData [31:0];
 

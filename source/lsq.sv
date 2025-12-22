@@ -18,10 +18,9 @@ module lsq #(parameter DEPTH = 4) (
     output logic             head_load, empty, 
     output lsq_packet_t      dout          // combinational output
 );
-
+    import structs_pkg::*;
+    
     logic [1:0] wptr, rptr;
-
-
     lsq_packet_t lsq_data [DEPTH];
 
     // Write logic

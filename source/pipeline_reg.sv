@@ -14,9 +14,7 @@ module pipeline_reg (
     input  logic reset, clk, stall,
     output pipe_in_t q
 );
-
-
-
+    import structs_pkg::*;
     always_ff @(posedge clk) begin
         if (reset) begin  // flush reg on reset or flush
             q <= '0;

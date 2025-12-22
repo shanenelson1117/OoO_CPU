@@ -9,6 +9,7 @@ module gbhsr (
     input logic clk, reset, update, valid_in,
     output logic [9:0] history
 );
+    import structs_pkg::*;
     logic [9:0] d;
     genvar i;
 

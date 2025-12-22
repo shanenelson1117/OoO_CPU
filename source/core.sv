@@ -15,10 +15,14 @@ module core (
         output logic [31:0] head_pc,
         output logic [31:0] WriteData_out,
         output logic [31:0] ins_out,
+        output logic [31:0] csr_WriteData_out,
+        output logic [1:0] priv_out,
     `endif
     input clk, reset
 );
- 
+    
+    import structs_pkg::*;
+    
     //-------------------------------------- 
     // All signals passed between modules
     //--------------------------------------
@@ -152,6 +156,18 @@ module core (
     logic illegal_access_e;
     // is the issuing instruction actually reading the csrs
     logic issue_csr_valid_read;
+    // Should rs packet be loaded into rs
+    logic valid_packet;
+    // Current privilege level
+    logic curr_priv;
+    // Do we need to set pc to mtvec
+    logic mret;
+    // Where do we jump to on exception
+    logic [31:0] mtvec_ReadData;
+    // Where do we set pc to on mret
+    logic [31:0] mepc_ReadData;
+    // Must we stall because csr is being written
+    logic csr_busy;
 
 
     //--------------------------------------
@@ -170,7 +186,11 @@ module core (
                     .committed_pc,
                     .pipe_in,
                     .stall(pc_pipe_stall),
-                    .mispredicted
+                    .mispredicted,
+                    .mret,
+                    .exception,
+                    .mtvec_ReadData,
+                    .mepc_ReadData
                 );
 
     // If using verilator we need to manually expose these to fill
@@ -244,15 +264,21 @@ module core (
                     .rs1rob_data(rs1rob_data),
                     .rs2rob_data(rs2rob_data),
                     .rs1rob_ready(rs1rob_ready),
-                    .rs2rob_ready(rs2rob_ready)
+                    .rs2rob_ready(rs2rob_ready),
+                    .valid_packet,
+                    .csr_ReadData,
+                    .csr_busy,
+                    .csr_valid_read(issue_csr_valid_read),
+                    .issue_csr_valid_write,
+                    .issue_csr_write_select
                 );
     
     // Control & Status Registers
     csr csrs (
-                    .csr_read_select,
-                    .csr_write_select,
-                    .valid_write,
-                    .valid_read,
+                    .csr_read_select(issue_csr_write_sel),
+                    .csr_write_select(commit_csr_write_sel),
+                    .valid_write(commit_csr_valid_write),
+                    .valid_read(issue_csr_valid_read),
                     .special,
                     .mepc_WriteData,
                     .clk,
@@ -266,6 +292,19 @@ module core (
                     .curr_priv,
                     .illegal_access_e,
                     .mret
+    );
+
+    csr_regstat csr_register_status (
+                    .clk,
+                    .reset(reset | mispredicted | exception),
+                    .issue_csr_valid_write,
+                    .commit_csr_valid_write,
+                    .commit_csr_write_select,
+                    .issue_csr_write_select,
+                    .commit_ROB,
+                    .issue_ROB(ROB_entry),
+                    .csr_valid_read(issue_csr_valid_read),
+                    .busy(csr_busy)
     );
     
     // Register file
@@ -313,7 +352,8 @@ module core (
                     .rs0_data,
                     .rs1_data,
                     .rs2_data,
-                    .rs3_data
+                    .rs3_data,
+                    .valid_packet
                                     );
 
     // Keeps track of the ordering of loads and stores, removes ambiguous memory RAW hazards   
@@ -552,6 +592,8 @@ module core (
             head_pc = head.pc;
             WriteData_out = WriteData;
             ins_out = head.ins;
+            priv_out = curr_priv;
+            csr_WriteData_out = csr_WriteData;
         end
     `endif
 endmodule

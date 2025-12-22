@@ -16,6 +16,8 @@ module memory (
     output logic rd_en_rob,            // Tell ROB to remove head (only for stores)
     output logic valid_out             // Valid signal for memory read
 );
+    import structs_pkg::*;
+    
     logic write_enable, read_enable;
     logic [31:0] mem_result_reg, read_data;
     logic [3:0] mem_rob_entry_reg;

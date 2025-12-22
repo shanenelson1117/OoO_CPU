@@ -12,6 +12,8 @@ module shift (
   output logic valid_out, ready,     // output is valid, FU ready for input, 
   output CDB_packet_t out
 );
+  import structs_pkg::*;
+
   logic [31:0] shifted, shifter;
   logic [31:0] result, output_inter;
   logic loadregs, shiftregs;

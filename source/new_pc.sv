@@ -24,6 +24,8 @@ module new_pc (
     output logic [31:0] pc_update
 );  
 
+    import structs_pkg::*;
+    
     logic [31:0] pipe_pc, instruction;
     logic pipe_taken, jump, branch;
     logic mis_taken;

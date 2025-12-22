@@ -22,6 +22,8 @@ module fetch (
     input logic mret, exception,
     output pipe_in_t pipe_in   // pc, instruction, branch prediction (taken?)
 );
+    import structs_pkg::*;
+    
     logic [31:0] pc, instruction, newpc;
     logic branch, prediction, jump, jalr; // is the instruction a branch/jump
     logic [9:0] history, index_read, index_write;
