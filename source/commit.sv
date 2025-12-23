@@ -45,6 +45,8 @@ module commit (
         exception = 0;
         mepc_WriteData = head.pc;
         mcause = '0;
+        csr_valid_write = 0;
+        rd_en_jalrq = 0;
         if (rob_head_ready & ~empty) begin
             rd_en = 1;
             valid_commit = 1;
@@ -53,9 +55,7 @@ module commit (
             if (head.jalr) begin
                 rd_en_jalrq = jalrq_ready;
             end
-            else begin
-                rd_en_jalrq = 0;
-            end
+            
             if (head.exception) begin
                 mcause = head.mcause;
                 exception = 1;
@@ -84,7 +84,7 @@ module commit (
             // MRET
             else if (head.special == MRET) begin
                 // if this is illegal then special = NONE
-                special = {illegal_access_e, 1'b0};
+                special = head.special;
                 // We should only commit if this is legal
                 rd_en = ~illegal_access_e;
                 valid_commit = rd_en;
@@ -95,7 +95,7 @@ module commit (
                 // illegal access e will still be high if we do not dequeue
                 // Only commit if we have privilege to change csrs
                 RegWrite = ~illegal_access_e;
-                csr_valid_write = RegWrite;
+                csr_valid_write = 1;
                 csr_WriteData = head.value;
                 WriteData = head.destination;
                 // NEED TO IMPLEMENT HEAD.CSR_WRITE_SELECT -> CSR_WRITE_SELECT

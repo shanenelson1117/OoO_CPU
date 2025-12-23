@@ -17,12 +17,11 @@
     // SET ALU OP FOR CSRRW/C/S
 
 module issue (
-    input pipe_in_t pipe_out,
+    input pipe_in_t hold_out,
     input logic [3:0] busy_bus, // busy signals from each rs
     input logic [31:0] rs1_data, rs2_data,
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
-    input logic rob_full, clk, reset,
-    input logic lsq_full, jalrq_full,
+    input logic clk, reset,
     input CDB_packet_t new_CDB,
     input logic [3:0] Q_j, Q_k,
     input logic rs1reg_busy, rs2reg_busy,
@@ -34,9 +33,9 @@ module issue (
     output rs_data_t rs_input, // create RS packet
     output ROB_entry_t new_packet, // create ROB packet
     output logic [2:0] rs_dest,
-    output logic [4:0] issue_dest, rs1, rs2, // regfile/regstat control sigs
+    output logic [4:0] issue_dest, // regfile/regstat control sigs
     output logic issue_writes, // ...
-    output logic stall, pc_pipe_stall,// if no avail rs or rob slot, do not advance pipeline
+    input logic stall, // if no avail rs or rob slot, do not advance pipeline
     output lsq_packet_t lsq_input,
     output jalrq_packet_t jalrq_input,
     output logic csr_valid_read,        // Are we actually trying to read csr
@@ -59,63 +58,28 @@ module issue (
     ROB_entry_t rob_input;
 
     logic csr_valid_write_temp, csr_valid_read_temp;
-    logic issue_csr_valid_read;
     logic exception;
     logic [7:0] mcause;
 
-
-    // Handshake with pipeline reg to not advance instruction on stall
-    typedef enum logic [0:0] { S_EMPTY=1'b0, S_HOLD=1'b1 } state_t;
-    state_t ps, ns;
-
-    // Latched instruction and metadata
-    pipe_in_t instr_hold;
-
-    always_ff @(posedge clk) begin
-        if (reset) begin
-            ps <= S_EMPTY;
-            instr_hold <= '0;
-        end else begin
-            ps <= ns;
-            // Capture the instruction when first entering HOLD
-            if (ps == S_EMPTY && ns == S_HOLD) begin
-                instr_hold <= pipe_out;
-            end
-        end
-    end
-
-    // Next state logic
-    always_comb begin
-        ns = ps;
-        case (ps)
-            S_EMPTY: if (stall) ns = S_HOLD;
-            S_HOLD : if (!stall) ns = S_EMPTY;
-        endcase
-    end
-
-    // Stall signal comes from registered state
-    assign pc_pipe_stall = (ps == S_HOLD);
-
-
     // hold instruction
-    assign ins = (ps == S_HOLD) ? instr_hold.instruction   : pipe_out.instruction;
+    assign ins = hold_out.instruction;
 
     assign new_packet = rob_input;
 
     // do not change reg stat if we are about to stall
-    assign issue_writes = (ns == S_HOLD) ? 1'b0: issue_writes_temp;
-    assign issue_csr_valid_write = (ns == S_HOLD) ? 1'b0: csr_valid_write_temp;
-    assign issue_csr_valid_read = (ns == S_HOLD) ? 1'b0: csr_valid_read_temp;
+    assign issue_writes = issue_writes_temp;
+    assign issue_csr_valid_write = csr_valid_write_temp;
+    assign csr_valid_read = csr_valid_read_temp;
     
-    assign prediction = (ps == S_HOLD) ? instr_hold.prediction : pipe_out.prediction;
+    assign prediction = hold_out.prediction;
 
-    assign exception = (ps == S_HOLD) ? instr_hold.exception : pipe_out.exception;
-    assign mcause = (ps == S_HOLD) ? instr_hold.mcause : pipe_out.mcause;
+    assign exception = hold_out.exception;
+    assign mcause = hold_out.mcause;
 
-    assign curr_branch_pc = (ps == S_HOLD) ? instr_hold.pc : pipe_out.pc;
+    assign curr_branch_pc = hold_out.pc;
 
-    assign branch =  (ps == S_HOLD) ? instr_hold.branch : pipe_out.branch;
-    assign jump = (ps == S_HOLD) ? instr_hold.jump : pipe_out.jump;
+    assign branch =  hold_out.branch;
+    assign jump = hold_out.jump;
 
     logic [6:0] op;
     assign op = ins[6:0];
@@ -135,13 +99,8 @@ module issue (
             rs_dest = 3'b101;
     end
 
-    logic lsq_stall, jalrq_stall;
-
-
-    assign lsq_stall = lsq_full & ((op == 7'b0000011) | (op == 7'b0100011));
-    assign jalrq_stall = jalrq_full & (op == 7'b1100111);
-
-    assign stall = (rs_dest[2] & rs_dest[0]) | rob_full | lsq_stall | jalrq_stall | csr_busy;
+    logic [4:0] rs1, rs2;
+    
     // decode instruction
     always_comb begin
         rs1 = ins[19:15];
@@ -152,6 +111,7 @@ module issue (
         csr_valid_write_temp = 0;
         issue_csr_write_select = '1;
         csr_valid_read_temp = 0;
+        alu_op = ADD;
 
         if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
             V_j = new_CDB.result;
@@ -386,8 +346,8 @@ module issue (
                 // Do not tell reg stat we are writing from cur ROB# if
                 // We are waiting on some resource
                 csr_valid_write_temp = 1;
-                V_k = csr_ReadData;
-                Q_k = '0;
+                V_k = '0;
+                Q_temp_k = '0;
                 // rd != 0
                 if (ins[11:7] != '0) begin
                     csr_valid_read_temp = 1;
@@ -397,7 +357,7 @@ module issue (
                 if (ins[14:12] != W) begin
                     // Use immediate value in rs1
                     V_j = {27'b0, rs1};
-                    Q_j = '0;
+                    Q_temp_j = '0;
                 end
             end
             // csrrc or csrrci
@@ -407,7 +367,7 @@ module issue (
                 issue_csr_write_select = index(ins[31:20]);
                 alu_op = CLEAR;
                 V_k = csr_ReadData;
-                Q_k = '0;
+                Q_temp_k = '0;
                 if (rs1 != '0) begin
                     // Do not tell reg stat we are writing from cur ROB# if
                     // We are waiting on some resource
@@ -416,7 +376,7 @@ module issue (
                 if (ins[14:12] != C) begin
                     // Use immediate value in rs1
                     V_j = {27'b0, rs1};
-                    Q_j = '0;
+                    Q_temp_j = '0;
                 end
             end
             // csrrs or csrrsi
@@ -426,14 +386,14 @@ module issue (
                 issue_csr_write_select = index(ins[31:20]);
                 alu_op = OR;
                 V_k = csr_ReadData;
-                Q_k = '0;
+                Q_temp_k = '0;
                 if (rs1 != '0) begin
                     csr_valid_write_temp = 1;
                 end
                 if (ins[14:12] != S) begin
                     // Use immediate value in rs1
                     V_j = {27'b0, rs1};
-                    Q_j = '0;
+                    Q_temp_j = '0;
                 end
             end
             // illegal instruction
@@ -480,7 +440,7 @@ module issue (
         rob_input.branch_pred = prediction;
         rob_input.branch_result = 1'b0; // to be updated later
         rob_input.jalr = (op == 7'b1100111) ? 1 : 0;
-        rob_input.ras_pointer = (ps == S_HOLD) ? instr_hold.ras_ptr : pipe_out.ras_ptr;
+        rob_input.ras_pointer = hold_out.ras_ptr;
         rob_input.exception = exception | illegal;
         rob_input.csr_valid_write = issue_csr_valid_write;
         rob_input.csr_valid_read = csr_valid_read;
@@ -667,7 +627,7 @@ module issue (
     // Assemble jalr queue packet
     always_comb begin
         jalrq_input.valid = (op == 7'b1100111) && ~stall;
-        jalrq_input.jalr_taken_address = (ps == S_HOLD) ? instr_hold.jalr_address : pipe_out.jalr_address;
+        jalrq_input.jalr_taken_address = hold_out.jalr_address;
         jalrq_input.imm = ins[31:20];
 
         if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin

@@ -93,6 +93,7 @@
         logic [CSR_BITS:0] csr_write_sel; // Which CSR are we writing, for now 2 bits is fine
         logic csr_valid_write;  // Are we writing a csr. Needs to be high for mret, ecall
         logic csr_valid_read;
+        logic exception;
         `ifdef VERILATOR
             logic [31:0] ins;
         `endif
@@ -149,7 +150,7 @@ package structs_pkg;
             12'h300: index = 3'b000;
             12'h305: index = 3'b001;
             12'h314: index = 3'b010;
-            12'h342: index = 3'b011;
+            12'h341: index = 3'b011;
             default: index = 3'b111;
         endcase
     endfunction

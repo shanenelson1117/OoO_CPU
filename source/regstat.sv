@@ -23,6 +23,7 @@ module regstat (
     input logic RegWrite, // are we actually writing to register
     input logic [4:0] commit_dest, issue_dest, // destination register of committing instruction
     input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
+    input logic stall,
     output logic [3:0] Q_j, Q_k, // ROB numbers for unready instructions
     output logic rs1reg_busy, rs2reg_busy
 );
@@ -57,7 +58,7 @@ module regstat (
     generate
         for (j = 1; j < 32; j++) begin:reg_stat_entries
             reg_status_entry stat_i (.clk, .reset(reset), .clear(reset_bus[j] & RegWrite),
-                .write_en(enable_bus[j]), .d(d), .q(reg_status_table[j]));
+                .write_en(enable_bus[j]), .d(d), .q(reg_status_table[j]), .stall);
         end
     endgenerate
 
@@ -79,6 +80,7 @@ module reg_status_entry (
     input logic clk, reset,
     input logic write_en,
     input logic clear,
+    input logic stall,
     input reg_stat_t d,
     output reg_stat_t q
 );
@@ -87,7 +89,7 @@ module reg_status_entry (
             q <= '{default: '0};
         else if (clear)
             q <= '{default: '0};
-        else if (write_en)
+        else if (write_en && !stall)
             q <= d;
         
     end

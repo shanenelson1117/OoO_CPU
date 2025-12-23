@@ -34,15 +34,17 @@ module instructmem (
         exception = 0;
         mcause = '0;
         if (address !== 'x) begin
-            if (((address - `BASE )/4 < `INSTRUCT_MEM_SIZE/4)) begin
+            if (((address - `BASE )/4 > `INSTRUCT_MEM_SIZE/4)) begin
                 exception = 1;
                 mcause = 8'd1;
+                $display("oob: %h", address);
             end
-            else if (address[1:0] == 0) begin
+            else if (address[1:0] != 0) begin
+                $display("unaligned: %h", address);
                 exception = 1;
             end
 
-            //assert(address[1:0] == 0) else $fatal("Unaligned address: %0h", address);
+            assert(address[1:0] == 0) else $fatal("Unaligned address: %0h", address);
             //assert((address - `BASE )/4 < `INSTRUCT_MEM_SIZE/4) else $fatal("Address out of bounds: %0h", address);
         end
     end

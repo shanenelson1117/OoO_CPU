@@ -16,6 +16,8 @@ module core (
         output logic [31:0] WriteData_out,
         output logic [31:0] ins_out,
         output logic [31:0] csr_WriteData_out,
+        output logic csr_write_out,
+        output logic [CSR_BITS:0] csr_write_select_out,
         output logic [1:0] priv_out,
     `endif
     input clk, reset
@@ -161,7 +163,7 @@ module core (
     // Should rs packet be loaded into rs
     logic valid_packet;
     // Current privilege level
-    logic curr_priv;
+    logic [1:0] curr_priv;
     // Do we need to set pc to mtvec
     logic mret;
     // Where do we jump to on exception
@@ -170,6 +172,8 @@ module core (
     logic [31:0] mepc_ReadData;
     // Must we stall because csr is being written
     logic csr_busy;
+
+    pipe_in_t hold_out;
 
 
     //--------------------------------------
@@ -209,7 +213,7 @@ module core (
     pipeline_reg fetch_issue_reg (
                     .clk(clk),
                     .d(pipe_in),
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .q(pipe_out),
                     .stall(pc_pipe_stall)
                 );
@@ -234,14 +238,24 @@ module core (
     // Issue Stage
     //--------------------------------------
 
+    assign stall = (busy_bus == 4'b1) | rob_full | lsq_full | jalrq_full;
+
+    hold ins_hold (
+                    .clk,
+                    .reset,
+                    .pipe_out,
+                    .stall,
+                    .hold_out,
+                    .pc_pipe_stall,
+                    .rs1,
+                    .rs2
+    );
     
     // Sends packets to reorder buffer, reservation stations, and load-store queue
     issue res_sched (
-                    .pipe_out(pipe_out),
+                    .hold_out,
                     .busy_bus(busy_bus),
-                    .lsq_full(lsq_full),
                     .lsq_input(lsq_input),
-                    .rob_full(rob_full),
                     .rs1reg_busy(rs1reg_busy),
                     .rs2reg_busy(rs2reg_busy),
                     .new_CDB(CDB_out),
@@ -249,19 +263,15 @@ module core (
                     .rs2_data(rs2reg_data),
                     .Q_j(Q_j),
                     .Q_k(Q_k),
-                    .rs1(rs1),
-                    .rs2(rs2),
                     .issue_writes(issue_writes),
                     .rs_input(rs_input),
                     .new_packet(rob_input),
-                    .stall(stall),
+                    .stall,
                     .issue_dest(issue_dest),
                     .ROB_entry(ROB_entry),
                     .rs_dest(rs_dest),
                     .clk(clk),
-                    .reset(reset | mispredicted | exception),
-                    .pc_pipe_stall(pc_pipe_stall),
-                    .jalrq_full(jalrq_full),
+                    .reset(reset | mispredicted | exception | mret),
                     .jalrq_input(jalrq_input),
                     .rs1rob_data(rs1rob_data),
                     .rs2rob_data(rs2rob_data),
@@ -298,12 +308,13 @@ module core (
 
     csr_regstat csr_register_status (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .issue_csr_valid_write,
                     .commit_csr_valid_write,
                     .commit_csr_write_select,
                     .issue_csr_write_select,
                     .commit_ROB,
+                    .stall,
                     .issue_ROB(ROB_entry),
                     .csr_valid_read(issue_csr_valid_read),
                     .busy(csr_busy)
@@ -326,8 +337,9 @@ module core (
     regstat reg_status_register (
                     .rs1,
                     .rs2,
+                    .stall,
                     .clk(clk),
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .issue_writes,
                     .commit_dest(rd),
                     .rs1reg_busy,
@@ -344,7 +356,7 @@ module core (
     rs_module reservation_stations (
                     .stall,
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .mispredicted,
                     .rs_dest,
                     .d(rs_input),
@@ -361,7 +373,7 @@ module core (
     // Keeps track of the ordering of loads and stores, removes ambiguous memory RAW hazards   
     lsq load_store_queue (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .wr_en,
                     .rd_en,
                     .CDB_in(CDB_out), 
@@ -383,7 +395,7 @@ module core (
     // queue of jalr instructions
     jalrq indirect_jump_queue (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .rd_en(rd_en_jalrq),
                     .CDB_in(CDB_out),
                     .din(jalrq_input),
@@ -418,7 +430,7 @@ module core (
     // Adder FU
     add adder_fu_0 (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .load(load[0]),
                     .valid_in(valid_in_bus[0]),
                     .yumi_in(yumi_bus[0]), 
@@ -435,7 +447,7 @@ module core (
     // Adder FU 
     add adder_fu_1 (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .valid_in(valid_in_bus[1]),
                     .load(load[1]),
                     .yumi_in(yumi_bus[1]),
@@ -452,7 +464,7 @@ module core (
     // Multiply FU (booth's algorithm) 
     multiply mult_fu (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .A(fu_bus[4]),
                     .B(fu_bus[5]),
                     .rs_rob_entry(ROB_entry_bus[2]), 
@@ -467,7 +479,7 @@ module core (
     // Divide FU (non-restoring division algorithm)
     divide div_fu (
                     .clk,
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .valid_in(valid_in_bus[3]),
                     .yumi_in(yumi_bus[3]), 
                     .rs_rob_entry(ROB_entry_bus[3]),
@@ -490,7 +502,7 @@ module core (
                     .rd_en,
                     .rd_en_rob,
                     .valid_out(valid_out_bus[4]),
-                    .reset(reset | mispredicted | exception), 
+                    .reset(reset | mispredicted | exception | mret), 
                     .yummy_in(yumi_bus[4]),
                     .empty(lsq_empty)
                         );
@@ -502,7 +514,7 @@ module core (
                     .ALUop(ALU_op[4]),
                     .valid_in(valid_in_bus[4]),
                     .yumi_in(yumi_bus[5]),
-                    .reset(reset | mispredicted | exception),
+                    .reset(reset | mispredicted | exception | mret),
                     .clk,
                     .valid_out(valid_out_bus[5]),
                     .ready(ready_bus[4]),
@@ -537,7 +549,7 @@ module core (
                     .new_entry(rob_input),
                     .CDB_in(CDB_out),
                     .clk,
-                    .reset(reset | mispredicted | exception), 
+                    .reset(reset | mispredicted | exception | mret), 
                     .rd_en(rob_read_enable),
                     .empty,
                     .rs1rob_data,
@@ -588,6 +600,9 @@ module core (
     
     `ifdef VERILATOR
         always_comb begin
+            if (valid_commit) begin
+                $display(head.ins);
+            end
             valid_commit_out = valid_commit;
             RegWrite_out = RegWrite;
             rd_out = rd;
@@ -596,6 +611,8 @@ module core (
             ins_out = head.ins;
             priv_out = curr_priv;
             csr_WriteData_out = csr_WriteData;
+            csr_write_out = commit_csr_valid_write;
+            csr_write_select_out = commit_csr_write_select;
         end
     `endif
 endmodule

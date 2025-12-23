@@ -27,20 +27,20 @@ module csr (
   output logic mret
 );
   import structs_pkg::*;
-  
+
   logic [NUM_CSR:0][31:0] csr_data;
 
   // Use index() function to get array index for csr based on csr num
   assign mepc_ReadData = csr_data[index(12'h300)];
   assign mtvec_ReadData = csr_data[index(12'h305)];
 
-  assign illegal_access_e = (valid_write | (special == MRET)) && (curr_priv == U);
-  assign mret = (special == MRET);
+  assign illegal_access_e = (valid_write |(special == MRET)) && (curr_priv == U);
+  assign mret = (special == MRET) && ~(curr_priv == U);
 
   // Combinational reads
   always_comb begin
     if (valid_read) begin
-      csr_ReadData = csr_data[index(csr_read_select)];
+      csr_ReadData = csr_data[csr_read_select];
     end
     else begin
       csr_ReadData = 32'b0;
@@ -81,11 +81,11 @@ module csr (
       end
     end
     // Handle normal writes
-    else if (valid_write) begin
+    else if (valid_write && ~illegal_access_e) begin
       csr_data[csr_write_select] <= csr_WriteData;
     end
     // MRET
-    else if (special == MRET) begin
+    else if (special == MRET && ~illegal_access_e) begin
       csr_data[0] <= {{csr_data[0][31:13]}, 
                     2'b0,
                     {csr_data[0][10:8]},

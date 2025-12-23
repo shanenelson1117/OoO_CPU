@@ -12,7 +12,7 @@ OoO_CPU is an Out-of-Order processor implementing the RISCVIM ISA. The design le
 * ```design-docs/```: Documents laying out choices made and tradeoffs faced for recent additions to OoO_CPU.
 * ```test/```: All resources used for testing the CPU, including testbenches and various tests and benchmarks. SEE ```test/README.md``` for more info on testing structure.
 ## Building OoO_CPU
-To build the cpu run ```make build-no-warn``` this builds the verilator files and strips unnecessary warnings that prevent the build from succeeding. The output files will be in ```obj_dir/``` .
+To build the cpu run ```make```. This builds the verilator files and strips unnecessary warnings that prevent the build from succeeding. The output files will be in ```obj_dir/``` .
 ### Diff Testing vs. Spike
 Script to be created later...
 

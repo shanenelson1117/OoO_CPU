@@ -8,8 +8,9 @@
 module csr_regstat (
     input logic clk, reset, // reset should go high when a mispredicted branch is committed
     input logic issue_csr_valid_write, commit_csr_valid_write, // are we actually writing to register
-    input logic [11:0] commit_csr_write_select,
+    input logic [CSR_BITS:0] commit_csr_write_select,
     input logic [CSR_BITS:0] issue_csr_write_select, 
+    input logic stall,
     input logic [3:0] commit_ROB, issue_ROB, // ROB number of committing instruction
     input logic csr_valid_read,
     output logic busy
@@ -25,8 +26,8 @@ module csr_regstat (
         d.busy = 1'b1;
     end
 
-    assign reset_enable = commit_csr_valid_write && (reg_stat_data[index(commit_csr_write_select)].ROB_number == commit_ROB)
-                           && ~((issue_csr_write_select == index(commit_csr_write_select)) & issue_csr_valid_write);
+    assign reset_enable = commit_csr_valid_write && (reg_stat_data[commit_csr_write_select].ROB_number == commit_ROB)
+                           && ~((issue_csr_write_select == commit_csr_write_select) & issue_csr_valid_write);
 
     // Since we are stalling on busy, we do not want to overwrite regstat values
     assign write_enable = issue_csr_valid_write & ~reg_stat_data[issue_csr_write_select].busy;
@@ -35,11 +36,11 @@ module csr_regstat (
       if (reset) begin
         reg_stat_data <= '0;
       end
-      else if (write_enable) begin
+      else if (write_enable && !stall) begin
         reg_stat_data[issue_csr_write_select] <= d;
       end
       if (reset_enable) begin
-        reg_stat_data[index(commit_csr_write_select)] <= '0;
+        reg_stat_data[commit_csr_write_select] <= '0;
       end
     end
 
