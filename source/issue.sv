@@ -23,24 +23,23 @@ module issue (
     input logic [3:0] ROB_entry, // all 0's indicates full ROB, otherwise avail rob number
     input logic clk, reset,
     input CDB_packet_t new_CDB,
-    input logic [3:0] Q_j, Q_k,
+    input logic [3:0] Q_j, Q_k, Q_csr,
     input logic rs1reg_busy, rs2reg_busy,
+    input logic issue_csr_op,
     // Necessary if an operand is not at the head of the ROB but is ready (previously broadcast)
     input logic [31:0] rs1rob_data, rs2rob_data,    // Ask ROB for operand data
     input logic [31:0] csr_ReadData,
     input logic rs1rob_ready, rs2rob_ready,   // Ask ROB if operand data is ready
-    input logic csr_busy,       // If the csr is being written we need to stall
+    input logic csr_reg_busy,       // If the csr is being written we need to stall
     output rs_data_t rs_input, // create RS packet
     output ROB_entry_t new_packet, // create ROB packet
     output logic [2:0] rs_dest,
     output logic [4:0] issue_dest, // regfile/regstat control sigs
     output logic issue_writes, // ...
+    output logic issue_csr_valid_write,
     input logic stall, // if no avail rs or rob slot, do not advance pipeline
     output lsq_packet_t lsq_input,
     output jalrq_packet_t jalrq_input,
-    output logic csr_valid_read,        // Are we actually trying to read csr
-    output logic issue_csr_valid_write,
-    output logic [CSR_BITS:0] issue_csr_write_select,
     output logic valid_packet       // Tell rs if we do not need it to hold this ins
 );  
     import structs_pkg::*;
@@ -60,16 +59,17 @@ module issue (
     logic csr_valid_write_temp, csr_valid_read_temp;
     logic exception;
     logic [7:0] mcause;
+    logic [CSR_BITS:0] issue_csr_write_select;
 
     // hold instruction
     assign ins = hold_out.instruction;
 
     assign new_packet = rob_input;
 
+    assign issue_csr_valid_write = csr_valid_write_temp;
+
     // do not change reg stat if we are about to stall
     assign issue_writes = issue_writes_temp;
-    assign issue_csr_valid_write = csr_valid_write_temp;
-    assign csr_valid_read = csr_valid_read_temp;
     
     assign prediction = hold_out.prediction;
 
@@ -98,20 +98,59 @@ module issue (
         else 
             rs_dest = 3'b101;
     end
-
-    logic [4:0] rs1, rs2;
     
     // decode instruction
     always_comb begin
-        rs1 = ins[19:15];
-        rs2 = ins[24:20];
         issue_dest = ins[11:7];
-        valid_packet = 1;
+        valid_packet = ~stall;
         illegal = 0;
         csr_valid_write_temp = 0;
         issue_csr_write_select = '1;
         csr_valid_read_temp = 0;
         alu_op = ADD;
+
+        // Handle csr reads into the K slot
+        if (issue_csr_op) begin
+            if ((Q_csr == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
+                V_k = new_CDB.result;
+                Q_temp_k = '0;
+            end
+            else if (~csr_reg_busy) begin
+                V_k = csr_ReadData;
+                Q_temp_k = '0;
+            end
+            // Query ROB
+            else if (rs1rob_ready) begin
+                V_k = rs2rob_data;
+                Q_temp_k = '0;
+            end
+            else begin
+                V_k = 32'b0;
+                Q_temp_k = Q_csr;
+            end
+        end
+        // Handle regfile reads into the K slot
+        else begin
+            if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
+                V_k = new_CDB.result;
+                Q_temp_k = '0;
+            end
+
+            else if (~rs2reg_busy) begin
+                V_k = rs2_data;
+                Q_temp_k = '0;
+            end
+            // Query ROB
+            else if (rs2rob_ready) begin
+                V_k = rs2rob_data;
+                Q_temp_k = '0;
+            end
+
+            else begin
+                V_k = 32'b0;
+                Q_temp_k = Q_k;
+            end
+        end
 
         if ((Q_j == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
             V_j = new_CDB.result;
@@ -131,25 +170,6 @@ module issue (
             Q_temp_j = Q_j;
         end
 
-        if ((Q_k == new_CDB.dest_ROB_entry) && (new_CDB.dest_ROB_entry != 4'b0) && (~new_CDB.load_step1)) begin
-            V_k = new_CDB.result;
-            Q_temp_k = '0;
-        end
-
-        else if (~rs2reg_busy) begin
-            V_k = rs2_data;
-            Q_temp_k = '0;
-        end
-        // Query ROB
-        else if (rs2rob_ready) begin
-            V_k = rs2rob_data;
-            Q_temp_k = '0;
-        end
-
-        else begin
-            V_k = 32'b0;
-            Q_temp_k = Q_k;
-        end
 
         // R-type
         if (op == 7'b0110011) begin
@@ -343,9 +363,8 @@ module issue (
             // CSRRW or CSRRWI
             else if (ins[14:12] == W || ins[14:12] == WI) begin
                 issue_csr_write_select = index(ins[31:20]);
-                // Do not tell reg stat we are writing from cur ROB# if
-                // We are waiting on some resource
                 csr_valid_write_temp = 1;
+                alu_op = ADD;
                 V_k = '0;
                 Q_temp_k = '0;
                 // rd != 0
@@ -356,7 +375,7 @@ module issue (
                 
                 if (ins[14:12] != W) begin
                     // Use immediate value in rs1
-                    V_j = {27'b0, rs1};
+                    V_j = {27'b0, ins[19:15]};
                     Q_temp_j = '0;
                 end
             end
@@ -368,14 +387,14 @@ module issue (
                 alu_op = CLEAR;
                 V_k = csr_ReadData;
                 Q_temp_k = '0;
-                if (rs1 != '0) begin
+                if (ins[19:15] != '0) begin
                     // Do not tell reg stat we are writing from cur ROB# if
                     // We are waiting on some resource
                     csr_valid_write_temp = 1;
                 end
                 if (ins[14:12] != C) begin
                     // Use immediate value in rs1
-                    V_j = {27'b0, rs1};
+                    V_j = {27'b0, ins[19:15]};
                     Q_temp_j = '0;
                 end
             end
@@ -387,12 +406,12 @@ module issue (
                 alu_op = OR;
                 V_k = csr_ReadData;
                 Q_temp_k = '0;
-                if (rs1 != '0) begin
+                if (ins[19:15] != '0) begin
                     csr_valid_write_temp = 1;
                 end
                 if (ins[14:12] != S) begin
                     // Use immediate value in rs1
-                    V_j = {27'b0, rs1};
+                    V_j = {27'b0, ins[19:15]};
                     Q_temp_j = '0;
                 end
             end
@@ -442,11 +461,13 @@ module issue (
         rob_input.jalr = (op == 7'b1100111) ? 1 : 0;
         rob_input.ras_pointer = hold_out.ras_ptr;
         rob_input.exception = exception | illegal;
-        rob_input.csr_valid_write = issue_csr_valid_write;
-        rob_input.csr_valid_read = csr_valid_read;
+        rob_input.csr_valid_write = csr_valid_write_temp & valid_packet;
+        rob_input.csr_valid_read = csr_valid_read_temp & valid_packet;
         rob_input.special = NONE;
         rob_input.reg_dest = (issue_writes) ? ins[11:7] : '0;
         rob_input.csr_write_sel = '1;
+        rob_input.ready = ~valid_packet;
+        rob_input.Q_csr = (csr_reg_busy & issue_csr_op) ? Q_csr : '0;
 
         // Set ROB mcause
         if (exception) begin
@@ -483,11 +504,12 @@ module issue (
             rob_input.reg_dest = ins[11:7];
         end
          else if (op == 7'b1110011) begin
-            rob_input.itype = 2'b11;
+            rob_input.itype = 2'b10;
             rob_input.value = 32'b0;
             rob_input.destination = '0;
             // mret, ecall, ebreak
             if (ins[14:12] == 3'b000) begin
+                rob_input.ready = 1;
                 rob_input.value = 32'b0;
                 rob_input.destination = '0;
                 // ecall

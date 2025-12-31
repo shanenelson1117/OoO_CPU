@@ -14,7 +14,7 @@ module regfile (
     output logic [31:0] rs1_data, rs2_data
 );  
     import structs_pkg::*;
-    
+
     logic [31:0] enable_bus;
     logic [31:0] RegData [31:0];
 
@@ -27,7 +27,7 @@ module regfile (
 
     generate
         for (i = 1; i < 32; i++) begin:registers
-            register reg_i (.clk, .reset, .enable(enable_bus[i]), .d(WriteData), .q(RegData[i]));
+            int_register reg_i (.clk, .reset, .enable(enable_bus[i]), .d(WriteData), .q(RegData[i]));
         end
     endgenerate
 
@@ -39,7 +39,7 @@ module regfile (
 
 endmodule
 
-module register (
+module int_register (
     input logic clk, reset, enable,
     input logic [31:0] d,
     output logic [31:0] q

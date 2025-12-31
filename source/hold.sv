@@ -1,11 +1,16 @@
+`include "structs.sv"
+
 module hold (
   input clk, reset,
   input pipe_in_t pipe_out,
   input stall,
   output pipe_in_t hold_out,
   output pc_pipe_stall,
-  output logic [4:0] rs1, rs2
-);
+  output logic [4:0] rs1, rs2,
+  output logic issue_csr_op,
+  output logic [CSR_BITS:0] csr_read_select
+);  
+    import structs_pkg::*;
       // Handshake with pipeline reg to not advance instruction on stall
     typedef enum logic [0:0] { S_EMPTY=1'b0, S_HOLD=1'b1 } state_t;
     state_t ps, ns;
@@ -39,6 +44,9 @@ module hold (
     assign pc_pipe_stall = (ps == S_HOLD);
 
     assign hold_out = (ps == S_HOLD) ? instr_hold : pipe_out;
-    assign rs1 = hold_out;
+    assign rs1 = hold_out.instruction[19:15];
+    assign rs2 = hold_out.instruction[24:20];
+    assign issue_csr_op = (hold_out.instruction[6:0] == 7'b1110011) && (hold_out.instruction[14:12] != 3'b000);
+    assign csr_read_select = issue_csr_op ? index(hold_out.instruction[31:20]) : '1;
 
 endmodule 

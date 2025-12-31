@@ -9,8 +9,9 @@ module rob #(parameter DEPTH = 16) (
     input CDB_packet_t CDB_in,      // Read CDB
     input logic clk, reset, 
     input logic rd_en,              // dequeue from commit unit
-    input logic [3:0] Q_j, Q_k,     // Query(ies) from issue unit
+    input logic [3:0] Q_j, Q_k, Q_csr,    // Query(ies) from issue unit
     input logic illegal_access_e,   // Need to set head.exception if action is illegal
+    input logic issue_csr_op,
     output ROB_entry_t head,        // Combinational read of head
     output logic head_ready,        // Are we ready to commit head?
     output logic full, empty,      
@@ -28,10 +29,18 @@ module rob #(parameter DEPTH = 16) (
     assign wr_en = new_entry.ROB_number == wptr;
     
     // Forwarding to issue stage logic
-    assign rs1rob_data = rob_data[Q_j].value;
-    assign rs2rob_data = rob_data[Q_k].value;
-    assign rs1rob_ready = rob_data[Q_j].ready;
-    assign rs2rob_ready = rob_data[Q_k].ready;
+    always_comb begin
+        rs1rob_data = rob_data[Q_j].value;
+        rs1rob_ready = rob_data[Q_j].ready;
+        if (issue_csr_op) begin
+            rs2rob_data = rob_data[Q_csr].value;
+            rs2rob_ready = rob_data[Q_csr].ready;
+        end 
+        else begin
+            rs2rob_data = rob_data[Q_k].value;
+            rs2rob_ready = rob_data[Q_k].ready;
+        end
+    end
 
     // Write logic
     always_ff @(posedge clk) begin
@@ -65,8 +74,14 @@ module rob #(parameter DEPTH = 16) (
                             rob_data[i].ready <= 1;
                         end
                     end
+                    // Forward csr read data 
+                    else if (rob_data[i].csr_valid_write || rob_data[i].csr_valid_read) begin
+                         if ((Q_csr == CDB_in.dest_ROB_entry) && (~CDB_in.load_step1)) begin
+                            rob_data[i].destination <= CDB_in.result;
+                            rob_data[i].Q_csr <= '0;
+                        end
+                    end
                 end
-
             end
         end
     end

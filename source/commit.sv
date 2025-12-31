@@ -9,7 +9,7 @@ module commit (
     input logic rob_head_ready, empty, 
     input logic jalrq_ready, // is jalr at head ready?
     input logic rd_en_rob, // from memory unit, is store at head of queue done?
-    input logic illegal_access_e,
+    input logic [1:0] curr_priv,
     output logic RegWrite, // register file write enable
     output logic [3:0] commit_ROB, 
     output logic [4:0] rd,
@@ -18,7 +18,7 @@ module commit (
     output logic rd_en, valid_commit, // dequeue head
     output logic rd_en_jalrq, // dequeue head of jalrq
     output logic [3:0] commit_ras_pointer,
-    output logic csr_valid_write,   // Are we writing to csrs
+    output logic csr_valid_write,
     output logic [1:0] special,     // Are we committing an mret, ecall
     output logic [31:0] mepc_WriteData, // Current pc for exceptions
     output logic [31:0] csr_WriteData,   // What are we writing to CSRs?
@@ -86,7 +86,7 @@ module commit (
                 // if this is illegal then special = NONE
                 special = head.special;
                 // We should only commit if this is legal
-                rd_en = ~illegal_access_e;
+                rd_en = curr_priv != U;
                 valid_commit = rd_en;
             end
             // CSR WRITE INSTRUCTION
@@ -94,11 +94,10 @@ module commit (
                 // important that we handle exceptions first because
                 // illegal access e will still be high if we do not dequeue
                 // Only commit if we have privilege to change csrs
-                RegWrite = ~illegal_access_e;
-                csr_valid_write = 1;
+                RegWrite = curr_priv != U;
+                csr_valid_write = RegWrite;
                 csr_WriteData = head.value;
                 WriteData = head.destination;
-                // NEED TO IMPLEMENT HEAD.CSR_WRITE_SELECT -> CSR_WRITE_SELECT
                 csr_write_select = head.csr_write_sel;
                 rd_en = RegWrite;
                 valid_commit = RegWrite;

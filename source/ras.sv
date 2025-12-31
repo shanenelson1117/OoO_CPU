@@ -10,8 +10,8 @@ module ras (
     output logic [3:0] ptr   // current pointer
 );
     import structs_pkg::*;
-    
-    logic [31:0] stack [15:0];
+
+    logic [31:0] ras_stack [15:0];
     logic [3:0] sp;
     logic full, empty;
 
@@ -23,11 +23,11 @@ module ras (
         end else begin
             if (push && !pop && !full) begin
                 sp <= sp + 1;
-                stack[sp + 1] <= ras_update;
+                ras_stack[sp + 1] <= ras_update;
             end else if (!push && pop && !empty) begin
                 sp <= sp - 1;
             end else if (push && pop) begin
-                stack[sp] <= ras_update; // overwrite top
+                ras_stack[sp] <= ras_update; // overwrite top
             end
         end
     end
@@ -36,9 +36,9 @@ module ras (
         if (reset)
             ras_new_pc = 32'h0;
         else if (mispredicted)
-            ras_new_pc = stack[flush_ptr-1];
+            ras_new_pc = ras_stack[flush_ptr-1];
         else
-            ras_new_pc = stack[sp];
+            ras_new_pc = ras_stack[sp];
     end
     
 

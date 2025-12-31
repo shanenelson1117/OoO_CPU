@@ -94,6 +94,7 @@
         logic csr_valid_write;  // Are we writing a csr. Needs to be high for mret, ecall
         logic csr_valid_read;
         logic exception;
+        logic [3:0] Q_csr;
         `ifdef VERILATOR
             logic [31:0] ins;
         `endif

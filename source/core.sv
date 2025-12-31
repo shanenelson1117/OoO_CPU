@@ -142,8 +142,6 @@ module core (
     logic [7:0] mcause;
     // Which CSR is commiting instruction writing
     logic [CSR_BITS:0] commit_csr_write_select;
-    // Which CSR is issuing instruction writing
-    logic [CSR_BITS:0] issue_csr_write_select;
     // Where are we returning to if we are commiting an exception
     logic [31:0] mepc_WriteData;
     // What data is being written to the csrs
@@ -158,8 +156,6 @@ module core (
     logic issue_csr_valid_write;
     // Are we attempting to write csrs from user mode
     logic illegal_access_e;
-    // is the issuing instruction actually reading the csrs
-    logic issue_csr_valid_read;
     // Should rs packet be loaded into rs
     logic valid_packet;
     // Current privilege level
@@ -172,7 +168,9 @@ module core (
     logic [31:0] mepc_ReadData;
     // Must we stall because csr is being written
     logic csr_busy;
-
+    logic issue_csr_op;
+    logic [CSR_BITS:0] csr_read_select;
+    logic [3:0] Q_csr;
     pipe_in_t hold_out;
 
 
@@ -238,7 +236,10 @@ module core (
     // Issue Stage
     //--------------------------------------
 
-    assign stall = (busy_bus == 4'b1) | rob_full | lsq_full | jalrq_full;
+    assign stall = (busy_bus == 4'b1) | rob_full | lsq_full | jalrq_full | (csr_busy & (csr_read_select != '1));
+    always_comb begin
+        if ((csr_busy & (csr_read_select != '1))) $display("stall");
+    end
 
     hold ins_hold (
                     .clk,
@@ -248,7 +249,9 @@ module core (
                     .hold_out,
                     .pc_pipe_stall,
                     .rs1,
-                    .rs2
+                    .rs2,
+                    .issue_csr_op,
+                    .csr_read_select
     );
     
     // Sends packets to reorder buffer, reservation stations, and load-store queue
@@ -261,8 +264,10 @@ module core (
                     .new_CDB(CDB_out),
                     .rs1_data(rs1reg_data),
                     .rs2_data(rs2reg_data),
+                    .issue_csr_valid_write,
                     .Q_j(Q_j),
                     .Q_k(Q_k),
+                    .Q_csr,
                     .issue_writes(issue_writes),
                     .rs_input(rs_input),
                     .new_packet(rob_input),
@@ -279,18 +284,15 @@ module core (
                     .rs2rob_ready(rs2rob_ready),
                     .valid_packet,
                     .csr_ReadData,
-                    .csr_busy,
-                    .csr_valid_read(issue_csr_valid_read),
-                    .issue_csr_valid_write,
-                    .issue_csr_write_select
+                    .csr_reg_busy(csr_busy),
+                    .issue_csr_op
                 );
     
     // Control & Status Registers
     csr csrs (
-                    .csr_read_select(issue_csr_write_select),
+                    .csr_read_select,
                     .csr_write_select(commit_csr_write_select),
                     .valid_write(commit_csr_valid_write),
-                    .valid_read(issue_csr_valid_read),
                     .special,
                     .mepc_WriteData,
                     .clk,
@@ -309,15 +311,16 @@ module core (
     csr_regstat csr_register_status (
                     .clk,
                     .reset(reset | mispredicted | exception | mret),
+                    .csr_read_select,
                     .issue_csr_valid_write,
                     .commit_csr_valid_write,
-                    .commit_csr_write_select,
-                    .issue_csr_write_select,
+                    .commit_dest(commit_csr_write_select),
+                    .issue_dest(csr_read_select),
                     .commit_ROB,
-                    .stall,
                     .issue_ROB(ROB_entry),
-                    .csr_valid_read(issue_csr_valid_read),
-                    .busy(csr_busy)
+                    .stall,
+                    .Q_csr,
+                    .csr_reg_busy(csr_busy)
     );
     
     // Register file
@@ -426,6 +429,11 @@ module core (
                     .valid_in_bus,
                     .load
                             );
+
+    /*
+    NEED TO UPDATE ADDER FU TO COMPUTE CLEAR AND SET 
+    CSR OPERATIONS
+    */
 
     // Adder FU
     add adder_fu_0 (
@@ -558,6 +566,8 @@ module core (
                     .rs2rob_ready,
                     .Q_j,
                     .Q_k,
+                    .Q_csr,
+                    .issue_csr_op,
                     .head,
                     .head_ready(rob_head_ready),
                     .full(rob_full),
@@ -588,7 +598,7 @@ module core (
                     .rd_en(rob_read_enable),
                     .jalrq_ready,
                     .commit_ras_pointer,
-                    .illegal_access_e,
+                    .curr_priv,
                     .csr_valid_write(commit_csr_valid_write),
                     .special,
                     .mepc_WriteData,

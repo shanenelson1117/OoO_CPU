@@ -12,7 +12,6 @@
 module csr (
   input logic [CSR_BITS:0] csr_read_select, csr_write_select,   // Which CSR are we accessing
   input logic valid_write,  // is the instruction writing a csr
-  input logic valid_read,   // is the intstruction reading a csr
   input logic [1:0] special,         // is this a ecall/mret
   input logic [31:0] mepc_WriteData, // Need to write mepc when we hit an exception
   input clk, reset, 
@@ -39,12 +38,7 @@ module csr (
 
   // Combinational reads
   always_comb begin
-    if (valid_read) begin
-      csr_ReadData = csr_data[csr_read_select];
-    end
-    else begin
-      csr_ReadData = 32'b0;
-    end
+    csr_ReadData = csr_data[csr_read_select];
   end
 
   // Handle writes
