@@ -143,13 +143,13 @@ module core (
     // Which CSR is commiting instruction writing
     logic [CSR_BITS:0] commit_csr_write_select;
     // Where are we returning to if we are commiting an exception
-    logic [31:0] mepc_WriteData;
+    logic [31:0] mepc_WriteData /* verilator public_flat */;
     // What data is being written to the csrs
-    logic [31:0] csr_WriteData;
+    logic [31:0] csr_WriteData /* verilator public_flat */;
     // Read csr data
-    logic [31:0] csr_ReadData;
+    logic [31:0] csr_ReadData /* verilator public_flat */;
     // Are we commiting an ecall, ebreak, mret
-    logic [1:0] special;
+    logic [1:0] special /* verilator public_flat */;
     // Is commiting instruction writing csrs
     logic commit_csr_valid_write;
     // is issuing instruction writing csrs
@@ -163,9 +163,9 @@ module core (
     // Do we need to set pc to mtvec
     logic mret;
     // Where do we jump to on exception
-    logic [31:0] mtvec_ReadData;
+    logic [31:0] mtvec_ReadData /* verilator public_flat */;
     // Where do we set pc to on mret
-    logic [31:0] mepc_ReadData;
+    logic [31:0] mepc_ReadData /* verilator public_flat */;
     // Must we stall because csr is being written
     logic csr_busy;
     logic issue_csr_op;
@@ -610,9 +610,6 @@ module core (
     
     `ifdef VERILATOR
         always_comb begin
-            if (valid_commit) begin
-                $display(head.ins);
-            end
             valid_commit_out = valid_commit;
             RegWrite_out = RegWrite;
             rd_out = rd;

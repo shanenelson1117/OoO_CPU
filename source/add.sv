@@ -91,10 +91,10 @@ module add (  // adder FSM
 endmodule
 
 module adder_32bit ( // full adder
-	input logic [31:0] rs1, rs2,
-	input logic ALUop1,
-	output logic [31:0] s,
-	output logic zero, overflow, negative, carry
+	input wire [31:0] rs1, rs2,
+	input wire ALUop1,
+	output wire [31:0] s,
+	output wire zero, overflow, negative, carry
 	);
 	
 	logic [32:0] c_bus;
@@ -121,10 +121,10 @@ module adder_32bit ( // full adder
 endmodule 
 
 module full_add (sum, c_out, a, b, c_in); // full adder
-	input logic a, b, c_in;
-	output logic c_out, sum;
+	input wire a, b, c_in;
+	output wire c_out, sum;
 	
-	logic i1, i2, i3;
+	wire i1, i2, i3;
 	
 	half_add add1 (i1, i2, a, b);
 	half_add add2 (sum, i3, c_in, i1);
@@ -134,8 +134,8 @@ module full_add (sum, c_out, a, b, c_in); // full adder
 endmodule
 
 module half_add (sum, c_out, a, b); // half adder
-	input logic a, b;
-	output logic sum, c_out;
+	input wire a, b;
+	output wire sum, c_out;
 	
 	xor sum_calc (sum, a, b);
 	and carry_calc (c_out, a, b);
@@ -143,12 +143,12 @@ module half_add (sum, c_out, a, b); // half adder
 endmodule 
 
 module zero_detect (
-	input logic [31:0] bus,
-	output logic zero
+	input wire [31:0] bus,
+	output wire zero
 	);
 	
 	logic [15:0] inner_or;
-	logic or1, or2, or3, or4, or_final;
+	wire or1, or2, or3, or4, or_final;
 	
 	genvar i;
 	

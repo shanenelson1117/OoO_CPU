@@ -19,15 +19,15 @@ NOWARNFLAGS := -Wall --cc --exe --trace \
               -O3 \
     					-Wno-DECLFILENAME -Wno-TIMESCALEMOD -Wno-UNUSEDSIGNAL -Wno-UNDRIVEN -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-VARHIDDEN
 
-WAVEFLAGS := --trace-fst \
+WAVEFLAGS := --trace \
 	-I$(RTL_DIR) \
   --trace-structs \
+	--trace-depth 99 \
   --trace-max-array 1024 \
   --public-flat-rw \
-  -O0 \
   --cc \
   --exe \
-	-Wno-DECLFILENAME -Wno-TIMESCALEMOD -Wno-UNUSEDSIGNAL -Wno-UNDRIVEN -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-VARHIDDEN
+	-Wno-DECLFILENAME -Wno-TIMESCALEMOD -Wno-UNUSEDSIGNAL -Wno-UNDRIVEN -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-VARHIDDEN -Wno-UNOPTFLAT
 
 
 RTL_SRCS   := $(wildcard $(RTL_DIR)/*.sv)
