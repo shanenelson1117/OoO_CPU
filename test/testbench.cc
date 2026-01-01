@@ -9,7 +9,7 @@
 #include <cassert>
 #include "test_utils.h"
 
-const int kCycles = 1000;
+const int kCycles = 5000;
 
 
 // Takes a path to an ELF and loads it into a vector of integers
@@ -52,7 +52,8 @@ int main(int argc, char **argv) {
           trace_file << "(0x" << std::hex << std::setw(8) << (top->ins_out & 0xFFFFFFFF) << ") ";
 
           if (top->RegWrite_out && top->rd_out != 0) {
-              trace_file << "x" << std::dec << (int)top->rd_out << " "
+              std::string fill = top->rd_out < 10 ? "  " : " ";
+              trace_file << "x" << std::dec << (int)top->rd_out << fill
                         << "0x" << std::hex << std::setw(8) << (top->WriteData_out & 0xFFFFFFFF);
           }
           if (top->csr_write_out) {
@@ -77,7 +78,6 @@ int main(int argc, char **argv) {
 
           trace_file << std::endl;
       }
-
       cycles_ran++;
     }
 

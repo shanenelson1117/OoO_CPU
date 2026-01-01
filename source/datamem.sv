@@ -8,6 +8,7 @@
 
 // How many bytes are in our memory?  Must be a power of two.
 `define DATA_MEM_SIZE	32768
+`define BASE 32'h8000_0000
 	
 module datamem (
 	input logic		[31:0]	address,
@@ -28,7 +29,7 @@ module datamem (
 		if (address !== 'x && (write_enable || read_enable)) begin // address or size could be all X's at startup, so ignore this case.
 			assert((address & (xfer_size - 1)) == 0);	// Makes sure address is aligned.
 			assert((xfer_size & (xfer_size-1)) == 0);	// Make sure size is a power of 2.
-			assert(address + xfer_size <= `DATA_MEM_SIZE);	// Make sure in bounds.
+			assert((address - `BASE) + xfer_size <= `DATA_MEM_SIZE);	// Make sure in bounds.
 		end
 	end
 	
@@ -39,10 +40,10 @@ module datamem (
 	logic [31:0] aligned_address;
 	always_comb begin
 		case (xfer_size)
-		1: aligned_address = address;
-		2: aligned_address = {address[31:1], 1'b0};
-		4: aligned_address = {address[31:2], 2'b00};
-		default: aligned_address = {address[31:2], 2'b00}; // Bad addresses forced to double-word aligned.
+		1: aligned_address = address - `BASE;
+		2: aligned_address = {address[31:1] - `BASE, 1'b0};
+		4: aligned_address = {address[31:2] - `BASE, 2'b00};
+		default: aligned_address = {address[31:2] - `BASE, 2'b00}; // Bad addresses forced to double-word aligned.
 		endcase
 	end
 	

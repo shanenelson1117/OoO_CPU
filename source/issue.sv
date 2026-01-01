@@ -108,6 +108,7 @@ module issue (
         issue_csr_write_select = '1;
         csr_valid_read_temp = 0;
         alu_op = ADD;
+        rob_input.ready = 0;
 
         // Handle csr reads into the K slot
         if (issue_csr_op) begin
@@ -176,11 +177,6 @@ module issue (
             branch_type = NB;
             issue_writes_temp = 1;
             temp_load = 0;
-
-            if (ins[11:7] == '0) begin
-                valid_packet = 0;
-                issue_writes_temp = 0;
-            end
             
             // ALu operation select
             if (ins[14:12] == 3'b0 && ins[31:25] == 7'b0000001) begin
@@ -238,10 +234,6 @@ module issue (
         // I-type instructions
         else if (op == 7'b0010011) begin
             issue_writes_temp = 1;
-            if (ins[11:7] == '0) begin
-                valid_packet = 0;
-                issue_writes_temp = 0;
-            end
     
             // ALU operation decode
             if (ins[14:12] == 3'b0) begin
@@ -419,13 +411,14 @@ module issue (
             else begin
                 valid_packet = 0;
                 illegal = 1;
+                rob_input.ready = 1;
             end
         end
 
         //nop
         else begin
             valid_packet = 0;
-            illegal = 1;
+            illegal = 0;
             issue_writes_temp = 1'b0;
             alu_op = ADD; // in the future make this a nop designation and have mech to clear rs
             V_j = '0;
@@ -434,6 +427,7 @@ module issue (
             Q_temp_k = '0;
             branch_type = NB;
             temp_load = 0;
+            rob_input.ready = 1;
         end
     end
     // assemble rs input packet
@@ -460,14 +454,14 @@ module issue (
         rob_input.branch_result = 1'b0; // to be updated later
         rob_input.jalr = (op == 7'b1100111) ? 1 : 0;
         rob_input.ras_pointer = hold_out.ras_ptr;
-        rob_input.exception = exception | illegal;
+        rob_input.exception = 0;
         rob_input.csr_valid_write = csr_valid_write_temp & valid_packet;
         rob_input.csr_valid_read = csr_valid_read_temp & valid_packet;
         rob_input.special = NONE;
         rob_input.reg_dest = (issue_writes) ? ins[11:7] : '0;
         rob_input.csr_write_sel = '1;
-        rob_input.ready = ~valid_packet;
         rob_input.Q_csr = (csr_reg_busy & issue_csr_op) ? Q_csr : '0;
+        rob_input.mcause = 8'd0;
 
         // Set ROB mcause
         if (exception) begin
@@ -475,9 +469,6 @@ module issue (
         end
         else if (illegal) begin
             rob_input.mcause = 8'd2;
-        end
-        else begin
-            rob_input.mcause = 8'd0;
         end
 
         // store
@@ -503,7 +494,7 @@ module issue (
             rob_input.ready = 1'b0;
             rob_input.reg_dest = ins[11:7];
         end
-         else if (op == 7'b1110011) begin
+        else if (op == 7'b1110011) begin
             rob_input.itype = 2'b10;
             rob_input.value = 32'b0;
             rob_input.destination = '0;
@@ -515,6 +506,7 @@ module issue (
                 // ecall
                 if(ins[31:20] == 12'h000) begin
                     rob_input.special = ECALL;
+                    rob_input.mcause = 8'd8;
                 end
                 //mret
                 else if (ins[31:20] == 12'h302) begin
@@ -546,13 +538,20 @@ module issue (
             end
         end
 
+        else if (~valid_packet) begin
+            rob_input.itype = 2'b10;
+            rob_input.value = 32'b0; // to be updated later
+            rob_input.destination = '0;
+            rob_input.reg_dest = '0;
+            rob_input.ready = 1;
+        end
         // register output
         else begin
             rob_input.itype = 2'b10;
             rob_input.value = 32'b0; // to be updated later
             rob_input.destination = {27'b0, ins[11:7]};
-            rob_input.ready = 1'b0;
             rob_input.reg_dest = ins[11:7];
+            rob_input.ready = 0;
         end
     end
 

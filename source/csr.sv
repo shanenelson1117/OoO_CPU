@@ -30,7 +30,7 @@ module csr (
   logic [NUM_CSR:0][31:0] csr_data;
 
   // Use index() function to get array index for csr based on csr num
-  assign mepc_ReadData = csr_data[index(12'h300)];
+  assign mepc_ReadData = csr_data[index(12'h341)];
   assign mtvec_ReadData = csr_data[index(12'h305)];
 
   assign illegal_access_e = (valid_write |(special == MRET)) && (curr_priv == U);
@@ -51,7 +51,7 @@ module csr (
     // Handle exceptions
     else if (exception) begin
       // Write mepc with pc of committing instruction
-      csr_data[2] <= mepc_WriteData;
+      csr_data[3] <= mepc_WriteData;
       csr_data[0] <= {{csr_data[0][31:13]}, 
                     curr_priv,
                     {csr_data[0][10:8]},
@@ -63,15 +63,15 @@ module csr (
       if (special == ECALL) begin
         // If ECALL then we set based on privilege
         if (curr_priv == M) begin
-          csr_data[3] <= 32'd11;
+          csr_data[2] <= 32'd11;
         end
         else begin
-          csr_data[3] <= 32'd8;
+          csr_data[2] <= 32'd8;
         end
       end
       // If not then use mcause from commit
       else begin
-        csr_data[3] <= {24'b0, mcause};
+        csr_data[2] <= {24'b0, mcause};
       end
     end
     // Handle normal writes

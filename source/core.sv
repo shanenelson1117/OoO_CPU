@@ -236,14 +236,11 @@ module core (
     // Issue Stage
     //--------------------------------------
 
-    assign stall = (busy_bus == 4'b1) | rob_full | lsq_full | jalrq_full | (csr_busy & (csr_read_select != '1));
-    always_comb begin
-        if ((csr_busy & (csr_read_select != '1))) $display("stall");
-    end
+    assign stall = (busy_bus == 4'b1111) | rob_full | lsq_full | jalrq_full;
 
     hold ins_hold (
                     .clk,
-                    .reset,
+                    .reset(reset | mispredicted | exception | mret),
                     .pipe_out,
                     .stall,
                     .hold_out,

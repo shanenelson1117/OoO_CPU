@@ -150,7 +150,7 @@ package structs_pkg;
         case (csr)
             12'h300: index = 3'b000;
             12'h305: index = 3'b001;
-            12'h314: index = 3'b010;
+            12'h342: index = 3'b010;
             12'h341: index = 3'b011;
             default: index = 3'b111;
         endcase
