@@ -6,6 +6,8 @@ OoO_CPU is an Out-of-Order processor implementing the RISCVIM ISA. The design le
 * Branch Prediction: Branch instructions are predicted with a (10,2) correlating branch predictor, executed speculatively and validated via the ROB.
 * Return Address Prediction: Jumps are predicted using a return address stack and validated via the ROB.
 * Commit Logic: Ensures architectural state updates (registers/memory) occur in program order.
+* Support for `ecall` and `ebreak` as well as the `ziscr` extension. Enabled using tomasulo's to track CSR writes. 
+* Suppport for the M privilege mode.
 ## Repository Structure:
 * ```source/core.sv```: Top-level module representing one RISCV hart(core).
 * ```source/```: All modules used by the top level module.
@@ -16,8 +18,11 @@ To build the cpu run ```make```. This builds the verilator files and strips unne
 ### Diff Testing vs. Spike
 Script to be created later...
 
+## Current Work
+* Verification of all aspects of the `zicsr` extension, precise exceptions, and the M privilege mode.
+
 ## Future Work
-* Support for `ecall` and `ebreak` via the `zicsr` extension.
-* Support for Supervisor (S) and Machine (M) mode privilege levels.
-* Support for precise exceptions.
+* Support for Supervisor (S) mode privilege level.
+* Addition of a memory hierarchy.
+* Support for virtual memory.
 * Support for the A memory atomics instructions.

@@ -1,0 +1,15 @@
+Vcore___024root__2.o: \
+  /Users/shanenelson/Projects/OoO_CPU_forks/A/OoO_CPU/obj_dir/Vcore__pch.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilated.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilated_config.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilatedos.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilated_types.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilated_funcs.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilated_dpi.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/verilated_sym_props.h \
+  /opt/homebrew/Cellar/verilator/5.042/share/verilator/include/vltstd/svdpi.h \
+  /Users/shanenelson/Projects/OoO_CPU_forks/A/OoO_CPU/obj_dir/Vcore__Syms.h \
+  /Users/shanenelson/Projects/OoO_CPU_forks/A/OoO_CPU/obj_dir/Vcore.h \
+  /Users/shanenelson/Projects/OoO_CPU_forks/A/OoO_CPU/obj_dir/Vcore___024root.h \
+  /Users/shanenelson/Projects/OoO_CPU_forks/A/OoO_CPU/obj_dir/Vcore___024unit.h \
+  Vcore___024root__2.cpp Vcore__pch.h

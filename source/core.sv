@@ -16,9 +16,12 @@ module core (
         output logic [31:0] WriteData_out,
         output logic [31:0] ins_out,
         output logic [31:0] csr_WriteData_out,
+        output logic [31:0] mem_addr_out,
         output logic csr_write_out,
         output logic [CSR_BITS:0] csr_write_select_out,
         output logic [1:0] priv_out,
+        output logic load_out,
+        output logic store_out,
     `endif
     input clk, reset
 );
@@ -617,6 +620,9 @@ module core (
             csr_WriteData_out = csr_WriteData;
             csr_write_out = commit_csr_valid_write;
             csr_write_select_out = commit_csr_write_select;
+            mem_addr_out = head.mem_addr;
+            store_out = head.itype == 2'b01;
+            load_out = head.itype == 2'b11;
         end
     `endif
 endmodule

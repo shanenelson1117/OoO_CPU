@@ -50,13 +50,19 @@ int main(int argc, char **argv) {
 
           // Instruction
           trace_file << "(0x" << std::hex << std::setw(8) << (top->ins_out & 0xFFFFFFFF) << ") ";
-
+    
           if (top->RegWrite_out && top->rd_out != 0) {
               std::string fill = top->rd_out < 10 ? "  " : " ";
               trace_file << "x" << std::dec << (int)top->rd_out << fill
                         << "0x" << std::hex << std::setw(8) << (top->WriteData_out & 0xFFFFFFFF);
           }
-          if (top->csr_write_out) {
+
+          if (top->load_out) {
+            trace_file << "mem " << std::hex << std::setw(8) << "0x" << (top->mem_addr_out & 0xFFFFFFFF);
+          } else if (top->store_out) {
+            trace_file << "mem " << std::hex << std::setw(8) << "0x" << (top->mem_addr_out & 0xFFFFFFFF);
+            trace_file << " 0x" << std::hex << std::setw(8) << (top->WriteData_out & 0xFFFFFFFF);
+          } else if (top->csr_write_out) {
             std::string csr_desc;
             switch(top->csr_write_select_out) {
                 case 0: 

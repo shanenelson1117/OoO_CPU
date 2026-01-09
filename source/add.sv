@@ -67,6 +67,10 @@ module add (  // adder FSM
 		else if (ALUop == SLTU) begin
 			result = (~carry) ? 32'd1 : 32'b0;
 		end
+		// CSR Clear
+		else if (ALUop == CLEAR) begin
+			result = ~rs1 & rs2;
+		end
 		// XOR
 		else if (ALUop == XOR) begin
 			result = rs1 ^ rs2;
