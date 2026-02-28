@@ -26,3 +26,6 @@ Script to be created later...
 * Addition of a memory hierarchy.
 * Support for virtual memory.
 * Support for the A memory atomics instructions.
+
+
+## Note: this version is unverified.
